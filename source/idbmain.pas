@@ -6,7 +6,7 @@ unit idbMain;
 interface
 
 uses
-  Classes, SysUtils, db, dbf, FileUtil, StrUtils,
+  Classes, SysUtils, db, dbf, FileUtil, StrUtils, IniFiles,
   Forms, Controls, Graphics, Dialogs, DBGrids, DBCtrls,
   ExtCtrls, StdCtrls, Grids, Buttons, ComCtrls, ActnList, StdActns, Types,
   {$ifdef APP_DEBUG}
@@ -70,6 +70,7 @@ type
     procedure DBGridDrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: Integer; Column: TColumn; State: TGridDrawState);
     procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
     procedure StatusbarTimerTimer(Sender: TObject);
   private
     procedure DatasetAfterPost(ADataset: TDataset);
@@ -77,11 +78,13 @@ type
     procedure ProgressHandler(Sender: TObject; AMin, AValue, AMax: Integer);
 
     procedure SetupDBGrid;
-    procedure UpdateDBGridRowHeight;
+    procedure UpdateDBGridRowHeight(ALineCount: Integer);
     procedure UpdateIconDetails;
     procedure UpdateImage;
     procedure UpdateKeywords;
 
+    procedure ReadIni;
+    procedure WriteIni;
   public
 
   end;
@@ -172,7 +175,8 @@ begin
     if F.ShowModal = mrOK then
     begin
       F.ControlsToSettings;
-      UpdateDBGridRowHeight;
+      MainDatamodule.ChangeDatabase(Settings.DatabaseFolder);
+      UpdateDBGridRowHeight(Settings.RowLines);
     end;
   finally
     F.Free;
@@ -281,6 +285,8 @@ procedure TMainForm.FormCreate(Sender: TObject);
 var
   i: Integer;
 begin
+  ReadIni;
+
   if MainDatamodule = nil then
     MainDatamodule := TMainDatamodule.Create(Application);
   MainDatamodule.AfterPost := @DatasetAfterPost;
@@ -291,6 +297,11 @@ begin
   InfoIconName.Datafield := 'NAME';
   InfoIconType.DataField := 'ICONTYPE';
   InfoIconSize.DataField := 'SIZE';
+end;
+
+procedure TMainForm.FormDestroy(Sender: TObject);
+begin
+  WriteIni;
 end;
 
 procedure TMainForm.StatusbarTimerTimer(Sender: TObject);
@@ -310,10 +321,24 @@ begin
   end;
 end;
 
+procedure TMainForm.ReadIni;
+var
+  ini: TCustomIniFile;
+begin
+  ini := CreateIni;
+  try
+    ReadFormFromIni(ini, Self, 'MainForm');
+    ReadSettingsFromIni(ini, 'Settings');
+  finally
+    ini.Free;
+  end;
+end;
+
 procedure TMainForm.SetupDBGrid;
 begin
   DBGrid.Columns.Clear;
   DBGrid.Datasource := Datasource1;
+
   with DBGrid.Columns.Add do
   begin
     FieldName := 'NAME';
@@ -350,9 +375,11 @@ begin
     Title.Alignment := taCenter;
     Width := 80;
   end;
+
+  UpdateDBGridRowHeight(Settings.RowLines);
 end;
 
-procedure TMainForm.UpdateDBGridRowHeight;
+procedure TMainForm.UpdateDBGridRowHeight(ALineCount: Integer);
 var
   h: Integer;
   bmp: TBitmap;
@@ -366,7 +393,7 @@ begin
     bmp.Free;
   end;
 
-  DBGrid.DefaultRowHeight := h * Settings.RowHeight + 2*varCellPadding;
+  DBGrid.DefaultRowHeight := h * ALineCount + 2*varCellPadding;
 end;
 
 procedure TMainForm.UpdateIconDetails;
@@ -400,6 +427,19 @@ begin
     finally
       L.Free;
     end;
+  end;
+end;
+
+procedure TMainForm.WriteIni;
+var
+  ini: TCustomIniFile;
+begin
+  ini := CreateIni;
+  try
+    WriteFormToIni(ini, self, 'MainForm');
+    WriteSettingsToIni(ini, 'Settings');
+  finally
+    ini.Free;
   end;
 end;
 

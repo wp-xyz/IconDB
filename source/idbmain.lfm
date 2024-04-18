@@ -8,6 +8,7 @@ object MainForm: TMainForm
   ClientWidth = 820
   LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   object DBGrid: TDBGrid
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = CoolBar

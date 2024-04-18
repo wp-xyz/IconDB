@@ -5,7 +5,7 @@ unit idbDatamodule;
 interface
 
 uses
-  Classes, SysUtils, StrUtils, FileUtil, Graphics,
+  Classes, SysUtils, StrUtils, FileUtil, Graphics, LazFileUtils,
   db, dbf,
   Forms;
 
@@ -46,6 +46,7 @@ type
     constructor Create(AOwner: TComponent); override;
 
     function AddIconsFromDirectory(const ADirectory: String): Integer;
+    procedure ChangeDatabase(ANewDatabase: String);
     procedure DeleteIcon;
     procedure DoProgress(AMin, AValue, AMax: Integer);
     procedure EditKeywords(const AKeywords: String);
@@ -80,11 +81,17 @@ uses
   idbGlobal;
 
 constructor TMainDatamodule.Create(AOwner: TComponent);
+var
+  path: String;
 begin
   inherited;
 
-  Dbf1.FilePath := Application.Location + 'data/';
-  Dbf1.Tablename := 'icon_db.dbf';
+  path := Settings.DatabaseFolder;
+  if path = '' then
+    path := Application.Location + 'data';
+
+  Dbf1.FilePath := AppendPathDelim(path);
+  Dbf1.Tablename := DBF_FILENAME;
 
   if not FileExists(Dbf1.FilePath + Dbf1.TableName) then
     CreateDataset(Dbf1);
@@ -169,6 +176,31 @@ begin
   end;
 end;
 
+procedure TMainDatamodule.ChangeDatabase(ANewDatabase: String);
+var
+  path: String;
+begin
+  if ANewDatabase = '' then
+    path := Application.Location + 'data'
+  else
+    path := ANewDatabase;
+  path := AppendPathDelim(path);
+
+  if AnsiSameText(path, Dbf1.FilePath) then
+    exit;
+
+  Dbf1.Close;
+  Dbf1.FilePath := path;
+  Dbf1.TableName := DBF_FILENAME;
+
+  if not FileExists(Dbf1.FilePath + Dbf1.TableName) then
+    CreateDataset(Dbf1);
+
+  Dbf1.Open;
+  Dbf1.IndexName := 'idxByName';
+  Dbf1.First;
+end;
+
 procedure TMainDatamodule.DoAfterOpen(DataSet: TDataSet);
 begin
   FNameField := Dataset.FieldByName('NAME');
@@ -204,6 +236,7 @@ begin
   ADataset.Exclusive := true;
   ADataset.TableLevel := 7;
 
+  ADataset.FieldDefs.Clear;
   ADataset.FieldDefs.Add('ICONID', ftAutoInc, 0, true);
   ADataset.FieldDefs.Add('NAME', ftString, 40, true);
   ADataset.FieldDefs.Add('NAMEBASE', ftString, 35);
@@ -219,6 +252,7 @@ begin
 
   ADataset.Open;
 
+  ADataset.IndexDefs.Clear;
   ADataset.AddIndex('idxByIconID', 'ICONID', [ixPrimary, ixUnique]);
   ADataset.AddIndex('idxByName', 'NAME', [ixCaseInsensitive]);
   ADataset.AddIndex('idxNameBase', 'NAMEBASE', [ixCaseInsensitive]);

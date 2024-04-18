@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ButtonPanel, StdCtrls,
-  Spin,
+  Spin, EditBtn,
   idbGlobal;
 
 type
@@ -15,8 +15,11 @@ type
 
   TSettingsForm = class(TForm)
     ButtonPanel: TButtonPanel;
+    edDatabaseFolder: TDirectoryEdit;
     gbDBGrid: TGroupBox;
+    gbDatabase: TGroupBox;
     Label1: TLabel;
+    lblDatabaseFolder: TLabel;
     seGridRowHeights: TSpinEdit;
   private
 
@@ -35,12 +38,20 @@ implementation
 
 procedure TSettingsForm.ControlsToSettings;
 begin
-  Settings.RowHeight := seGridRowHeights.Value;
+  if edDatabaseFolder.Text = Application.Location + 'data' then
+    Settings.DatabaseFolder := ''
+  else
+    Settings.DatabaseFolder := edDatabaseFolder.Text;
+  Settings.RowLines := seGridRowHeights.Value;
 end;
 
 procedure TSettingsForm.SettingsToControls;
 begin
-  seGridRowHeights.Value := Settings.RowHeight;
+  if Settings.DatabaseFolder = '' then
+    edDatabaseFolder.Text := Application.Location + 'data'
+  else
+    edDatabaseFolder.Text := Settings.DatabaseFolder;
+  seGridRowHeights.Value := Settings.RowLines;
 end;
 
 end.
