@@ -37,10 +37,12 @@ type
     Image1: TImage;
     InfoIconSize: TDBText;
     InfoIconType: TDBText;
+    InfoIconHash: TDBText;
     InfoKeywords: TLabel;
     lblIconName: TLabel;
     lblIconType: TLabel;
     lblIconSize: TLabel;
+    lblIconHash: TLabel;
     lblKeywords: TLabel;
     Panel1: TPanel;
     FilterPanel: TPanel;
@@ -73,11 +75,14 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure StatusbarTimerTimer(Sender: TObject);
   private
+    procedure DatasetAfterDelete(ADataset: TDataset);
+    procedure DatasetAfterOpen(ADataset: TDataset);
     procedure DatasetAfterPost(ADataset: TDataset);
     procedure DatasetAfterScroll(ADataset: TDataset);
     procedure ProgressHandler(Sender: TObject; AMin, AValue, AMax: Integer);
 
     procedure SetupDBGrid;
+    procedure UpdateCaption(ARecordCount: Integer);
     procedure UpdateDBGridRowHeight(ALineCount: Integer);
     procedure UpdateIconDetails;
     procedure UpdateImage;
@@ -98,7 +103,7 @@ implementation
 
 uses
   Math,
-  idbGlobal, idbKeywords, idbSettings;
+  idbGlobal, idbKeywords, idbSettings, idbDuplicates;
 
 
 { TMainForm }
@@ -106,18 +111,35 @@ uses
 procedure TMainForm.acAddIconsExecute(Sender: TObject);
 var
   n: Integer;
+  Duplicates: TStrings;
+  ok: Boolean = false;
+  F: TDuplicateIconsForm;
 begin
   if SelectDirectoryDialog1.Execute then
   begin
     Screen.Cursor := crHourglass;
     MainDatamodule.OnProgress := @ProgressHandler;
+    Duplicates := TStringList.Create;
     try
-      n := MainDatamodule.AddIconsFromDirectory(SelectDirectoryDialog1.FileName);
+      n := MainDatamodule.AddIconsFromDirectory(SelectDirectoryDialog1.FileName, Duplicates);
       Statusbar.SimpleText := Format('%d icons loaded.', [n]);
       StatusbarTimer.Enabled := true;
+      ok := true;
     finally
       MainDatamodule.OnProgress := nil;
       Screen.Cursor := crDefault;
+      if ok and (Duplicates.Count > 0) then
+      begin
+        F := TDuplicateIconsForm.Create(nil);
+        try
+          F.DuplicateList.Items.Assign(Duplicates);
+          F.ShowModal;
+        finally
+          F.Free;
+        end;
+      end;
+      Duplicates.Free;
+      UpdateCaption(MainDatamodule.Dataset.RecordCount);
     end;
   end;
 end;
@@ -211,6 +233,16 @@ begin
   acFilterExecute(nil);
 end;
 
+procedure TMainForm.DatasetAfterDelete(ADataset: TDataset);
+begin
+  UpdateCaption(ADataset.RecordCount);
+end;
+
+procedure TMainForm.DatasetAfterOpen(ADataset: TDataset);
+begin
+  UpdateCaption(ADataset.RecordCount);
+end;
+
 procedure TMainForm.DatasetAfterScroll(ADataSet: TDataSet);
 begin
   UpdateIconDetails;
@@ -239,6 +271,8 @@ var
 begin
   col := DBGrid.Columns[DataCol];
   field := col.Field;
+  if field = nil then
+    exit;
   R := Rect;
   if field.FieldName = 'ICON' then
   begin
@@ -289,14 +323,18 @@ begin
 
   if MainDatamodule = nil then
     MainDatamodule := TMainDatamodule.Create(Application);
+  Datasource1.Dataset := MainDatamodule.Dataset;
+  MainDatamodule.AfterDelete := @DatasetAfterDelete;
+  MainDatamodule.AfterOpen := @DatasetAfterOpen;
   MainDatamodule.AfterPost := @DatasetAfterPost;
   MainDatamodule.AfterScroll := @DatasetAfterScroll;
-  Datasource1.Dataset := MainDatamodule.Dataset;
+  MainDatamodule.OpenDataset;
 
   SetupDBGrid;
   InfoIconName.Datafield := 'NAME';
   InfoIconType.DataField := 'ICONTYPE';
   InfoIconSize.DataField := 'SIZE';
+  InfoIconHash.DataField := 'ICONHASH';
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
@@ -377,6 +415,14 @@ begin
   end;
 
   UpdateDBGridRowHeight(Settings.RowLines);
+end;
+
+procedure TMainForm.UpdateCaption(ARecordCount: Integer);
+begin
+  if ARecordCount > 0 then
+    Caption := Format(APP_CAPTION_COUNT, [ARecordCount])
+  else
+    Caption := APP_CAPTION;
 end;
 
 procedure TMainForm.UpdateDBGridRowHeight(ALineCount: Integer);

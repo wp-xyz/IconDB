@@ -8,6 +8,8 @@ uses
   Classes, SysUtils, IniFiles, Forms;
 
 const
+  APP_CAPTION = 'Icon Database';
+  APP_CAPTION_COUNT = 'Icon Database (%d icons)';
   DBF_FILENAME = 'icon_db.dbf';
   KEYWORD_SEPARATOR = ';';
   ICON_FILE_MASK = '*.png';

@@ -7,7 +7,8 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, idbMain, dbflaz, idbKeywords, idbDatamodule, idbGlobal, idbSettings
+  Forms, idbMain, dbflaz, idbKeywords, idbDatamodule, idbGlobal, idbSettings,
+  idbDuplicates
   { you can add units after this };
 
 {$R *.res}

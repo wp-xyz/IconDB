@@ -4,9 +4,9 @@ unit idbDatamodule;
 
 interface
 
-uses
-  Classes, SysUtils, StrUtils, FileUtil, Graphics, LazFileUtils,
-  db, dbf,
+uses       LazLogger,
+  Classes, SysUtils, StrUtils, FileUtil, Graphics, LazFileUtils, Dialogs,
+  db, dbf, BufDataset,
   Forms;
 
 type
@@ -17,6 +17,7 @@ type
 
   TMainDatamodule = class(TDataModule)
     Dbf1: TDbf;
+    procedure DoAfterDelete(Dataset: TDataset);
     procedure DoAfterOpen(DataSet: TDataSet);
     procedure DoAfterPost(DataSet: TDataSet);
     procedure DoAfterScroll(DataSet: TDataSet);
@@ -25,6 +26,7 @@ type
     FNameBaseField: TField;
     FNameSuffixField: TField;
     FWidthField: TField;
+    FHashTable: TBufDataset;
     FHeightField: TField;
     FKeywordsField: TField;
     FIconField: TField;
@@ -32,6 +34,8 @@ type
     FIconHashField: TField;
     FIconTypeField: TField;
     FSizeField: TField;
+    FOnAfterDelete: TDatasetNotifyEvent;
+    FOnAfterOpen: TDatasetNotifyEvent;
     FOnAfterPost: TDatasetNotifyEvent;
     FOnAfterScroll: TDatasetNotifyEvent;
     FOnProgress: TProgressEvent;
@@ -39,21 +43,28 @@ type
 
   protected
     procedure CreateDataset(ADataset: TDbf);
-    procedure AddIconFromFile(const AFileName: String);
+    function CreateHashTable: TBufDataset;
+    function AddIconFromFile(const AFileName: String; ADuplicatesList: TStrings): Boolean;
+    procedure FillHashTable;
     function GetFilterByKeywords(const AKeywords: String): String;
+    function GetIconHash(AStream: TStream): String;
 
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
 
-    function AddIconsFromDirectory(const ADirectory: String): Integer;
+    function AddIconsFromDirectory(const ADirectory: String; ADuplicatesList: TStrings): Integer;
     procedure ChangeDatabase(ANewDatabase: String);
     procedure DeleteIcon;
     procedure DoProgress(AMin, AValue, AMax: Integer);
     procedure EditKeywords(const AKeywords: String);
     procedure FilterByKeywords(const AKeywords: String);
     procedure LoadPicture(APicture: TPicture);
+    procedure OpenDataset;
 
     property Dataset: TDataset read GetDataset;
+    property AfterDelete: TDatasetNotifyEvent read FOnAfterDelete write FOnAfterDelete;
+    property AfterOpen: TDatasetNotifyEvent read FOnAfterOpen write FOnAfterOpen;
     property AfterPost: TDatasetNotifyEvent read FOnAfterPost write FOnAfterPost;
     property AfterScroll: TDatasetNotifyEvent read FOnAfterScroll write FOnAfterScroll;
     property OnProgress: TProgressEvent read FOnProgress write FOnProgress;
@@ -77,8 +88,8 @@ implementation
 {$R *.lfm}
 
 uses
-  FPImage,
-  idbGlobal;
+  Variants, FPImage, MD5,
+  idbGlobal, idbDuplicates;
 
 constructor TMainDatamodule.Create(AOwner: TComponent);
 var
@@ -96,23 +107,29 @@ begin
   if not FileExists(Dbf1.FilePath + Dbf1.TableName) then
     CreateDataset(Dbf1);
 
+  Dbf1.AfterDelete := @DoAfterDelete;
   Dbf1.AfterOpen := @DoAfterOpen;
   Dbf1.AfterScroll := @DoAfterScroll;
   Dbf1.AfterPost := @DoAfterPost;
-
-  Dbf1.Open;
-  Dbf1.IndexName := 'idxByName';
-  Dbf1.First;
 end;
 
-procedure TMainDatamodule.AddIconFromFile(const AFileName: String);
+destructor TMainDatamodule.Destroy;
+begin
+  FHashTable.Free;
+  inherited;
+end;
+
+function TMainDatamodule.AddIconFromFile(const AFileName: String;
+  ADuplicatesList: TStrings): Boolean;
 var
   stream: TMemoryStream;
   reader: TFPCustomImageReaderClass;
   s, sBase, sNumber: String;
   p, n: Integer;
   sz: TPoint;
+  hash: String;
 begin
+  Result := true;
   stream := TMemoryStream.Create;
   try
     stream.LoadFromFile(AFileName);
@@ -122,6 +139,15 @@ begin
       reader := TFPCustomImage.FindReaderFromStream(stream);
       if reader <> nil then
       begin
+        stream.Position := 0;
+        hash := GetIconHash(stream);
+        FHashTable.First;
+        if FHashTable.Locate('IconHash', hash, []) then
+        begin
+          ADuplicatesList.Add(ExtractFileName(AFileName));
+          Result := false;
+          exit;
+        end;
         stream.Position := 0;
         Dbf1.Insert;
         s := ExtractFileExt(AFileName);
@@ -145,9 +171,15 @@ begin
         FWidthField.AsInteger := sz.X;
         FHeightField.AsInteger := sz.Y;
         FSizeField.AsString := Format('%d x %d', [sz.X, sz.Y]);
+        FIconHashField.AsString := hash;
         stream.Position := 0;
         TBlobField(FIconField).LoadFromStream(stream);
         Dbf1.Post;
+
+        FHashTable.Insert;
+        FHashTable.FieldByName('IconID').AsInteger := FIconIDField.AsInteger;
+        FHashTable.FieldByName('IconHash').AsString := hash;
+        FHashTable.Post;
       end;
     end;
   finally
@@ -155,7 +187,8 @@ begin
   end;
 end;
 
-function TMainDatamodule.AddIconsFromDirectory(const ADirectory: String): Integer;
+function TMainDatamodule.AddIconsFromDirectory(const ADirectory: String;
+  ADuplicatesList: TStrings): Integer;
 var
   List: TStrings;
   i: Integer;
@@ -164,10 +197,11 @@ begin
   Dbf1.DisableControls;
   try
     FindAllFiles(List, ADirectory, ICON_FILE_MASK, false);
-    Result := List.Count;
+    Result := 0;
     for i := 0 to List.Count-1 do
     begin
-      AddIconFromFile(List[i]);
+      if AddIconFromFile(List[i], ADuplicatesList) then
+        inc(Result);
       DoProgress(0, i, List.Count-1);
     end;
   finally
@@ -201,6 +235,11 @@ begin
   Dbf1.First;
 end;
 
+procedure TMainDatamodule.DoAfterDelete(Dataset: TDataset);
+begin
+  if Assigned(FOnAfterDelete) then FOnAfterDelete(Dataset);
+end;
+
 procedure TMainDatamodule.DoAfterOpen(DataSet: TDataSet);
 begin
   FNameField := Dataset.FieldByName('NAME');
@@ -214,6 +253,8 @@ begin
   FIconHashField := Dataset.FieldByName('ICONHASH');
   FIconTypeField := Dataset.FieldByName('ICONTYPE');
   FSizeField := Dataset.FieldByName('SIZE');
+
+  if Assigned(FOnAfterOpen) then FOnAfterOpen(Dataset);
 end;
 
 procedure TMainDatamodule.DoAfterPost(DataSet: TDataSet);
@@ -263,9 +304,25 @@ begin
   ADataset.Close;
 end;
 
-procedure TMainDatamodule.DeleteIcon;
+function TMainDatamodule.CreateHashTable: TBufDataset;
 begin
+  Result := TBufDataset.Create(self);
+  Result.FieldDefs.Add('IconID', ftInteger);
+  Result.FieldDefs.Add('IconHash', ftString, 64);
+  Result.CreateDataset;
+  Result.Open;
+  Result.AddIndex('idxByHash', 'IconHash', []);
+end;
+
+procedure TMainDatamodule.DeleteIcon;
+var
+  id: Integer;
+begin
+  id := FIconIDField.AsInteger;
   Dbf1.Delete;
+  FHashTable.Locate('IconID', id, []);
+  FHashTable.Delete;
+  DoAfterDelete(Dataset);
 end;
 
 procedure TMainDatamodule.DoProgress(AMin, AValue, AMax: Integer);
@@ -322,6 +379,38 @@ begin
   end;
 end;
 
+procedure TMainDatamodule.FillHashTable;
+var
+  bm: TBookmark;
+  id: Integer;
+  hash: String;
+begin
+  FHashTable.Free;
+  FHashTable := CreateHashTable;
+  FHashTable.IndexName := '';
+
+  bm := Dbf1.GetBookmark;
+  Dbf1.DisableControls;
+  try
+    Dbf1.First;
+    while not Dbf1.EoF do
+    begin
+      id := FIconIDField.AsInteger;
+      hash := FIconHashField.AsString;
+      FHashTable.Append;
+      FHashTable.FieldByName('IconID').AsInteger := id;
+      FHashTable.FieldByName('IconHash').AsString := hash;
+      FHashTable.Post;
+      Dbf1.Next;
+    end;
+    FHashTable.IndexName := 'idxByHash';
+  finally
+    Dbf1.GotoBookmark(bm);
+    Dbf1.FreeBookmark(bm);
+    Dbf1.EnableControls;
+  end;
+end;
+
 procedure TMainDatamodule.FilterByKeywords(const AKeywords: String);
 begin
   if AKeywords <> '' then
@@ -368,6 +457,27 @@ begin
   end;
 end;
 
+function TMainDatamodule.GetIconHash(AStream: TStream): String;
+var
+  pic: TPicture;
+  md5: TMDContext;
+  md5Digest: TMDDigest;
+  buf: PByte;
+begin
+  pic := TPicture.Create;
+  try
+    pic.LoadFromStream(AStream);
+    AStream.Position := 0;
+    buf := pic.Bitmap.RawImage.Data;
+    MDInit(md5, MD_VERSION_5);
+    MDUpdate(md5, buf^, pic.Bitmap.RawImage.DataSize);
+    MDFinal(md5, md5Digest);
+    Result := Lowercase(MDPrint(md5Digest));
+  finally
+    pic.Free;
+  end;
+end;
+
 procedure TMainDatamodule.LoadPicture(APicture: TPicture);
 var
   stream: TStream;
@@ -384,6 +494,17 @@ begin
   finally
     stream.Free;
   end;
+end;
+
+procedure TMainDatamodule.OpenDataset;
+begin
+  Dbf1.Open;
+//  Dbf1.IndexName := 'idxByName';
+  Dbf1.IndexFieldNames := 'idxByNameBase;idxWidth';
+  Dbf1.Last;
+  Dbf1.First;
+
+  FillHashTable;
 end;
 
 end.
