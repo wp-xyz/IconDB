@@ -1,0 +1,70 @@
+object EditKeywordsForm: TEditKeywordsForm
+  Left = 777
+  Height = 262
+  Top = 320
+  Width = 299
+  ActiveControl = mmoKeywords
+  Caption = 'Edit keywords'
+  ClientHeight = 262
+  ClientWidth = 299
+  Position = poMainFormCenter
+  LCLVersion = '3.99.0.0'
+  object ButtonPanel: TButtonPanel
+    Left = 6
+    Height = 34
+    Top = 222
+    Width = 287
+    OKButton.Name = 'OKButton'
+    OKButton.DefaultCaption = True
+    HelpButton.Name = 'HelpButton'
+    HelpButton.DefaultCaption = True
+    CloseButton.Name = 'CloseButton'
+    CloseButton.DefaultCaption = True
+    CancelButton.Name = 'CancelButton'
+    CancelButton.DefaultCaption = True
+    TabOrder = 0
+    ShowButtons = [pbOK, pbCancel]
+  end
+  object Label5: TLabel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    Left = 8
+    Height = 15
+    Top = 8
+    Width = 172
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
+    BorderSpacing.Bottom = 2
+    Caption = 'Keywords (one keyword per line)'
+  end
+  object Image: TImage
+    AnchorSideLeft.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 8
+    Height = 64
+    Top = 32
+    Width = 64
+    AutoSize = True
+    BorderSpacing.Left = 8
+    BorderSpacing.Right = 8
+  end
+  object mmoKeywords: TMemo
+    AnchorSideLeft.Control = Image
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = Label5
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = ButtonPanel
+    Left = 80
+    Height = 189
+    Top = 27
+    Width = 211
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 4
+    BorderSpacing.Right = 8
+    TabOrder = 1
+  end
+end

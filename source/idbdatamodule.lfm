@@ -1,0 +1,17 @@
+object MainDatamodule: TMainDatamodule
+  OldCreateOrder = False
+  Height = 193
+  HorizontalOffset = 668
+  VerticalOffset = 265
+  Width = 436
+  object Dbf1: TDbf
+    IndexDefs = <>
+    TableLevel = 4
+    FilterOptions = []
+    AfterOpen = DoAfterOpen
+    AfterPost = DoAfterPost
+    AfterScroll = DoAfterScroll
+    Left = 64
+    Top = 48
+  end
+end
