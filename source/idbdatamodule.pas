@@ -4,9 +4,9 @@ unit idbDatamodule;
 
 interface
 
-uses       LazLogger,
+uses
   Classes, SysUtils, StrUtils, FileUtil, Graphics, LazFileUtils, Dialogs,
-  db, dbf, BufDataset,
+  db, dbf,
   Forms;
 
 type
@@ -26,7 +26,7 @@ type
     FNameBaseField: TField;
     FNameSuffixField: TField;
     FWidthField: TField;
-    FHashTable: TBufDataset;
+    FHashes: TStringList;
     FHeightField: TField;
     FKeywordsField: TField;
     FIconField: TField;
@@ -43,9 +43,8 @@ type
 
   protected
     procedure CreateDataset(ADataset: TDbf);
-    function CreateHashTable: TBufDataset;
     function AddIconFromFile(const AFileName: String; ADuplicatesList: TStrings): Boolean;
-    procedure FillHashTable;
+    procedure FillHashes;
     function GetFilterByKeywords(const AKeywords: String): String;
     function GetIconHash(AStream: TStream): String;
 
@@ -97,6 +96,9 @@ var
 begin
   inherited;
 
+  FHashes := TStringList.Create;
+  FHashes.Sorted := true;
+
   path := Settings.DatabaseFolder;
   if path = '' then
     path := Application.Location + 'data';
@@ -115,7 +117,7 @@ end;
 
 destructor TMainDatamodule.Destroy;
 begin
-  FHashTable.Free;
+  FHashes.Free;
   inherited;
 end;
 
@@ -136,19 +138,24 @@ begin
     if stream.Size <> 0 then
     begin
       stream.Position := 0;
+      // Check the image format (without raising an exception)
       reader := TFPCustomImage.FindReaderFromStream(stream);
       if reader <> nil then
       begin
+        // Get the hash value of the image
         stream.Position := 0;
         hash := GetIconHash(stream);
-        FHashTable.First;
-        if FHashTable.Locate('IconHash', hash, []) then
+        stream.Position := 0;
+        // If the hash is stored in FHashes then the image has already been stored earlier.
+        // Skip such an image.
+        if FHashes.IndexOf(hash) > -1 then
         begin
           ADuplicatesList.Add(ExtractFileName(AFileName));
           Result := false;
           exit;
         end;
-        stream.Position := 0;
+
+        // Add the new image
         Dbf1.Insert;
         s := ExtractFileExt(AFileName);
         FIconTypeField.AsString := s;
@@ -176,10 +183,8 @@ begin
         TBlobField(FIconField).LoadFromStream(stream);
         Dbf1.Post;
 
-        FHashTable.Insert;
-        FHashTable.FieldByName('IconID').AsInteger := FIconIDField.AsInteger;
-        FHashTable.FieldByName('IconHash').AsString := hash;
-        FHashTable.Post;
+        // Store hash value of the new image.
+        FHashes.Add(hash);
       end;
     end;
   finally
@@ -304,24 +309,19 @@ begin
   ADataset.Close;
 end;
 
-function TMainDatamodule.CreateHashTable: TBufDataset;
-begin
-  Result := TBufDataset.Create(self);
-  Result.FieldDefs.Add('IconID', ftInteger);
-  Result.FieldDefs.Add('IconHash', ftString, 64);
-  Result.CreateDataset;
-  Result.Open;
-  Result.AddIndex('idxByHash', 'IconHash', []);
-end;
-
 procedure TMainDatamodule.DeleteIcon;
 var
-  id: Integer;
+  hash: String;
+  idx: Integer;
 begin
-  id := FIconIDField.AsInteger;
+  // Delete the hash value of the icon
+  hash := FIconHashField.AsString;
+  idx := FHashes.IndexOf(hash);
+  if idx > -1 then
+    FHashes.Delete(idx);
+
+  // Delete the icon record
   Dbf1.Delete;
-  FHashTable.Locate('IconID', id, []);
-  FHashTable.Delete;
   DoAfterDelete(Dataset);
 end;
 
@@ -379,15 +379,12 @@ begin
   end;
 end;
 
-procedure TMainDatamodule.FillHashTable;
+procedure TMainDatamodule.FillHashes;
 var
   bm: TBookmark;
-  id: Integer;
   hash: String;
 begin
-  FHashTable.Free;
-  FHashTable := CreateHashTable;
-  FHashTable.IndexName := '';
+  FHashes.Clear;
 
   bm := Dbf1.GetBookmark;
   Dbf1.DisableControls;
@@ -395,15 +392,10 @@ begin
     Dbf1.First;
     while not Dbf1.EoF do
     begin
-      id := FIconIDField.AsInteger;
       hash := FIconHashField.AsString;
-      FHashTable.Append;
-      FHashTable.FieldByName('IconID').AsInteger := id;
-      FHashTable.FieldByName('IconHash').AsString := hash;
-      FHashTable.Post;
+      FHashes.Add(hash);
       Dbf1.Next;
     end;
-    FHashTable.IndexName := 'idxByHash';
   finally
     Dbf1.GotoBookmark(bm);
     Dbf1.FreeBookmark(bm);
@@ -467,7 +459,6 @@ begin
   pic := TPicture.Create;
   try
     pic.LoadFromStream(AStream);
-    AStream.Position := 0;
     buf := pic.Bitmap.RawImage.Data;
     MDInit(md5, MD_VERSION_5);
     MDUpdate(md5, buf^, pic.Bitmap.RawImage.DataSize);
@@ -504,7 +495,7 @@ begin
   Dbf1.Last;
   Dbf1.First;
 
-  FillHashTable;
+  FillHashes;
 end;
 
 end.

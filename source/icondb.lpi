@@ -72,6 +72,7 @@
         <Filename Value="idbsettings.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="SettingsForm"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="idbSettings"/>
       </Unit>
@@ -79,6 +80,7 @@
         <Filename Value="idbduplicates.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="DuplicateIconsForm"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="idbDuplicates"/>
       </Unit>
