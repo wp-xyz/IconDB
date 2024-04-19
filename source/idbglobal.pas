@@ -15,6 +15,11 @@ const
   ICON_FILE_MASK = '*.png';
   MAX_FILTER_HISTORY_COUNT = 24;
 
+  CLASSIC_STYLE = 0;
+  FLAT_STYLE = 1;
+  OUTLINE_STYE = 2;
+  OUTLINE2_STYLE = 3;
+
 type
   TSettings = record
     DatabaseFolder: String;
@@ -26,6 +31,8 @@ var
     DatabaseFolder: '';
     RowLines: 1
   );
+
+function GetStyleName(AStyle: Integer): String;
 
 function CreateIni: TCustomIniFile;
 
@@ -40,6 +47,18 @@ implementation
 
 uses
   LCLType, LCLIntf, TypInfo;
+
+function GetStyleName(AStyle: Integer): String;
+begin
+  case AStyle of
+    0: Result := 'Classic';
+    1: Result := 'Flat';
+    2: Result := 'Outline';
+    3: Result := 'Outline 2-color';
+    else
+       Result := IntToStr(AStyle);
+  end;
+end;
 
 function CreateIni: TCustomIniFile;
 begin

@@ -1,0 +1,48 @@
+object DuplicateIconsForm: TDuplicateIconsForm
+  Left = 314
+  Height = 244
+  Top = 130
+  Width = 289
+  Caption = 'Duplicate icons'
+  ClientHeight = 244
+  ClientWidth = 289
+  Position = poMainFormCenter
+  LCLVersion = '3.99.0.0'
+  object ButtonPanel: TButtonPanel
+    Left = 6
+    Height = 34
+    Top = 204
+    Width = 277
+    OKButton.Name = 'OKButton'
+    OKButton.DefaultCaption = True
+    HelpButton.Name = 'HelpButton'
+    HelpButton.DefaultCaption = True
+    CloseButton.Name = 'CloseButton'
+    CloseButton.DefaultCaption = True
+    CancelButton.Name = 'CancelButton'
+    CancelButton.DefaultCaption = True
+    TabOrder = 0
+    ShowButtons = [pbOK]
+  end
+  object Label1: TLabel
+    Left = 8
+    Height = 30
+    Top = 8
+    Width = 273
+    Align = alTop
+    BorderSpacing.Around = 8
+    Caption = 'The following icons could not be added since they are duplicates of previously loaded icons:'
+    WordWrap = True
+  end
+  object DuplicateList: TListBox
+    Left = 8
+    Height = 152
+    Top = 46
+    Width = 273
+    Align = alClient
+    BorderSpacing.Left = 8
+    BorderSpacing.Right = 8
+    ItemHeight = 0
+    TabOrder = 1
+  end
+end

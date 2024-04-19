@@ -14,9 +14,11 @@ type
 
   TEditKeywordsForm = class(TForm)
     ButtonPanel: TButtonPanel;
+    cmbStyle: TComboBox;
+    lblStyle: TLabel;
     mmoKeywords: TMemo;
     Image: TImage;
-    Label5: TLabel;
+    lblKeywords: TLabel;
   private
     FDataSource: TDataSource;
     procedure LoadIconFromDataset(APicture: TPicture);
@@ -24,6 +26,7 @@ type
 
   public
     function GetKeywords: String;
+    function GetStyle: Integer;
     procedure SetDataSource(ADataSource: TDataSource);
 
   end;
@@ -56,8 +59,8 @@ begin
     for i := L.Count-1 downto 0 do
     begin
       L[i] := Trim(L[i]);
-      if L[i] = '' then L.Delete(i);
-      if L.IndexOf(L[i]) <> i then L.Delete(i);
+      if (L[i] = '') then
+        L.Delete(i);
     end;
     L.Sorted := True;
     L.Delimiter := KEYWORD_SEPARATOR;
@@ -66,6 +69,11 @@ begin
   finally
     L.Free;
   end;
+end;
+
+function TEditKeywordsForm.GetStyle: Integer;
+begin
+  Result := cmbStyle.ItemIndex;
 end;
 
 function TEditKeywordsForm.SeparateKeywords: String;
@@ -92,10 +100,19 @@ begin
 end;
 
 procedure TEditKeywordsForm.SetDataSource(ADataSource: TDataSource);
+var
+  field: TField;
 begin
   FDataSource := ADataSource;
+
   LoadIconFromDataset(Image.Picture);
   mmoKeywords.Lines.Text := SeparateKeywords;
+
+  field := FDatasource.Dataset.FieldByName('STYLE');
+  if field.IsNull then
+    cmbStyle.ItemIndex := -1
+  else
+    cmbStyle.ItemIndex := field.AsInteger;
 end;
 
 end.

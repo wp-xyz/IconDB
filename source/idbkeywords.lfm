@@ -22,10 +22,10 @@ object EditKeywordsForm: TEditKeywordsForm
     CloseButton.DefaultCaption = True
     CancelButton.Name = 'CancelButton'
     CancelButton.DefaultCaption = True
-    TabOrder = 0
+    TabOrder = 2
     ShowButtons = [pbOK, pbCancel]
   end
-  object Label5: TLabel
+  object lblKeywords: TLabel
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = Owner
     Left = 8
@@ -48,23 +48,60 @@ object EditKeywordsForm: TEditKeywordsForm
     AutoSize = True
     BorderSpacing.Left = 8
     BorderSpacing.Right = 8
+    Constraints.MinWidth = 30
   end
   object mmoKeywords: TMemo
     AnchorSideLeft.Control = Image
     AnchorSideLeft.Side = asrBottom
-    AnchorSideTop.Control = Label5
+    AnchorSideTop.Control = lblKeywords
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Control = ButtonPanel
+    AnchorSideBottom.Control = cmbStyle
     Left = 80
-    Height = 189
+    Height = 160
     Top = 27
     Width = 211
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Left = 8
     BorderSpacing.Top = 4
     BorderSpacing.Right = 8
+    TabOrder = 0
+  end
+  object cmbStyle: TComboBox
+    AnchorSideLeft.Control = mmoKeywords
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = mmoKeywords
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = ButtonPanel
+    Left = 80
+    Height = 23
+    Top = 193
+    Width = 211
+    Anchors = [akLeft, akRight, akBottom]
+    BorderSpacing.Top = 6
+    ItemHeight = 15
+    ItemIndex = 0
+    Items.Strings = (
+      'Classic'
+      'Flat'
+      'Outline'
+      'Outline 2-color'
+    )
+    Style = csDropDownList
     TabOrder = 1
+    Text = 'Classic'
+  end
+  object lblStyle: TLabel
+    AnchorSideTop.Control = cmbStyle
+    AnchorSideTop.Side = asrCenter
+    AnchorSideRight.Control = cmbStyle
+    Left = 47
+    Height = 15
+    Top = 197
+    Width = 25
+    Anchors = [akTop, akRight]
+    BorderSpacing.Right = 8
+    Caption = 'Style'
   end
 end

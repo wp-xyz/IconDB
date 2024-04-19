@@ -161,7 +161,9 @@ object MainForm: TMainForm
       EdgeBorders = []
       Images = ImageList1
       ImagesWidth = 24
+      ParentShowHint = False
       ShowCaptions = True
+      ShowHint = True
       TabOrder = 0
       Transparent = True
       object tbAddIcons: TToolButton
@@ -195,23 +197,50 @@ object MainForm: TMainForm
         ClientHeight = 44
         ClientWidth = 362
         TabOrder = 0
-        object cmbFilter: TComboBox
+        object cmbFilterByKeywords: TComboBox
           AnchorSideLeft.Control = FilterPanel
           AnchorSideTop.Control = FilterPanel
           AnchorSideTop.Side = asrCenter
           AnchorSideRight.Control = FilterPanel
           AnchorSideRight.Side = asrBottom
-          Left = 6
+          Left = 152
           Height = 23
+          Hint = 'Keyword filter'
           Top = 11
-          Width = 350
-          Anchors = [akTop, akLeft, akRight]
+          Width = 204
+          Anchors = [akTop, akRight]
           BorderSpacing.Left = 6
           BorderSpacing.Right = 6
           ItemHeight = 15
           TabOrder = 0
-          OnCloseUp = cmbFilterCloseUp
-          OnEditingDone = cmbFilterEditingDone
+          TextHint = 'Filter by keywords'
+          OnCloseUp = cmbFilterByKeywordsCloseUp
+          OnEditingDone = cmbFilterByKeywordsEditingDone
+        end
+        object cmbFilterByStyle: TComboBox
+          AnchorSideLeft.Control = FilterPanel
+          AnchorSideTop.Control = FilterPanel
+          AnchorSideTop.Side = asrCenter
+          Left = 6
+          Height = 23
+          Hint = 'Style filter'
+          Top = 11
+          Width = 132
+          BorderSpacing.Left = 6
+          ItemHeight = 15
+          ItemIndex = 0
+          Items.Strings = (
+            '(all styles)'
+            'classic'
+            'flat'
+            'outline'
+            'outline 2-color'
+          )
+          Style = csDropDownList
+          TabOrder = 1
+          Text = '(all styles)'
+          TextHint = 'Filter by style'
+          OnChange = cmbFilterByStyleChange
         end
       end
       object tbFilter: TToolButton
@@ -1465,6 +1494,7 @@ object MainForm: TMainForm
     Top = 224
     object acAddIcons: TAction
       Caption = 'Add icons...'
+      Hint = 'Add all icons in a directory'
       ImageIndex = 2
       OnExecute = acAddIconsExecute
     end
@@ -1472,32 +1502,37 @@ object MainForm: TMainForm
       AutoCheck = True
       Caption = 'Filter'
       GroupIndex = 1
+      Hint = 'Filter by keywords'
       ImageIndex = 0
       OnExecute = acFilterExecute
     end
     object acClearFilter: TAction
       Caption = 'Clear'
+      Hint = 'Clear the keyword filter'
       ImageIndex = 1
       OnExecute = acClearFilterExecute
     end
     object acEditKeywords: TAction
       Caption = 'Keywords...'
+      Hint = 'Enter keywords and styles'
       ImageIndex = 3
       OnExecute = acEditKeywordsExecute
     end
     object acDeleteIcon: TAction
       Caption = 'Delete icon'
+      Hint = 'Delete selected icon from database'
       ImageIndex = 4
       OnExecute = acDeleteIconExecute
     end
     object acFileExit: TFileExit
       Category = 'File'
       Caption = 'E&xit'
-      Hint = 'Exit'
+      Hint = 'Close application'
       ImageIndex = 5
     end
     object acSettings: TAction
       Caption = 'Settings...'
+      Hint = 'Settings'
       ImageIndex = 6
       OnExecute = acSettingsExecute
     end

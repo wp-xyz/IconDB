@@ -26,6 +26,8 @@ type
     FNameBaseField: TField;
     FNameSuffixField: TField;
     FWidthField: TField;
+    FFilterByKeywords: String;
+    FFilterByStyle: String;
     FHashes: TStringList;
     FHeightField: TField;
     FKeywordsField: TField;
@@ -34,6 +36,7 @@ type
     FIconHashField: TField;
     FIconTypeField: TField;
     FSizeField: TField;
+    FStyleField: TField;
     FOnAfterDelete: TDatasetNotifyEvent;
     FOnAfterOpen: TDatasetNotifyEvent;
     FOnAfterPost: TDatasetNotifyEvent;
@@ -45,7 +48,9 @@ type
     procedure CreateDataset(ADataset: TDbf);
     function AddIconFromFile(const AFileName: String; ADuplicatesList: TStrings): Boolean;
     procedure FillHashes;
+    procedure FilterDataset;
     function GetFilterByKeywords(const AKeywords: String): String;
+    function GetFilterByStyle(const AStyle: Integer): String;
     function GetIconHash(AStream: TStream): String;
 
   public
@@ -56,8 +61,9 @@ type
     procedure ChangeDatabase(ANewDatabase: String);
     procedure DeleteIcon;
     procedure DoProgress(AMin, AValue, AMax: Integer);
-    procedure EditKeywords(const AKeywords: String);
+    procedure EditKeywordsAndStyle(const AKeywords: String; const AStyle: Integer);
     procedure FilterByKeywords(const AKeywords: String);
+    procedure FilterByStyle(const AStyle: Integer);
     procedure LoadPicture(APicture: TPicture);
     procedure OpenDataset;
 
@@ -75,6 +81,7 @@ type
     property KeywordsField: TField read FKeywordsField;
     property NameField: TField read FNameField;
     property SizeField: TField read FSizeField;
+    property StyleField: TField read FStyleField;
     property WidthField: TField read FWidthField;
 
   end;
@@ -258,6 +265,7 @@ begin
   FIconHashField := Dataset.FieldByName('ICONHASH');
   FIconTypeField := Dataset.FieldByName('ICONTYPE');
   FSizeField := Dataset.FieldByName('SIZE');
+  FStyleField := Dataset.FieldByName('STYLE');
 
   if Assigned(FOnAfterOpen) then FOnAfterOpen(Dataset);
 end;
@@ -292,6 +300,7 @@ begin
   ADataset.FieldDefs.Add('WIDTH', ftInteger, 0, true);
   ADataset.FieldDefs.Add('HEIGHT', ftInteger, 0, true);
   ADataset.FieldDefs.Add('SIZE', ftString, 12);
+  ADataset.FieldDefs.Add('STYLE', ftInteger);
   ADataset.FieldDefs.Add('KEYWORDS', ftString, 255);
   ADataset.FieldDefs.Add('ICON', ftBlob);
   ADataset.CreateTable;
@@ -305,6 +314,7 @@ begin
   ADataset.AddIndex('idxByWidth', 'WIDTH', []);
   ADataset.AddIndex('idxByHeight', 'HEIGHT', []);
   ADataset.AddIndex('idxByIconHash', 'ICONHASH', [ixCaseInsensitive]);
+  ADataset.AddIndex('idxByStyle', 'STYLE', []);
 
   ADataset.Close;
 end;
@@ -331,19 +341,34 @@ begin
     FOnProgress(self, AMin, AValue, AMax);
 end;
 
-procedure TMainDatamodule.EditKeywords(const AKeywords: String);
+procedure TMainDatamodule.EditKeywordsAndStyle(const AKeywords: String; const AStyle: Integer);
+
+  procedure KeywordsToField(AKeywords: String; AField: TField);
+  begin
+    if AKeywords = '' then
+      AField.Clear
+    else
+      AField.AsString := AKeywords;
+  end;
+
+  procedure StyleToField(AStyle: Integer; AField: TField);
+  begin
+    if AStyle < 0 then
+      AField.Clear
+    else
+      AField.AsInteger := AStyle;
+  end;
+
 var
   iconNameBase: String;
   bm: TBookmark;
   oldFilter: String;
   wasFiltered: Boolean;
 begin
-  // Post given keywords to current record
+  // Post given keywords and style to current record
   Dbf1.Edit;
-  if AKeywords = '' then
-    FKeywordsField.Clear
-  else
-    FKeywordsField.AsString := AKeywords;
+    KeywordsToField(AKeywords, FKeywordsField);
+    StyleToField(AStyle, FStyleField);
   Dbf1.Post;
 
   // Post the same keywords to all records having the same NAMEBASE.
@@ -362,17 +387,16 @@ begin
       while not Dbf1.EoF do
       begin
         Dbf1.Edit;
-        if AKeywords = '' then
-          FKeywordsField.Clear
-        else
-          FKeywordsField.AsString := AKeywords;
+          KeywordsToField(AKeywords, FKeywordsField);
+          StyleToField(AStyle, FStylefield);
         Dbf1.Post;
         Dbf1.Next;
       end;
     finally
       Dbf1.Filter := oldFilter;
       Dbf1.Filtered := wasFiltered;
-      Dbf1.GoToBookmark(bm);
+      if Dbf1.BookmarkValid(bm) then
+        Dbf1.GoToBookmark(bm);
       Dbf1.FreeBookmark(bm);
       Dbf1.EnableControls;
     end;
@@ -406,13 +430,43 @@ end;
 procedure TMainDatamodule.FilterByKeywords(const AKeywords: String);
 begin
   if AKeywords <> '' then
+    FFilterByKeywords := GetFilterByKeywords(AKeywords)
+  else
+    FFilterByKeywords := '';
+  FilterDataset;
+end;
+
+procedure TMainDatamodule.FilterByStyle(const AStyle: Integer);
+begin
+  if AStyle < 0 then
+    FFilterByStyle := ''
+  else
+    FFilterByStyle := GetFilterByStyle(AStyle);
+  FilterDataset;
+end;
+
+procedure TMainDatamodule.FilterDataset;
+var
+  filter: String;
+begin
+  if (FFilterByStyle <> '') and (FFilterByKeywords <> '') then
+    filter := Format('(%s) AND (%s)', [FFilterByStyle, FFilterByKeywords])
+  else
+  if (FFilterByStyle <> '') then
+    filter := FFilterByStyle
+  else
+  if (FFilterByKeywords <> '') then
+    filter := FFilterByKeywords
+  else
+    filter := '';
+  if filter <> '' then
   begin
-    Dbf1.Filter := GetFilterByKeywords(AKeywords);
-    Dbf1.Filtered := true;
+    Dbf1.Filter := filter;
+    Dbf1.Filtered := True;
   end else
   begin
     Dbf1.Filter := '';
-    Dbf1.Filtered := false;
+    Dbf1.Filtered := False;
   end;
 end;
 
@@ -447,6 +501,14 @@ begin
   finally
     L.Free;
   end;
+end;
+
+function TMainDatamodule.GetFilterByStyle(const AStyle: Integer): String;
+begin
+  if AStyle = -1 then
+    Result := ''
+  else
+    Result := 'STYLE = ' + IntToStr(AStyle);
 end;
 
 function TMainDatamodule.GetIconHash(AStream: TStream): String;

@@ -26,7 +26,8 @@ type
     acDeleteIcon: TAction;
     acSettings: TAction;
     ActionList: TActionList;
-    cmbFilter: TComboBox;
+    cmbFilterByKeywords: TComboBox;
+    cmbFilterByStyle: TComboBox;
     CoolBar: TCoolBar;
     DataSource1: TDataSource;
     Dbf1: TDbf;
@@ -66,8 +67,9 @@ type
     procedure acEditKeywordsExecute(Sender: TObject);
     procedure acFilterExecute(Sender: TObject);
     procedure acSettingsExecute(Sender: TObject);
-    procedure cmbFilterCloseUp(Sender: TObject);
-    procedure cmbFilterEditingDone(Sender: TObject);
+    procedure cmbFilterByKeywordsCloseUp(Sender: TObject);
+    procedure cmbFilterByKeywordsEditingDone(Sender: TObject);
+    procedure cmbFilterByStyleChange(Sender: TObject);
     procedure DBGridDblClick(Sender: TObject);
     procedure DBGridDrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: Integer; Column: TColumn; State: TGridDrawState);
@@ -146,7 +148,7 @@ end;
 
 procedure TMainForm.acClearFilterExecute(Sender: TObject);
 begin
-  cmbFilter.Clear;
+  cmbFilterByKeywords.Clear;
   acFilter.Checked := false;
   acFilterExecute(nil);
 end;
@@ -168,7 +170,7 @@ begin
     begin
       Screen.Cursor := crHourglass;
       try
-        MainDatamodule.EditKeywords(F.GetKeywords);
+        MainDatamodule.EditKeywordsAndStyle(F.GetKeywords, F.GetStyle);
       finally
         Screen.Cursor := crDefault;
       end;
@@ -181,7 +183,7 @@ end;
 procedure TMainForm.acFilterExecute(Sender: TObject);
 begin
   if acFilter.Checked then
-    MainDatamodule.FilterByKeywords(cmbFilter.Text)
+    MainDatamodule.FilterByKeywords(cmbFilterByKeywords.Text)
   else
     MainDatamodule.FilterByKeywords('');
   UpdateIconDetails;
@@ -205,32 +207,37 @@ begin
   end;
 end;
 
-procedure TMainForm.cmbFilterCloseUp(Sender: TObject);
+procedure TMainForm.cmbFilterByKeywordsCloseUp(Sender: TObject);
 begin
-  if cmbFilter.ItemIndex > -1 then
+  if cmbFilterByKeywords.ItemIndex > -1 then
   begin
-    cmbFilter.Text := cmbFilter.Items[cmbFilter.ItemIndex];
-    cmbFilter.Items.Move(cmbFilter.ItemIndex, 0);
+    cmbFilterByKeywords.Text := cmbFilterByKeywords.Items[cmbFilterByKeywords.ItemIndex];
+    cmbFilterByKeywords.Items.Move(cmbFilterByKeywords.ItemIndex, 0);
     acFilter.Checked := true;
     acFilterExecute(nil);
   end;
 end;
 
-procedure TMainForm.cmbFilterEditingDone(Sender: TObject);
+procedure TMainForm.cmbFilterByKeywordsEditingDone(Sender: TObject);
 var
   idx: Integer;
 begin
-  idx := cmbFilter.Items.IndexOf(cmbFilter.Text);
+  idx := cmbFilterByKeywords.Items.IndexOf(cmbFilterByKeywords.Text);
   if idx = -1 then
   begin
-    cmbFilter.Items.Insert(0, cmbFilter.Text);
-    while cmbFilter.Items.Count > MAX_FILTER_HISTORY_COUNT do
-      cmbFilter.Items.Delete(cmbFilter.Items.Count-1);
+    cmbFilterByKeywords.Items.Insert(0, cmbFilterByKeywords.Text);
+    while cmbFilterByKeywords.Items.Count > MAX_FILTER_HISTORY_COUNT do
+      cmbFilterByKeywords.Items.Delete(cmbFilterByKeywords.Items.Count-1);
   end else
-    cmbFilter.Items.Move(idx, 0);
+    cmbFilterByKeywords.Items.Move(idx, 0);
 
   acFilter.Checked := true;
   acFilterExecute(nil);
+end;
+
+procedure TMainForm.cmbFilterByStyleChange(Sender: TObject);
+begin
+  MainDatamodule.FilterByStyle(cmbFilterByStyle.ItemIndex-1);
 end;
 
 procedure TMainForm.DatasetAfterDelete(ADataset: TDataset);
@@ -310,7 +317,17 @@ begin
 //    ts.Wordbreak := true;
 //    ts.SingleLine := false;
     InflateRect(R, -varCellPadding, -varCellPadding);
-    s := StringReplace(field.AsString, KEYWORD_SEPARATOR, KEYWORD_SEPARATOR + ' ', [rfReplaceAll]);
+    case field.FieldName of
+      'STYLE':
+        if field.IsNull then
+          s := ''
+        else
+          s := GetStyleName(field.AsInteger);
+      'KEYWORDS':
+        s := StringReplace(field.AsString, KEYWORD_SEPARATOR, KEYWORD_SEPARATOR + ' ', [rfReplaceAll]);
+      else
+        s := field.AsString;
+    end;
     DBGrid.Canvas.TextRect(R, R.Left, R.Top, s, ts);
   end;
 end;
@@ -389,7 +406,7 @@ begin
     FieldName := 'NAMEBASE';
     Title.Caption := 'Name base';
     Title.Alignment := taCenter;
-    Width := 160;
+    Width := 140;
   end;
   with DBGrid.Columns.Add do
   begin
@@ -398,6 +415,14 @@ begin
     Title.Alignment := taCenter;
     Alignment := taCenter;
     Width := 50;
+  end;
+  with DBGrid.Columns.Add do
+  begin
+    FieldName := 'STYLE';
+    Title.Caption := 'Style';
+    Title.Alignment := taCenter;
+    Alignment := taLeftJustify;
+    Width := 80;
   end;
   with DBGrid.Columns.Add do
   begin
