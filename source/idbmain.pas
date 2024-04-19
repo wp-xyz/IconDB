@@ -455,25 +455,13 @@ end;
 
 procedure TMainForm.UpdateKeywords;
 var
-  L: TStringList;
   field: TField;
 begin
-  field := MainDatamodule.Dataset.FieldByName('KEYWORDS');
+  field := MainDatamodule.KeywordsField;
   if field.IsNull then
     infoKeywords.Caption := ''
   else
-  begin
-    L := TStringList.Create;
-    try
-      L.Delimiter := ';';
-      L.StrictDelimiter := true;
-      L.DelimitedText := field.AsString;
-      L.Sorted := true;
-      infoKeywords.Caption := L.Text;
-    finally
-      L.Free;
-    end;
-  end;
+    infoKeywords.Caption := StringReplace(field.AsString, ';', '; ', [rfReplaceAll]);
 end;
 
 procedure TMainForm.WriteIni;
