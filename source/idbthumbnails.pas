@@ -17,9 +17,12 @@ type
     FViewer: TBasicThumbnailViewer;
     FLeft: Integer;
     FTop: Integer;
+    FSelected: Boolean;
+    procedure SetSelected(AValue: Boolean);
   public
     procedure DrawToCanvas(ACanvas: TCanvas; ARect: TRect); virtual;
     property Left: Integer read FLeft write FLeft;
+    property Selected: Boolean read FSelected write SetSelected;
     property Top: Integer read FTop write FTop;
     property Viewer: TBasicThumbnailViewer read FViewer write FViewer;
   end;
@@ -34,14 +37,20 @@ type
     FThumbnailSpacing: Integer;
     FThumbnailHeight: Integer;
     FThumbnailWidth: Integer;
-    FThumbnailColor: TColor;
-    FThumbnailBorderColor: TColor;
-    FSelectedColor: TColor;
-    FSelectedIndex: Integer;
+    FThumbnailBorderColor: TColor;     // Border of "normal" thumbnail
+    FThumbnailColor: TColor;           // Background of "normal" thumbnail
+    FFocusedBorderColor: TColor;       // Border of SelectedIndex
+    FFocusedColor: TColor;             // Background of SelectedIndex
+    FSelectedBorderColor: TColor;      // Border of thumbnail.Selected
+    FSelectedIndex: Integer;           // Background of thumbnail.Selected
     FTotalHeight: Integer;
     FColCount, FRowCount: Integer;
+    FMultiSelect: Boolean;
     function GetThumbnailCount: Integer;
-    procedure SetSelectedColor(AValue: TColor);
+    procedure SetFocusedBorderColor(AValue: TColor);
+    procedure SetFocusedColor(AValue: TColor);
+    procedure SetMultiSelect(AValue: Boolean);
+    procedure SetSelectedBorderColor(AValue: TColor);
     procedure SetSelectedIndex(AValue: Integer);
     procedure SetThumbnailBorderColor(AValue: TColor);
     procedure SetThumbnailColor(AValue: TColor);
@@ -54,6 +63,7 @@ type
     procedure KeyUp(var Key: Word; Shift: TShiftState); override;
     procedure MouseDown(Button: TMouseButton; Shift:TShiftState; X, Y: Integer); override;
     procedure Paint; override;
+    procedure SingleSelect(AThumbnail: TBasicThumbnail);
     function ThumbnailVisible(AThumbnail: TBasicThumbnail): Boolean;
 
   public
@@ -70,7 +80,10 @@ type
 
     property ThumbnailCount: Integer read GetThumbnailCount;
 
-    property SelectedColor: TColor read FSelectedColor write SetSelectedColor default clHighlight;
+    property FocusedBorderColor: TColor read FFocusedBorderColor write FFocusedBorderColor default clWindowText;
+    property FocusedColor: TColor read FFocusedColor write SetFocusedColor default clBtnFace;
+    property MultiSelect: Boolean read FMultiSelect write SetMultiSelect default false;
+    property SelectedBorderColor: TColor read FSelectedBorderColor write FSelectedBorderColor default clWindowText;
     property SelectedIndex: Integer read FSelectedIndex write SetSelectedIndex default -1;
     property ThumbnailBorderColor: TColor read FThumbnailBorderColor write SetThumbnailBorderColor default clScrollbar;
     property ThumbnailColor: TColor read FThumbnailColor write SetThumbnailColor default clWindow;
@@ -97,6 +110,17 @@ begin
   ACanvas.TextRect(ARect, 0, 0, s, ts);
 end;
 
+procedure TBasicThumbnail.SetSelected(AValue: Boolean);
+begin
+  if AValue = FSelected then
+    exit;
+  FSelected := AValue;
+  if FSelected and (not FViewer.MultiSelect) then
+    FViewer.SingleSelect(Self)
+  else
+    FSelected := AValue;
+end;
+
 
 { TBasicThumbnailViewer }
 
@@ -108,12 +132,14 @@ begin
 
   FThumbnailList := TThumbnailList.Create;
   FThumbnailSpacing := 8;
-  FThumbnailWidth := 68;
-  FThumbnailHeight := 68;
+  FThumbnailWidth := 100;
+  FThumbnailHeight := 100;
   FThumbnailBorderColor := clScrollbar;
   FThumbnailColor := clWindow;
 
-  FSelectedColor := clHighlight;
+  FFocusedBorderColor := clWindowText;
+  FFocusedColor := clBtnFace;
+  FSelectedBorderColor := clWindowText;
   FSelectedIndex := -1;
 
   HorzScrollbar.Tracking := true;
@@ -297,6 +323,7 @@ procedure TBasicThumbnailviewer.Paint;
 var
   i: Integer;
   R: TRect;
+  Rclip: TRect;
   thumbnail: TBasicThumbnail;
 begin
   for i := 0 to ThumbnailCount-1 do
@@ -306,37 +333,81 @@ begin
     begin
       R := Rect(0, 0, FThumbnailWidth, FThumbnailHeight);
       OffsetRect(R, thumbnail.Left, thumbnail.Top);
+      Rclip := R;
+      InflateRect(Rclip, -1, -1);
 
+      // Define the brush
       Canvas.Brush.Color := FThumbnailColor;
       if FThumbnailColor = clNone then
         Canvas.Brush.Style := bsClear
       else
         Canvas.Brush.Style := bsSolid;
       if i = FSelectedIndex then
-      begin
-        Canvas.Brush.Style := bsSolid;
-        Canvas.Brush.Color := FSelectedColor;
-      end;
+        Canvas.Brush.Color := FFocusedColor;
 
+      // Define the pen
+      if i = FSelectedIndex then
+      begin
+        Canvas.Pen.Width := 2;
+        Canvas.Pen.Color := FFocusedBorderColor;
+        dec(Rclip.Right);
+        dec(Rclip.Bottom);
+      end else
+      if thumbnail.Selected then
+      begin
+        Canvas.Pen.Width := 1;
+        Canvas.Pen.Color := FSelectedBorderColor;
+      end else
       if FThumbnailBorderColor = clNone then
         Canvas.Pen.Style := psClear
       else
       begin
-        Canvas.Pen.Style := psSolid;
-        Canvas.Pen.Color := FThumbnailBorderColor;
+        Canvas.Pen.Width := 1;
+        Canvas.Pen.Color := ColorToRGB(FThumbnailBorderColor);
       end;
 
+      // Draw the thumbnail background
       Canvas.Rectangle(R);
+
+      // Make the thumbnail draw itself
+      Canvas.ClipRect := Rclip;
+      Canvas.Clipping := true;
       thumbnail.DrawToCanvas(Canvas, R);
+      Canvas.Clipping := false;
     end;
   end;
 end;
 
-procedure TBasicThumbnailViewer.SetSelectedColor(AValue: TColor);
+procedure TBasicThumbnailViewer.SetFocusedBorderColor(AValue: TColor);
 begin
-  if AValue = FSelectedColor then
+  if AValue = FFocusedBorderColor then
     exit;
-  FSelectedColor := AValue;
+  FFocusedBorderColor := AValue;
+  Invalidate;
+end;
+
+procedure TBasicThumbnailViewer.SetFocusedColor(AValue: TColor);
+begin
+  if AValue = FFocusedColor then
+    exit;
+  FFocusedColor := AValue;
+  Invalidate;
+end;
+
+procedure TBasicThumbnailViewer.SetMultiSelect(AValue: Boolean);
+begin
+  if AValue = FMultiSelect then
+    exit;
+  FMultiSelect := AValue;
+  if not FMultiSelect then
+    SingleSelect(FThumbnailList[FSelectedIndex]);
+end;
+
+procedure TBasicThumbnailViewer.SetSelectedBorderColor(AValue: TColor);
+begin
+  if AValue = FSelectedBorderColor then
+    exit;
+  FSelectedBorderColor := AValue;
   Invalidate;
 end;
 
@@ -345,7 +416,10 @@ begin
   if AValue = FSelectedIndex then
     exit;
   FSelectedIndex := AValue;
-  Invalidate;
+  if FSelectedIndex > -1 then
+    SingleSelect(FThumbnailList[AValue])
+  else
+    SingleSelect(nil);
 end;
 
 procedure TBasicThumbnailviewer.SetThumbnailBorderColor(AValue: TColor);
@@ -400,6 +474,18 @@ begin
     (y + FThumbnailHeight>= 0) and (y < ClientHeight);
 end;
 
+procedure TBasicThumbnailViewer.SingleSelect(AThumbnail: TBasicThumbnail);
+var
+  i: Integer;
+  thumbnail: TBasicThumbnail;
+begin
+  for i := 0 to FThumbnailList.Count-1 do
+  begin
+    thumbnail := FThumbnailList[i];
+    thumbnail.Selected := (AThumbnail = thumbnail);
+  end;
+  Invalidate;
+end;
 
 end.
 

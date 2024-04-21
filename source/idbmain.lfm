@@ -286,13 +286,13 @@ object MainForm: TMainForm
       AnchorSideLeft.Control = InfoIconName
       AnchorSideTop.Control = lblKeywords
       AnchorSideTop.Side = asrBottom
-      AnchorSideRight.Control = Owner
+      AnchorSideRight.Control = Panel2
       AnchorSideRight.Side = asrBottom
       AnchorSideBottom.Control = StatusBar
       Left = 12
       Height = 119
       Top = 338
-      Width = 800
+      Width = 163
       Anchors = [akTop, akLeft, akRight, akBottom]
       BorderSpacing.Right = 8
       BorderSpacing.Bottom = 6

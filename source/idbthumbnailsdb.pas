@@ -160,9 +160,10 @@ procedure TDBThumbnailViewer.Populate;
 var
   bm: TBookmark;
 begin
+  Clear;
+
   if FDataset = nil then
   begin
-    Clear;
     FClassificationField := nil;
     FDescriptionField := nil;
     FIDField := nil;

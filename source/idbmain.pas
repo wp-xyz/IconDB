@@ -252,6 +252,7 @@ end;
 procedure TMainForm.cmbFilterByStyleChange(Sender: TObject);
 begin
   MainDatamodule.FilterByStyle(cmbFilterByStyle.ItemIndex-1);
+  PopulateThumbnails;
 end;
 
 procedure TMainForm.DatasetAfterDelete(ADataset: TDataset);
@@ -377,6 +378,9 @@ begin
   FThumbnailViewer.ImageNameFieldName := 'NAME';
   FThumbnailViewer.DescriptionFieldName := 'KEYWORDS';
   FThumbnailViewer.ClassificationFieldName := 'STYLE';
+  FThumbnailViewer.FocusedColor := clBlack;
+  FThumbnailViewer.ThumbnailWidth := 68;
+  FThumbnailViewer.ThumbnailHeight := 68;
 //  FThumbnailViewer.BevelOuter := bvNone;
 //  FThumbnailViewer.AutoSize := true;
 //  FThumbnailViewer.Color := clBlack;
@@ -407,25 +411,7 @@ end;
 procedure TMainForm.PopulateThumbnails;
 begin
   if FThumbnailViewer <> nil then
-  begin
     FThumbnailViewer.Populate;
-    {
-//    FThumbnailViewer.DisableAlign;
-    FThumbnailViewer.Clear;
-    with MainDatamodule.Dataset do
-    begin
-      First;
-      while not EoF do
-      begin
-        FThumbnailViewer.Add(MainDatamodule.IconIDField.AsInteger);
-        Next;
-      end;
-    end;
-//    FThumbnailViewer.InvalidatePreferredSize;
-//    FThumbnailViewer.AdjustSize;
-//    FThumbnailViewer.EnableAlign;
-}
-  end;
 end;
 
 procedure TMainForm.ProgressHandler(Sender: TObject; AMin, AValue, AMax: Integer);
