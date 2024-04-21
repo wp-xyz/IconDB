@@ -85,13 +85,23 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="idbDuplicates"/>
       </Unit>
+      <Unit>
+        <Filename Value="idbthumbnails.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="idbThumbnails"/>
+      </Unit>
+      <Unit>
+        <Filename Value="idbthumbnailsdb.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="idbThumbnailsDB"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="..\bin\lib\$(TargetCPU)-$(TargetOS)\icondb"/>
+      <Filename Value="..\bin\$(TargetCPU)-$(TargetOS)\icondb"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>

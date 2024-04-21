@@ -12,7 +12,7 @@ uses
   {$ifdef APP_DEBUG}
   LazLogger,
   {$endif}
-  idbDatamodule;
+  idbDatamodule, idbThumbnails, idbThumbnailsDB;
 
 type
 
@@ -45,11 +45,17 @@ type
     lblIconSize: TLabel;
     lblIconHash: TLabel;
     lblKeywords: TLabel;
+    PageControl1: TPageControl;
     Panel1: TPanel;
     FilterPanel: TPanel;
+    Panel2: TPanel;
+    ScrollBox: TScrollBox;
     SelectDirectoryDialog1: TSelectDirectoryDialog;
+    Splitter1: TSplitter;
     StatusBar: TStatusBar;
     StatusbarTimer: TTimer;
+    pgThumbnails: TTabSheet;
+    pgGrid: TTabSheet;
     ToolBar: TToolBar;
     tbAddIcons: TToolButton;
     tbEditKeywords: TToolButton;
@@ -75,6 +81,7 @@ type
       DataCol: Integer; Column: TColumn; State: TGridDrawState);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure ScrollBoxResize(Sender: TObject);
     procedure StatusbarTimerTimer(Sender: TObject);
   private
     procedure DatasetAfterDelete(ADataset: TDataset);
@@ -90,6 +97,11 @@ type
     procedure UpdateImage;
     procedure UpdateKeywords;
 
+  private
+    FThumbnailViewer: TDBThumbnailViewer;
+    procedure PopulateThumbnails;
+
+  private
     procedure ReadIni;
     procedure WriteIni;
   public
@@ -104,7 +116,6 @@ implementation
 {$R *.lfm}
 
 uses
-  Math,
   idbGlobal, idbKeywords, idbSettings, idbDuplicates;
 
 
@@ -144,6 +155,8 @@ begin
       UpdateCaption(MainDatamodule.Dataset.RecordCount);
     end;
   end;
+
+  PopulateThumbnails;
 end;
 
 procedure TMainForm.acClearFilterExecute(Sender: TObject);
@@ -187,6 +200,7 @@ begin
   else
     MainDatamodule.FilterByKeywords('');
   UpdateIconDetails;
+  PopulateThumbnails;
 end;
 
 procedure TMainForm.acSettingsExecute(Sender: TObject);
@@ -352,17 +366,66 @@ begin
   InfoIconType.DataField := 'ICONTYPE';
   InfoIconSize.DataField := 'SIZE';
   InfoIconHash.DataField := 'ICONHASH';
+
+  FThumbnailViewer := TDBThumbnailViewer.Create(self);
+  FThumbnailViewer.Parent := pgThumbnails;  //ScrollBox;
+  FThumbnailViewer.Align := alClient;;
+//  FThumbnailViewer.Height := Scrollbox.Height;
+  FThumbnailViewer.Dataset := MainDatamodule.Dataset;
+  FThumbnailViewer.IDFieldName := 'ICONID';
+  FThumbnailViewer.ImageFieldName := 'ICON';
+  FThumbnailViewer.ImageNameFieldName := 'NAME';
+  FThumbnailViewer.DescriptionFieldName := 'KEYWORDS';
+  FThumbnailViewer.ClassificationFieldName := 'STYLE';
+//  FThumbnailViewer.BevelOuter := bvNone;
+//  FThumbnailViewer.AutoSize := true;
+//  FThumbnailViewer.Color := clBlack;
+
+  PopulateThumbnails;
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
   WriteIni;
+  FThumbnailViewer.DisableAlign;
+  FThumbnailViewer.Clear;
+  FThumbnailViewer.EnableAlign;
+end;
+
+procedure TMainForm.ScrollBoxResize(Sender: TObject);
+begin
+  FThumbnailViewer.InvalidatePreferredSize;
+  FThumbnailViewer.AdjustSize;
 end;
 
 procedure TMainForm.StatusbarTimerTimer(Sender: TObject);
 begin
   StatusbarTimer.Enabled := false;
   Statusbar.SimpleText := '';
+end;
+
+procedure TMainForm.PopulateThumbnails;
+begin
+  if FThumbnailViewer <> nil then
+  begin
+    FThumbnailViewer.Populate;
+    {
+//    FThumbnailViewer.DisableAlign;
+    FThumbnailViewer.Clear;
+    with MainDatamodule.Dataset do
+    begin
+      First;
+      while not EoF do
+      begin
+        FThumbnailViewer.Add(MainDatamodule.IconIDField.AsInteger);
+        Next;
+      end;
+    end;
+//    FThumbnailViewer.InvalidatePreferredSize;
+//    FThumbnailViewer.AdjustSize;
+//    FThumbnailViewer.EnableAlign;
+}
+  end;
 end;
 
 procedure TMainForm.ProgressHandler(Sender: TObject; AMin, AValue, AMax: Integer);

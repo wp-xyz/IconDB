@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, idbMain, dbflaz, idbKeywords, idbDatamodule, idbGlobal, idbSettings,
-  idbDuplicates
+  idbDuplicates, idbThumbnails, idbThumbnailsDB
   { you can add units after this };
 
 {$R *.res}

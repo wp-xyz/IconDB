@@ -9,130 +9,6 @@ object MainForm: TMainForm
   LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  object DBGrid: TDBGrid
-    AnchorSideLeft.Control = Owner
-    AnchorSideTop.Control = CoolBar
-    AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = Panel1
-    AnchorSideBottom.Control = StatusBar
-    Left = 0
-    Height = 410
-    Top = 54
-    Width = 632
-    Anchors = [akTop, akLeft, akRight, akBottom]
-    BorderSpacing.Right = 8
-    Color = clWindow
-    Columns = <    
-      item
-        Title.Caption = 'Title'
-      end>
-    DataSource = DataSource1
-    DefaultDrawing = False
-    DefaultRowHeight = 22
-    Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgTruncCellHints, dgThumbTracking]
-    ReadOnly = True
-    ShowHint = True
-    TabOrder = 0
-    OnDrawColumnCell = DBGridDrawColumnCell
-    OnDblClick = DBGridDblClick
-  end
-  object InfoIconName: TDBText
-    AnchorSideLeft.Control = lblIconName
-    AnchorSideTop.Control = lblIconName
-    AnchorSideTop.Side = asrBottom
-    Left = 652
-    Height = 15
-    Top = 248
-    Width = 76
-    BorderSpacing.Left = 12
-    DataSource = DataSource1
-  end
-  object lblIconName: TLabel
-    AnchorSideLeft.Control = Panel1
-    AnchorSideTop.Control = Panel1
-    AnchorSideTop.Side = asrBottom
-    Left = 640
-    Height = 15
-    Top = 233
-    Width = 57
-    BorderSpacing.Top = 8
-    BorderSpacing.Right = 8
-    Caption = 'Icon name:'
-    Font.Style = [fsItalic]
-    ParentFont = False
-  end
-  object lblIconSize: TLabel
-    AnchorSideLeft.Control = Panel1
-    AnchorSideTop.Control = InfoIconType
-    AnchorSideTop.Side = asrBottom
-    Left = 640
-    Height = 15
-    Top = 309
-    Width = 46
-    BorderSpacing.Top = 8
-    BorderSpacing.Right = 8
-    Caption = 'Icon size:'
-    Font.Style = [fsItalic]
-    ParentFont = False
-  end
-  object lblKeywords: TLabel
-    AnchorSideLeft.Control = Panel1
-    AnchorSideTop.Control = InfoIconHash
-    AnchorSideTop.Side = asrBottom
-    Left = 640
-    Height = 15
-    Top = 385
-    Width = 53
-    BorderSpacing.Top = 8
-    BorderSpacing.Right = 8
-    Caption = 'Keywords:'
-    Font.Style = [fsItalic]
-    ParentFont = False
-  end
-  object InfoKeywords: TLabel
-    AnchorSideLeft.Control = InfoIconName
-    AnchorSideTop.Control = lblKeywords
-    AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = Owner
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Control = StatusBar
-    Left = 652
-    Height = 58
-    Top = 400
-    Width = 160
-    Anchors = [akTop, akLeft, akRight, akBottom]
-    BorderSpacing.Right = 8
-    BorderSpacing.Bottom = 6
-    WordWrap = True
-  end
-  object Panel1: TPanel
-    AnchorSideLeft.Control = DBGrid
-    AnchorSideLeft.Side = asrBottom
-    AnchorSideTop.Control = DBGrid
-    AnchorSideRight.Control = Owner
-    AnchorSideRight.Side = asrBottom
-    Left = 640
-    Height = 163
-    Top = 62
-    Width = 172
-    Anchors = [akTop, akRight]
-    BorderSpacing.Around = 8
-    BevelInner = bvRaised
-    BevelOuter = bvLowered
-    ClientHeight = 163
-    ClientWidth = 172
-    TabOrder = 1
-    object Image1: TImage
-      Left = 8
-      Height = 147
-      Top = 8
-      Width = 156
-      Align = alClient
-      Anchors = [akTop, akLeft, akRight]
-      BorderSpacing.Around = 6
-      Center = True
-    end
-  end
   object CoolBar: TCoolBar
     Left = 0
     Height = 54
@@ -287,65 +163,235 @@ object MainForm: TMainForm
     Width = 820
     Panels = <>
   end
-  object lblIconType: TLabel
-    AnchorSideLeft.Control = Panel1
-    AnchorSideTop.Control = InfoIconName
-    AnchorSideTop.Side = asrBottom
-    Left = 640
-    Height = 15
-    Top = 271
-    Width = 50
-    BorderSpacing.Top = 8
-    BorderSpacing.Right = 8
-    Caption = 'Icon type:'
-    Font.Style = [fsItalic]
-    ParentFont = False
+  object PageControl1: TPageControl
+    Left = 0
+    Height = 410
+    Top = 54
+    Width = 616
+    ActivePage = pgThumbnails
+    Align = alClient
+    TabIndex = 0
+    TabOrder = 2
+    object pgThumbnails: TTabSheet
+      Caption = 'Thumbnails'
+      ClientHeight = 382
+      ClientWidth = 608
+      object ScrollBox: TScrollBox
+        Left = 0
+        Height = 382
+        Top = 0
+        Width = 608
+        HorzScrollBar.Page = 1
+        VertScrollBar.Page = 1
+        VertScrollBar.Tracking = True
+        Align = alClient
+        TabOrder = 0
+        Visible = False
+        OnResize = ScrollBoxResize
+      end
+    end
+    object pgGrid: TTabSheet
+      Caption = 'Grid'
+      ClientHeight = 382
+      ClientWidth = 608
+      object DBGrid: TDBGrid
+        Left = 0
+        Height = 382
+        Top = 0
+        Width = 600
+        Align = alClient
+        BorderSpacing.Right = 8
+        Color = clWindow
+        Columns = <        
+          item
+            Title.Caption = 'Title'
+          end>
+        DataSource = DataSource1
+        DefaultDrawing = False
+        DefaultRowHeight = 22
+        Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgTruncCellHints, dgThumbTracking]
+        ReadOnly = True
+        ShowHint = True
+        TabOrder = 0
+        OnDrawColumnCell = DBGridDrawColumnCell
+        OnDblClick = DBGridDblClick
+      end
+    end
   end
-  object InfoIconType: TDBText
-    AnchorSideLeft.Control = lblIconType
-    AnchorSideTop.Control = lblIconType
-    AnchorSideTop.Side = asrBottom
-    Left = 652
-    Height = 15
-    Top = 286
-    Width = 68
-    BorderSpacing.Left = 12
-    DataSource = DataSource1
+  object Panel2: TPanel
+    Left = 629
+    Height = 394
+    Top = 62
+    Width = 183
+    Align = alRight
+    BorderSpacing.Around = 8
+    BevelOuter = bvNone
+    ClientHeight = 394
+    ClientWidth = 183
+    TabOrder = 3
+    object InfoIconName: TDBText
+      AnchorSideLeft.Control = lblIconName
+      AnchorSideTop.Control = lblIconName
+      AnchorSideTop.Side = asrBottom
+      Left = 12
+      Height = 15
+      Top = 186
+      Width = 76
+      BorderSpacing.Left = 12
+      DataSource = DataSource1
+    end
+    object lblIconName: TLabel
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = Panel1
+      AnchorSideTop.Side = asrBottom
+      Left = 0
+      Height = 15
+      Top = 171
+      Width = 57
+      BorderSpacing.Top = 8
+      BorderSpacing.Right = 8
+      Caption = 'Icon name:'
+      Font.Style = [fsItalic]
+      ParentFont = False
+    end
+    object lblIconSize: TLabel
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = InfoIconType
+      AnchorSideTop.Side = asrBottom
+      Left = 0
+      Height = 15
+      Top = 247
+      Width = 46
+      BorderSpacing.Top = 8
+      BorderSpacing.Right = 8
+      Caption = 'Icon size:'
+      Font.Style = [fsItalic]
+      ParentFont = False
+    end
+    object lblKeywords: TLabel
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = InfoIconHash
+      AnchorSideTop.Side = asrBottom
+      Left = 0
+      Height = 15
+      Top = 323
+      Width = 53
+      BorderSpacing.Top = 8
+      BorderSpacing.Right = 8
+      Caption = 'Keywords:'
+      Font.Style = [fsItalic]
+      ParentFont = False
+    end
+    object InfoKeywords: TLabel
+      AnchorSideLeft.Control = InfoIconName
+      AnchorSideTop.Control = lblKeywords
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = Owner
+      AnchorSideRight.Side = asrBottom
+      AnchorSideBottom.Control = StatusBar
+      Left = 12
+      Height = 119
+      Top = 338
+      Width = 800
+      Anchors = [akTop, akLeft, akRight, akBottom]
+      BorderSpacing.Right = 8
+      BorderSpacing.Bottom = 6
+      WordWrap = True
+    end
+    object Panel1: TPanel
+      AnchorSideLeft.Control = Panel2
+      AnchorSideTop.Control = Panel2
+      AnchorSideRight.Control = Panel2
+      AnchorSideRight.Side = asrBottom
+      Left = 0
+      Height = 163
+      Top = 0
+      Width = 183
+      Anchors = [akTop, akLeft, akRight]
+      BevelInner = bvRaised
+      BevelOuter = bvLowered
+      ClientHeight = 163
+      ClientWidth = 183
+      TabOrder = 0
+      object Image1: TImage
+        Left = 8
+        Height = 147
+        Top = 8
+        Width = 167
+        Align = alClient
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Around = 6
+        Center = True
+      end
+    end
+    object lblIconType: TLabel
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = InfoIconName
+      AnchorSideTop.Side = asrBottom
+      Left = 0
+      Height = 15
+      Top = 209
+      Width = 50
+      BorderSpacing.Top = 8
+      BorderSpacing.Right = 8
+      Caption = 'Icon type:'
+      Font.Style = [fsItalic]
+      ParentFont = False
+    end
+    object InfoIconType: TDBText
+      AnchorSideLeft.Control = lblIconType
+      AnchorSideTop.Control = lblIconType
+      AnchorSideTop.Side = asrBottom
+      Left = 12
+      Height = 15
+      Top = 224
+      Width = 68
+      BorderSpacing.Left = 12
+      DataSource = DataSource1
+    end
+    object InfoIconSize: TDBText
+      AnchorSideLeft.Control = InfoIconName
+      AnchorSideTop.Control = lblIconSize
+      AnchorSideTop.Side = asrBottom
+      Left = 12
+      Height = 15
+      Top = 262
+      Width = 64
+      DataSource = DataSource1
+    end
+    object lblIconHash: TLabel
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = InfoIconSize
+      AnchorSideTop.Side = asrBottom
+      Left = 0
+      Height = 15
+      Top = 285
+      Width = 53
+      BorderSpacing.Top = 8
+      BorderSpacing.Right = 8
+      Caption = 'Icon hash:'
+      Font.Style = [fsItalic]
+      ParentFont = False
+    end
+    object InfoIconHash: TDBText
+      AnchorSideLeft.Control = lblIconHash
+      AnchorSideTop.Control = lblIconHash
+      AnchorSideTop.Side = asrBottom
+      Left = 12
+      Height = 15
+      Top = 300
+      Width = 71
+      BorderSpacing.Left = 12
+      DataSource = DataSource1
+    end
   end
-  object InfoIconSize: TDBText
-    AnchorSideLeft.Control = InfoIconName
-    AnchorSideTop.Control = lblIconSize
-    AnchorSideTop.Side = asrBottom
-    Left = 652
-    Height = 15
-    Top = 324
-    Width = 64
-    DataSource = DataSource1
-  end
-  object lblIconHash: TLabel
-    AnchorSideLeft.Control = Panel1
-    AnchorSideTop.Control = InfoIconSize
-    AnchorSideTop.Side = asrBottom
-    Left = 640
-    Height = 15
-    Top = 347
-    Width = 53
-    BorderSpacing.Top = 8
-    BorderSpacing.Right = 8
-    Caption = 'Icon hash:'
-    Font.Style = [fsItalic]
-    ParentFont = False
-  end
-  object InfoIconHash: TDBText
-    AnchorSideLeft.Control = lblIconHash
-    AnchorSideTop.Control = lblIconHash
-    AnchorSideTop.Side = asrBottom
-    Left = 652
-    Height = 15
-    Top = 362
-    Width = 71
-    BorderSpacing.Left = 12
-    DataSource = DataSource1
+  object Splitter1: TSplitter
+    Left = 616
+    Height = 410
+    Top = 54
+    Width = 5
+    Align = alRight
+    ResizeAnchor = akRight
   end
   object DataSource1: TDataSource
     DataSet = Dbf1
