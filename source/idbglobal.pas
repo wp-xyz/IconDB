@@ -26,12 +26,20 @@ type
   TSettings = record
     DatabaseFolder: String;
     RowLines: Integer;
+    FixedThumbnailSize: Boolean;
+    ThumbnailWidth: Integer;
+    ThumbnailHeight: Integer;
+    ThumbnailBorder: Integer;
   end;
 
 var
   Settings: TSettings = (
     DatabaseFolder: '';
-    RowLines: 1
+    RowLines: 1;
+    FixedThumbnailSize: false;
+    ThumbnailWidth: 68;
+    ThumbnailHeight: 68;
+    ThumbnailBorder: 4
   );
 
 function GetStyleName(AStyle: Integer): String;
@@ -70,6 +78,9 @@ procedure ReadSettingsFromIni(AIniFile: TCustomIniFile; Section: String);
 begin
   Settings.DatabaseFolder := AIniFile.ReadString(Section, 'DatabaseFolder', '');
   Settings.RowLines := AIniFile.ReadInteger(Section, 'RowLines', 1);
+  Settings.FixedThumbnailSize := AIniFile.ReadBool(Section, 'FixedThumbnailSize', false);
+  Settings.ThumbnailWidth := AIniFile.ReadInteger(Section, 'ThumbnailWidth', 80);
+  Settings.ThumbnailHeight := AIniFile.ReadInteger(Section, 'ThumbnailHeight', 80);
 end;
 
 procedure WriteSettingsToIni(AIniFile: TCustomIniFile; Section: String);
@@ -77,6 +88,9 @@ begin
   AIniFile.EraseSection(Section);
   AIniFile.WriteString(Section, 'DatabaseFolder', Settings.DatabaseFolder);
   AIniFile.WriteInteger(Section, 'RowLines', Settings.RowLines);
+  AIniFile.WriteBool(Section, 'FixedThumbnailSize', Settings.FixedThumbnailSize);
+  AIniFile.WriteInteger(Section, 'ThumbnailWidth', Settings.ThumbnailWidth);
+  AIniFile.WriteInteger(Section, 'ThumbnailHeight', Settings.ThumbnailHeight);
 end;
 
 procedure ReadFormFromIni(AIniFile: TCustomIniFile; AForm: TForm;

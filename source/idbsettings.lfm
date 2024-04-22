@@ -1,17 +1,17 @@
 object SettingsForm: TSettingsForm
   Left = 314
-  Height = 171
+  Height = 262
   Top = 130
   Width = 445
   Caption = 'Settings'
-  ClientHeight = 171
+  ClientHeight = 262
   ClientWidth = 445
   Position = poMainFormCenter
   LCLVersion = '3.99.0.0'
   object ButtonPanel: TButtonPanel
     Left = 6
     Height = 34
-    Top = 131
+    Top = 222
     Width = 433
     OKButton.Name = 'OKButton'
     OKButton.DefaultCaption = True
@@ -21,14 +21,14 @@ object SettingsForm: TSettingsForm
     CloseButton.DefaultCaption = True
     CancelButton.Name = 'CancelButton'
     CancelButton.DefaultCaption = True
-    TabOrder = 2
+    TabOrder = 3
     ShowButtons = [pbOK, pbCancel]
   end
   object gbDBGrid: TGroupBox
-    AnchorSideLeft.Control = gbDatabase
+    AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = gbDatabase
     AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = gbDatabase
+    AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
     Left = 8
     Height = 51
@@ -36,6 +36,7 @@ object SettingsForm: TSettingsForm
     Width = 429
     Anchors = [akTop, akLeft, akRight]
     AutoSize = True
+    BorderSpacing.Around = 8
     Caption = 'Grid'
     ClientHeight = 31
     ClientWidth = 425
@@ -44,18 +45,18 @@ object SettingsForm: TSettingsForm
       AnchorSideLeft.Control = gbDBGrid
       AnchorSideTop.Control = seGridRowHeights
       AnchorSideTop.Side = asrCenter
-      Left = 16
+      Left = 24
       Height = 15
       Top = 4
       Width = 95
-      BorderSpacing.Left = 16
+      BorderSpacing.Left = 24
       Caption = 'Row height (lines)'
     end
     object seGridRowHeights: TSpinEdit
       AnchorSideLeft.Control = Label1
       AnchorSideLeft.Side = asrBottom
       AnchorSideTop.Control = gbDBGrid
-      Left = 119
+      Left = 127
       Height = 23
       Top = 0
       Width = 64
@@ -89,11 +90,11 @@ object SettingsForm: TSettingsForm
       AnchorSideLeft.Control = gbDatabase
       AnchorSideTop.Control = edDatabaseFolder
       AnchorSideTop.Side = asrCenter
-      Left = 16
+      Left = 24
       Height = 15
       Top = 4
       Width = 33
-      BorderSpacing.Left = 16
+      BorderSpacing.Left = 24
       Caption = 'Folder'
     end
     object edDatabaseFolder: TDirectoryEdit
@@ -102,10 +103,10 @@ object SettingsForm: TSettingsForm
       AnchorSideTop.Control = gbDatabase
       AnchorSideRight.Control = gbDatabase
       AnchorSideRight.Side = asrBottom
-      Left = 57
+      Left = 65
       Height = 23
       Top = 0
-      Width = 360
+      Width = 352
       ShowHidden = False
       ButtonWidth = 23
       Constraints.MinWidth = 250
@@ -116,6 +117,115 @@ object SettingsForm: TSettingsForm
       BorderSpacing.Bottom = 8
       MaxLength = 0
       TabOrder = 0
+    end
+  end
+  object gbThumbnails: TGroupBox
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = gbDBGrid
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 8
+    Height = 86
+    Top = 126
+    Width = 429
+    Anchors = [akTop, akLeft, akRight]
+    AutoSize = True
+    BorderSpacing.Around = 8
+    Caption = 'Thumbnails'
+    ClientHeight = 66
+    ClientWidth = 425
+    TabOrder = 2
+    object seFixedThumbnailWidth: TSpinEdit
+      AnchorSideLeft.Control = seThumbnailBorder
+      AnchorSideTop.Control = gbThumbnails
+      Left = 145
+      Height = 23
+      Top = 0
+      Width = 50
+      Alignment = taRightJustify
+      MaxValue = 500
+      TabOrder = 1
+      Value = 80
+    end
+    object lblMultiply: TLabel
+      AnchorSideLeft.Control = seFixedThumbnailWidth
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Side = asrCenter
+      Left = 201
+      Height = 15
+      Top = 2
+      Width = 6
+      BorderSpacing.Left = 6
+      Caption = 'x'
+    end
+    object seFixedThumbnailHeight: TSpinEdit
+      AnchorSideLeft.Control = lblMultiply
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = gbThumbnails
+      Left = 213
+      Height = 23
+      Top = 0
+      Width = 50
+      Alignment = taRightJustify
+      BorderSpacing.Left = 6
+      MaxValue = 500
+      TabOrder = 2
+      Value = 80
+    end
+    object lblBorder: TLabel
+      AnchorSideLeft.Control = seThumbnailBorder
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Side = asrCenter
+      Left = 201
+      Height = 15
+      Top = 34
+      Width = 35
+      BorderSpacing.Left = 6
+      Caption = 'border'
+    end
+    object seThumbnailBorder: TSpinEdit
+      AnchorSideLeft.Control = rbVariableThumbnailSize
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = seFixedThumbnailWidth
+      AnchorSideTop.Side = asrBottom
+      Left = 145
+      Height = 23
+      Top = 35
+      Width = 50
+      Alignment = taRightJustify
+      BorderSpacing.Left = 12
+      BorderSpacing.Top = 12
+      BorderSpacing.Bottom = 8
+      MaxValue = 32
+      TabOrder = 4
+      Value = 4
+    end
+    object rbFixedThumbnailSize: TRadioButton
+      AnchorSideLeft.Control = gbThumbnails
+      AnchorSideTop.Control = seFixedThumbnailWidth
+      AnchorSideTop.Side = asrCenter
+      Left = 24
+      Height = 19
+      Top = 2
+      Width = 66
+      BorderSpacing.Left = 24
+      Caption = 'fixed size'
+      TabOrder = 0
+    end
+    object rbVariableThumbnailSize: TRadioButton
+      AnchorSideLeft.Control = gbThumbnails
+      AnchorSideTop.Control = seThumbnailBorder
+      AnchorSideTop.Side = asrCenter
+      Left = 24
+      Height = 19
+      Top = 37
+      Width = 109
+      BorderSpacing.Left = 24
+      Caption = 'variable size, plus'
+      Checked = True
+      TabOrder = 3
+      TabStop = True
     end
   end
 end

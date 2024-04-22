@@ -144,7 +144,7 @@ object MainForm: TMainForm
           TabOrder = 2
           Text = '(all styles)'
           TextHint = 'Filter by style'
-          OnChange = cmbFilterByStyleChange
+          OnChange = cmbFilterBySizeChange
         end
       end
       object tbFilter: TToolButton

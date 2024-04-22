@@ -76,6 +76,7 @@ type
     procedure acSettingsExecute(Sender: TObject);
     procedure cmbFilterByKeywordsCloseUp(Sender: TObject);
     procedure cmbFilterByKeywordsEditingDone(Sender: TObject);
+    procedure cmbFilterBySizeChange(Sender: TObject);
     procedure cmbFilterByStyleChange(Sender: TObject);
     procedure DBGridDblClick(Sender: TObject);
     procedure DBGridDrawColumnCell(Sender: TObject; const Rect: TRect;
@@ -96,7 +97,9 @@ type
     procedure UpdateDBGridRowHeight(ALineCount: Integer);
     procedure UpdateIconDetails;
     procedure UpdateImage;
+    procedure UpdateImageSizes;
     procedure UpdateKeywords;
+    procedure UpdateThumbnailSize;
 
   private
     FThumbnailViewer: TDBThumbnailViewer;
@@ -216,6 +219,8 @@ begin
       F.ControlsToSettings;
       MainDatamodule.ChangeDatabase(Settings.DatabaseFolder);
       UpdateDBGridRowHeight(Settings.RowLines);
+      UpdateThumbnailSize;
+      PopulateThumbnails;
     end;
   finally
     F.Free;
@@ -250,6 +255,28 @@ begin
   acFilterExecute(nil);
 end;
 
+procedure TMainForm.cmbFilterBySizeChange(Sender: TObject);
+var
+  sizeStr: String;
+  sa: TStringArray;
+  w, h: Integer;
+begin
+  if cmbFilterBySize.ItemIndex = 0 then // all sizes
+    sizeStr := cmbFilterBySize.Items[cmbFilterBySize.Items.Count-1]
+  else
+    sizeStr := cmbFilterBySize.Items[cmbFilterBySize.ItemIndex];
+  sa := sizeStr.Split('x');
+  w := StrToInt(trim(sa[0]));
+  h := StrToInt(trim(sa[1]));
+  if cmbFilterBySize.ItemIndex = 0 then
+    MainDatamodule.FilterBySize(-1, -1)
+  else
+    MainDatamodule.FilterBySize(w, h);
+
+  UpdateThumbnailSize;
+  PopulateThumbnails;
+end;
+
 procedure TMainForm.cmbFilterByStyleChange(Sender: TObject);
 begin
   MainDatamodule.FilterByStyle(cmbFilterByStyle.ItemIndex-1);
@@ -264,6 +291,7 @@ end;
 procedure TMainForm.DatasetAfterOpen(ADataset: TDataset);
 begin
   UpdateCaption(ADataset.RecordCount);
+  UpdateImageSizes;
 end;
 
 procedure TMainForm.DatasetAfterScroll(ADataSet: TDataSet);
@@ -380,12 +408,12 @@ begin
   FThumbnailViewer.DescriptionFieldName := 'KEYWORDS';
   FThumbnailViewer.ClassificationFieldName := 'STYLE';
   FThumbnailViewer.FocusedColor := clBlack;
-  FThumbnailViewer.ThumbnailWidth := 68;
-  FThumbnailViewer.ThumbnailHeight := 68;
 //  FThumbnailViewer.BevelOuter := bvNone;
 //  FThumbnailViewer.AutoSize := true;
 //  FThumbnailViewer.Color := clBlack;
 
+  UpdateImageSizes;
+  UpdateThumbnailSize;
   PopulateThumbnails;
 end;
 
@@ -528,6 +556,13 @@ begin
   MainDatamodule.LoadPicture(Image1.Picture);
 end;
 
+procedure TMainForm.UpdateImageSizes;
+begin
+  cmbFilterBySize.Items.Assign(MainDatamodule.ImageSizes);
+  cmbFilterBySize.Items.Insert(0, '(all sizes)');
+  cmbFilterBySize.ItemIndex := 0;
+end;
+
 procedure TMainForm.UpdateKeywords;
 var
   field: TField;
@@ -537,6 +572,31 @@ begin
     infoKeywords.Caption := ''
   else
     infoKeywords.Caption := StringReplace(field.AsString, ';', '; ', [rfReplaceAll]);
+end;
+
+procedure TMainForm.UpdateThumbnailSize;
+var
+  w, h: Integer;
+  sizeStr: String;
+  sa: TStringArray;
+begin
+  if cmbFilterBySize.ItemIndex = 0 then // all sizes
+    sizeStr := cmbFilterBySize.Items[cmbFilterBySize.Items.Count-1]
+  else
+    sizeStr := cmbFilterBySize.Items[cmbFilterBySize.ItemIndex];
+  sa := sizeStr.Split('x');
+  w := StrToInt(trim(sa[0]));
+  h := StrToInt(trim(sa[1]));
+
+  if Settings.FixedThumbnailSize then
+  begin
+    FThumbnailViewer.ThumbnailWidth := Settings.ThumbnailWidth;
+    FThumbnailViewer.ThumbnailHeight := Settings.ThumbnailHeight;
+  end else
+  begin
+    FThumbnailViewer.ThumbnailWidth := w + Settings.ThumbnailBorder * 2;
+    FThumbnailViewer.ThumbnailHeight := h + Settings.ThumbnailBorder * 2;
+  end;
 end;
 
 procedure TMainForm.WriteIni;

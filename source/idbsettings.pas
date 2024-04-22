@@ -15,12 +15,20 @@ type
 
   TSettingsForm = class(TForm)
     ButtonPanel: TButtonPanel;
+    rbVariableThumbnailSize: TRadioButton;
+    rbFixedThumbnailSize: TRadioButton;
     edDatabaseFolder: TDirectoryEdit;
     gbDBGrid: TGroupBox;
     gbDatabase: TGroupBox;
+    gbThumbnails: TGroupBox;
     Label1: TLabel;
+    lblMultiply: TLabel;
+    lblBorder: TLabel;
     lblDatabaseFolder: TLabel;
     seGridRowHeights: TSpinEdit;
+    seFixedThumbnailWidth: TSpinEdit;
+    seFixedThumbnailHeight: TSpinEdit;
+    seThumbnailBorder: TSpinEdit;
   private
 
   public
@@ -43,6 +51,10 @@ begin
   else
     Settings.DatabaseFolder := edDatabaseFolder.Text;
   Settings.RowLines := seGridRowHeights.Value;
+  Settings.FixedThumbnailSize := rbFixedThumbnailSize.Checked;
+  Settings.ThumbnailWidth := seFixedThumbnailWidth.Value;
+  Settings.ThumbnailHeight := seFixedThumbnailHeight.Value;
+  Settings.ThumbnailBorder := seThumbnailBorder.Value;
 end;
 
 procedure TSettingsForm.SettingsToControls;
@@ -52,6 +64,13 @@ begin
   else
     edDatabaseFolder.Text := Settings.DatabaseFolder;
   seGridRowHeights.Value := Settings.RowLines;
+  if Settings.FixedThumbnailSize then
+    rbFixedThumbnailSize.Checked := true
+  else
+    rbVariableThumbnailSize.Checked := true;
+  seFixedThumbnailWidth.Value := Settings.ThumbnailWidth;
+  seFixedThumbnailHeight.Value := Settings.ThumbnailHeight;
+  seThumbnailBorder.Value := Settings.ThumbnailBorder;
 end;
 
 end.

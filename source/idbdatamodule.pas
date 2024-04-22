@@ -27,6 +27,7 @@ type
     FNameSuffixField: TField;
     FWidthField: TField;
     FFilterByKeywords: String;
+    FFilterBySize: String;
     FFilterByStyle: String;
     FHashes: TStringList;
     FHeightField: TField;
@@ -35,6 +36,7 @@ type
     FIconIDField: TField;
     FIconHashField: TField;
     FIconTypeField: TField;
+    FSizes: TStrings;
     FSizeField: TField;
     FStyleField: TField;
     FOnAfterDelete: TDatasetNotifyEvent;
@@ -48,9 +50,10 @@ type
     procedure CreateDataset(ADataset: TDbf);
     function AddIconFromFile(const AFileName: String;
       ADuplicatesList: TStrings; AStyle: Integer; AKeywords: String): Boolean;
-    procedure FillHashes;
+    procedure FillHashesAndSizes;
     procedure FilterDataset;
     function GetFilterByKeywords(const AKeywords: String): String;
+    function GetFilterBySize(const AWidth, AHeight: Integer): String;
     function GetFilterByStyle(const AStyle: Integer): String;
     function GetIconHash(AStream: TStream): String;
 
@@ -64,11 +67,13 @@ type
     procedure DoProgress(AMin, AValue, AMax: Integer);
     procedure EditKeywordsAndStyle(const AKeywords: String; const AStyle: Integer);
     procedure FilterByKeywords(const AKeywords: String);
+    procedure FilterBySize(const AWidth, AHeight: Integer);
     procedure FilterByStyle(const AStyle: Integer);
     procedure LoadPicture(APicture: TPicture);
     procedure OpenDataset;
 
     property Dataset: TDataset read GetDataset;
+    property ImageSizes: TStrings read FSizes;
     property AfterDelete: TDatasetNotifyEvent read FOnAfterDelete write FOnAfterDelete;
     property AfterOpen: TDatasetNotifyEvent read FOnAfterOpen write FOnAfterOpen;
     property AfterPost: TDatasetNotifyEvent read FOnAfterPost write FOnAfterPost;
@@ -106,6 +111,8 @@ begin
 
   FHashes := TStringList.Create;
   FHashes.Sorted := true;
+
+  FSizes := TStringList.Create;
 
   path := Settings.DatabaseFolder;
   if path = '' then
@@ -439,13 +446,23 @@ begin
     end;
   end;
 end;
+                     {
+function CompareSizes(List: TStringList; Index1, Index2: Integer): Integer;
+var
+  s1, s2: Integer;
+begin
+  s1 := List[Index1];
+  s2 := List[Index2];
+                      }
 
-procedure TMainDatamodule.FillHashes;
+procedure TMainDatamodule.FillHashesAndSizes;
 var
   bm: TBookmark;
-  hash: String;
+  hashStr: String;
+  sizeStr: String;
 begin
   FHashes.Clear;
+  FSizes.Clear;
 
   bm := Dbf1.GetBookmark;
   Dbf1.DisableControls;
@@ -453,10 +470,14 @@ begin
     Dbf1.First;
     while not Dbf1.EoF do
     begin
-      hash := FIconHashField.AsString;
-      FHashes.Add(hash);
+      hashStr := FIconHashField.AsString;
+      FHashes.Add(hashStr);
+      sizeStr := FSizeField.AsString;
+      if FSizes.IndexOf(sizeStr) = -1 then
+        FSizes.Add(sizeStr);
       Dbf1.Next;
     end;
+    TStringList(FSizes).Sort; //CustomSort(@CompareSizes);
   finally
     Dbf1.GotoBookmark(bm);
     Dbf1.FreeBookmark(bm);
@@ -473,6 +494,15 @@ begin
   FilterDataset;
 end;
 
+procedure TMainDatamodule.FilterBySize(const AWidth, AHeight: Integer);
+begin
+  if (AWidth = -1) or (AHeight = -1) then
+    FFilterBySize := ''
+  else
+    FFilterBySize := GetFilterBySize(AWidth, AHeight);
+  FilterDataset;
+end;
+
 procedure TMainDatamodule.FilterByStyle(const AStyle: Integer);
 begin
   if AStyle < 0 then
@@ -486,6 +516,20 @@ procedure TMainDatamodule.FilterDataset;
 var
   filter: String;
 begin
+  filter := '';
+  if (FFilterBySize <> '') then
+    filter := Format('%s AND (%s)', [filter, FFilterBySize]);
+  if (FFilterByStyle <> '') then
+    filter := Format('%s AND (%s)', [filter, FFilterByStyle]);
+  if (FFilterByKeywords <> '') then
+    filter := Format('%s AND (%s)', [filter, FFilterByKeywords]);
+  if filter <> '' then
+  begin
+    Delete(filter, 1, 5);
+    Dbf1.Filter := filter;
+    Dbf1.Filtered := True;
+  end else
+  {
   if (FFilterByStyle <> '') and (FFilterByKeywords <> '') then
     filter := Format('(%s) AND (%s)', [FFilterByStyle, FFilterByKeywords])
   else
@@ -496,11 +540,13 @@ begin
     filter := FFilterByKeywords
   else
     filter := '';
+
   if filter <> '' then
   begin
     Dbf1.Filter := filter;
     Dbf1.Filtered := True;
   end else
+  }
   begin
     Dbf1.Filter := '';
     Dbf1.Filtered := False;
@@ -538,6 +584,11 @@ begin
   finally
     L.Free;
   end;
+end;
+
+function TMainDatamodule.GetFilterBySize(const AWidth, AHeight: Integer): String;
+begin
+  Result := Format('(WIDTH = %d) AND (HEIGHT = %d)', [AWidth, AHeight]);
 end;
 
 function TMainDatamodule.GetFilterByStyle(const AStyle: Integer): String;
@@ -594,7 +645,7 @@ begin
   Dbf1.Last;
   Dbf1.First;
 
-  FillHashes;
+  FillHashesAndSizes;
 end;
 
 end.
