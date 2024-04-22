@@ -46,12 +46,12 @@ type
     FTotalHeight: Integer;
     FColCount, FRowCount: Integer;
     FMultiSelect: Boolean;
+    function GetThumbnail(AIndex: Integer): TBasicThumbnail;
     function GetThumbnailCount: Integer;
     procedure SetFocusedBorderColor(AValue: TColor);
     procedure SetFocusedColor(AValue: TColor);
     procedure SetMultiSelect(AValue: Boolean);
     procedure SetSelectedBorderColor(AValue: TColor);
-    procedure SetSelectedIndex(AValue: Integer);
     procedure SetThumbnailBorderColor(AValue: TColor);
     procedure SetThumbnailColor(AValue: TColor);
     procedure SetThumbnailHeight(AValue: Integer);
@@ -63,6 +63,7 @@ type
     procedure KeyUp(var Key: Word; Shift: TShiftState); override;
     procedure MouseDown(Button: TMouseButton; Shift:TShiftState; X, Y: Integer); override;
     procedure Paint; override;
+    procedure SetSelectedIndex(AValue: Integer); virtual;
     procedure SingleSelect(AThumbnail: TBasicThumbnail);
     function ThumbnailVisible(AThumbnail: TBasicThumbnail): Boolean;
 
@@ -78,6 +79,7 @@ type
     function IndexOf(AThumbnail: TBasicThumbnail): Integer;
     procedure LayoutThumbnails; virtual;
 
+    property Thumbnail[AIndex: Integer]: TBasicThumbnail read GetThumbnail;
     property ThumbnailCount: Integer read GetThumbnailCount;
 
     property FocusedBorderColor: TColor read FFocusedBorderColor write FFocusedBorderColor default clWindowText;
@@ -207,6 +209,11 @@ begin
     ARow := -1;
 end;
 
+function TBasicThumbnailViewer.GetThumbnail(AIndex: Integer): TBasicThumbnail;
+begin
+  Result := FThumbnailList[AIndex];
+end;
+
 function TBasicThumbnailviewer.GetThumbnailCount: Integer;
 begin
   Result := FThumbnailList.Count;
@@ -232,7 +239,7 @@ procedure TBasicThumbnailviewer.LayoutThumbnails;
 var
   i: Integer;
   x, y: Integer;
-  thumbnail: TBasicThumbnail;
+  thumb: TBasicThumbnail;
 begin
   x := FThumbnailSpacing;
   y := FThumbnailSpacing;
@@ -241,9 +248,9 @@ begin
   FRowCount := 1;
   for i := 0 to ThumbnailCount-1 do
   begin
-    thumbnail := FThumbnailList[i];
-    thumbnail.Left := x;
-    thumbnail.Top := y;
+    thumb := FThumbnailList[i];
+    thumb.Left := x;
+    thumb.Top := y;
     inc(x, FThumbnailWidth + FThumbnailSpacing);
     if x + FThumbnailWidth >= ClientWidth then
     begin
@@ -324,15 +331,15 @@ var
   i: Integer;
   R: TRect;
   Rclip: TRect;
-  thumbnail: TBasicThumbnail;
+  thumb: TBasicThumbnail;
 begin
   for i := 0 to ThumbnailCount-1 do
   begin
-    thumbnail := FThumbnailList[i];
-    if ThumbnailVisible(thumbnail) then
+    thumb := FThumbnailList[i];
+    if ThumbnailVisible(thumb) then
     begin
       R := Rect(0, 0, FThumbnailWidth, FThumbnailHeight);
-      OffsetRect(R, thumbnail.Left, thumbnail.Top);
+      OffsetRect(R, thumb.Left, thumb.Top);
       Rclip := R;
       InflateRect(Rclip, -1, -1);
 
@@ -353,7 +360,7 @@ begin
         dec(Rclip.Right);
         dec(Rclip.Bottom);
       end else
-      if thumbnail.Selected then
+      if thumb.Selected then
       begin
         Canvas.Pen.Width := 1;
         Canvas.Pen.Color := FSelectedBorderColor;
@@ -372,7 +379,7 @@ begin
       // Make the thumbnail draw itself
       Canvas.ClipRect := Rclip;
       Canvas.Clipping := true;
-      thumbnail.DrawToCanvas(Canvas, R);
+      thumb.DrawToCanvas(Canvas, R);
       Canvas.Clipping := false;
     end;
   end;
@@ -477,12 +484,12 @@ end;
 procedure TBasicThumbnailViewer.SingleSelect(AThumbnail: TBasicThumbnail);
 var
   i: Integer;
-  thumbnail: TBasicThumbnail;
+  thumb: TBasicThumbnail;
 begin
   for i := 0 to FThumbnailList.Count-1 do
   begin
-    thumbnail := FThumbnailList[i];
-    thumbnail.Selected := (AThumbnail = thumbnail);
+    thumb := FThumbnailList[i];
+    thumb.Selected := (AThumbnail = thumb);
   end;
   Invalidate;
 end;

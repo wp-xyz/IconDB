@@ -50,6 +50,7 @@ type
   protected
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
     procedure Paint; override;
+    procedure SetSelectedIndex(AValue: Integer); override;
   public
     procedure Add(ARecordID: Integer); reintroduce;
     procedure Populate;
@@ -253,6 +254,19 @@ begin
   if AValue = FImageNameFieldName then
     exit;
   FImageNameFieldName := AValue;
+end;
+
+procedure TDBThumbnailViewer.SetSelectedIndex(AValue: Integer);
+var
+  thumb: TDBThumbnail;
+  id: Integer;
+begin
+  inherited;
+  if (SelectedIndex > -1) and (FDataset <> nil) then
+  begin
+    thumb:= Thumbnail[SelectedIndex] as TDBThumbnail;
+    FDataset.Locate(FIDFieldName, thumb.ID, []);
+  end;
 end;
 
 end.
