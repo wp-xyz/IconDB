@@ -49,6 +49,7 @@ type
     procedure SetImageNameFieldName(AValue: String);
   protected
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
+    procedure Paint; override;
   public
     procedure Add(ARecordID: Integer); reintroduce;
     procedure Populate;
@@ -153,6 +154,19 @@ begin
   begin
     FDataset := nil;
     Clear;
+  end;
+end;
+
+procedure TDBThumbnailViewer.Paint;
+var
+  bm: TBookmark;
+begin
+  bm := FDataset.GetBookmark;
+  try
+    inherited;
+  finally
+    FDataset.GotoBookmark(bm);
+    FDataset.FreeBookmark(bm);
   end;
 end;
 
