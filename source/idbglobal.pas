@@ -13,12 +13,14 @@ const
   DBF_FILENAME = 'icon_db.dbf';
   KEYWORD_SEPARATOR = ';';
   ICON_FILE_MASK = '*.png';
+  INFO_FILE_NAME = 'info.txt';      // Contains style and keywords for each icon
   MAX_FILTER_HISTORY_COUNT = 24;
 
   CLASSIC_STYLE = 0;
   FLAT_STYLE = 1;
-  OUTLINE_STYE = 2;
+  OUTLINE_STYLE = 2;
   OUTLINE2_STYLE = 3;
+  LAST_STYLE = 3;
 
 type
   TSettings = record
@@ -51,12 +53,11 @@ uses
 function GetStyleName(AStyle: Integer): String;
 begin
   case AStyle of
-    0: Result := 'Classic';
-    1: Result := 'Flat';
-    2: Result := 'Outline';
-    3: Result := 'Outline 2-color';
-    else
-       Result := IntToStr(AStyle);
+    CLASSIC_STYLE  : Result := 'classic';
+    FLAT_STYLE     : Result := 'flat';
+    OUTLINE_STYLE  : Result := 'outline';
+    OUTLINE2_STYLE : Result := 'outline 2-color';
+    else             Result := IntToStr(AStyle);
   end;
 end;
 

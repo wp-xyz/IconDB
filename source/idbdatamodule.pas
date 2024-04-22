@@ -46,7 +46,8 @@ type
 
   protected
     procedure CreateDataset(ADataset: TDbf);
-    function AddIconFromFile(const AFileName: String; ADuplicatesList: TStrings): Boolean;
+    function AddIconFromFile(const AFileName: String;
+      ADuplicatesList: TStrings; AStyle: Integer; AKeywords: String): Boolean;
     procedure FillHashes;
     procedure FilterDataset;
     function GetFilterByKeywords(const AKeywords: String): String;
@@ -129,7 +130,7 @@ begin
 end;
 
 function TMainDatamodule.AddIconFromFile(const AFileName: String;
-  ADuplicatesList: TStrings): Boolean;
+  ADuplicatesList: TStrings; AStyle: Integer; AKeywords: String): Boolean;
 var
   stream: TMemoryStream;
   reader: TFPCustomImageReaderClass;
@@ -153,17 +154,17 @@ begin
         stream.Position := 0;
         hash := GetIconHash(stream);
         stream.Position := 0;
+
         // If the hash is stored in FHashes then the image has already been stored earlier.
-        // Skip such an image.
+        // Replace such an image.
         if FHashes.IndexOf(hash) > -1 then
         begin
           ADuplicatesList.Add(ExtractFileName(AFileName));
-          Result := false;
-          exit;
-        end;
+          Dbf1.Edit
+        end else
+          Dbf1.Insert;
 
-        // Add the new image
-        Dbf1.Insert;
+        // Add/replace the image
         s := ExtractFileExt(AFileName);
         FIconTypeField.AsString := s;
         s := ChangeFileExt(ExtractFileName(AFileName), '');
@@ -186,6 +187,8 @@ begin
         FHeightField.AsInteger := sz.Y;
         FSizeField.AsString := Format('%d x %d', [sz.X, sz.Y]);
         FIconHashField.AsString := hash;
+        FStyleField.AsInteger := AStyle;
+        FKeywordsField.AsString := AKeywords;
         stream.Position := 0;
         TBlobField(FIconField).LoadFromStream(stream);
         Dbf1.Post;
@@ -203,21 +206,55 @@ function TMainDatamodule.AddIconsFromDirectory(const ADirectory: String;
   ADuplicatesList: TStrings): Integer;
 var
   List: TStrings;
+  infos: TStrings;
   i: Integer;
+  style: Integer;
+  keywords: String;
+
+  procedure FindInfo(AFileName: String; out AStyle: Integer; out AKeywords: String);
+  var
+    i, j: Integer;
+    strArray: TStringArray;
+  begin
+    AStyle := -1;
+    AKeywords := '';
+    for i := 0 to infos.Count-1 do
+    begin
+      if (infos[i] = '') or (pos('#', infos[i]) = 1) then
+        continue;
+      strArray := infos[i].Split('|');
+      if SameText(AFileName, strArray[0]) then
+      begin
+        for j := 0 to LAST_STYLE do
+          if SameText(GetStyleName(j), strArray[1]) then
+          begin
+            AStyle := j;
+            break;
+          end;
+        AKeywords := StringReplace(strArray[2], '; ', ';', [rfReplaceAll]);
+        exit;
+      end;
+    end;
+  end;
+
 begin
   List := TStringList.Create;
+  infos := TStringList.Create;
   Dbf1.DisableControls;
   try
     FindAllFiles(List, ADirectory, ICON_FILE_MASK, false);
+    infos.LoadFromFile(AppendPathDelim(ADirectory) + INFO_FILE_NAME);
     Result := 0;
     for i := 0 to List.Count-1 do
     begin
-      if AddIconFromFile(List[i], ADuplicatesList) then
+      FindInfo(ExtractFileName(List[i]), style, keywords);
+      if AddIconFromFile(List[i], ADuplicatesList, style, keywords) then
         inc(Result);
       DoProgress(0, i, List.Count-1);
     end;
   finally
     Dbf1.EnableControls;
+    infos.Free;
     List.Free;
   end;
 end;
