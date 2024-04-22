@@ -28,6 +28,7 @@ type
     ActionList: TActionList;
     cmbFilterByKeywords: TComboBox;
     cmbFilterByStyle: TComboBox;
+    cmbFilterBySize: TComboBox;
     CoolBar: TCoolBar;
     DataSource1: TDataSource;
     Dbf1: TDbf;

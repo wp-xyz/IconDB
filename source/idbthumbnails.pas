@@ -71,7 +71,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure Add(AThumbnail: TBasicThumbnail); virtual;
-    procedure Clear;
+    procedure Clear; virtual;
     procedure Delete(AIndex: Integer);
     class function GetControlClassDefaultSize: TSize; override;
     procedure GetThumbnailColRow(X, Y: Integer; out ACol, ARow: Integer);
@@ -167,6 +167,9 @@ begin
   FColCount := 0;
   FTotalHeight := 0;
   FSelectedIndex := -1;
+  VertScrollbar.Page := ClientHeight;
+  VertScrollbar.Range := 0;
+  VertScrollbar.Position := 0;
 end;
 
 procedure TBasicThumbnailViewer.Delete(AIndex: Integer);
