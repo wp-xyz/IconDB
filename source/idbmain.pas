@@ -698,15 +698,20 @@ var
   sizeStr: String;
   sa: TStringArray;
 begin
+  w := -1;
+  h := -1;
   case cmbFilterBySize.ItemIndex of
     0  : sizeStr := cmbFilterBySize.Items[cmbFilterBySize.Items.Count-1];
-    1  : sizeStr := '32x32';
-    2  : sizeStr := '48x48';
+    1  : begin w := 32; h := 32; end;
+    2  : begin w := 48; h := 48; end;
     else sizeStr := cmbFilterBySize.Items[cmbFilterBySize.ItemIndex];
   end;
-  sa := sizeStr.Split('x');
-  w := StrToInt(trim(sa[0]));
-  h := StrToInt(trim(sa[1]));
+  if (w <> -1) and (h <> -1) then
+  begin
+    sa := sizeStr.Split('x');
+    w := StrToInt(trim(sa[0]));
+    h := StrToInt(trim(sa[1]));
+  end;
 
   if Settings.FixedThumbnailSize then
   begin
