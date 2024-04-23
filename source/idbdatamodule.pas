@@ -244,6 +244,7 @@ var
   i: Integer;
   style: Integer;
   keywordsOfFile: String;
+  infoFile: String;
 
   procedure FindInfo(AFileName: String; out AStyle: Integer; out AKeywords: String);
   var
@@ -274,10 +275,12 @@ var
 begin
   List := TStringList.Create;
   infos := TStringList.Create;
+  infoFile := AppendPathDelim(ADirectory) + INFO_FILE_NAME;
   Database.DisableControls;
   try
     FindAllFiles(List, ADirectory, ICON_FILE_MASK, false);
-    infos.LoadFromFile(AppendPathDelim(ADirectory) + INFO_FILE_NAME);
+    if FileExists(infoFile) then
+      infos.LoadFromFile(infoFile);
     Result := 0;
     for i := 0 to List.Count-1 do
     begin
@@ -286,6 +289,7 @@ begin
         inc(Result);
       DoProgress(0, i, List.Count-1);
     end;
+    FillLists;
   finally
     Database.EnableControls;
     infos.Free;
