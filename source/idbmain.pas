@@ -201,12 +201,18 @@ end;
 
 procedure TMainForm.acFilterExecute(Sender: TObject);
 begin
-  if acFilter.Checked then
-    MainDatamodule.FilterByKeywords(cmbFilterByKeywords.Text)
-  else
-    MainDatamodule.FilterByKeywords('');
-  UpdateIconDetails;
-  PopulateThumbnails;
+  Screen.Cursor := crHourglass;
+  try
+    Application.ProcessMessages;
+    if acFilter.Checked then
+      MainDatamodule.FilterByKeywords(cmbFilterByKeywords.Text)
+    else
+      MainDatamodule.FilterByKeywords('');
+    UpdateIconDetails;
+    PopulateThumbnails;
+  finally
+    Screen.Cursor := crDefault;
+  end;
 end;
 
 procedure TMainForm.acSettingsExecute(Sender: TObject);
@@ -268,26 +274,36 @@ var
   sa: TStringArray;
   w, h: Integer;
 begin
-  if cmbFilterBySize.ItemIndex = 0 then // all sizes
-    sizeStr := cmbFilterBySize.Items[cmbFilterBySize.Items.Count-1]
-  else
-    sizeStr := cmbFilterBySize.Items[cmbFilterBySize.ItemIndex];
-  sa := sizeStr.Split('x');
-  w := StrToInt(trim(sa[0]));
-  h := StrToInt(trim(sa[1]));
-  if cmbFilterBySize.ItemIndex = 0 then
-    MainDatamodule.FilterBySize(-1, -1)
-  else
-    MainDatamodule.FilterBySize(w, h);
+  Screen.Cursor := crHourglass;
+  try
+    if cmbFilterBySize.ItemIndex = 0 then // all sizes
+      sizeStr := cmbFilterBySize.Items[cmbFilterBySize.Items.Count-1]
+    else
+      sizeStr := cmbFilterBySize.Items[cmbFilterBySize.ItemIndex];
+    sa := sizeStr.Split('x');
+    w := StrToInt(trim(sa[0]));
+    h := StrToInt(trim(sa[1]));
+    if cmbFilterBySize.ItemIndex = 0 then
+      MainDatamodule.FilterBySize(-1, -1)
+    else
+      MainDatamodule.FilterBySize(w, h);
 
-  UpdateThumbnailSize;
-  PopulateThumbnails;
+    UpdateThumbnailSize;
+    PopulateThumbnails;
+  finally
+    Screen.Cursor := crdefault;
+  end;
 end;
 
 procedure TMainForm.cmbFilterByStyleChange(Sender: TObject);
 begin
-  MainDatamodule.FilterByStyle(cmbFilterByStyle.ItemIndex-1);
-  PopulateThumbnails;
+  Screen.Cursor := crHourglass;
+  try
+    MainDatamodule.FilterByStyle(cmbFilterByStyle.ItemIndex-1);
+    PopulateThumbnails;
+  finally
+    Screen.Cursor := crDefault;
+  end;
 end;
 
 procedure TMainForm.DatasetAfterDelete(ADataset: TDataset);

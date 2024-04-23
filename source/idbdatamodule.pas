@@ -5,9 +5,9 @@ unit idbDatamodule;
 interface
 
 uses
-  Classes, SysUtils, StrUtils, FileUtil, Graphics, LazFileUtils, Dialogs,
-  db, dbf,
-  Forms;
+  Classes, SysUtils, StrUtils,
+  FileUtil, Graphics, LazFileUtils, Dialogs, Forms,
+  db, dbf;
 
 type
 
@@ -527,24 +527,6 @@ begin
     Dbf1.Filter := filter;
     Dbf1.Filtered := True;
   end else
-  {
-  if (FFilterByStyle <> '') and (FFilterByKeywords <> '') then
-    filter := Format('(%s) AND (%s)', [FFilterByStyle, FFilterByKeywords])
-  else
-  if (FFilterByStyle <> '') then
-    filter := FFilterByStyle
-  else
-  if (FFilterByKeywords <> '') then
-    filter := FFilterByKeywords
-  else
-    filter := '';
-
-  if filter <> '' then
-  begin
-    Dbf1.Filter := filter;
-    Dbf1.Filtered := True;
-  end else
-  }
   begin
     Dbf1.Filter := '';
     Dbf1.Filtered := False;
