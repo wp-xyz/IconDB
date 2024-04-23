@@ -16,7 +16,7 @@ type
   { TMainDatamodule }
 
   TMainDatamodule = class(TDataModule)
-    Dbf1: TDbf;
+    Database: TDbf;
     procedure DoAfterDelete(Dataset: TDataset);
     procedure DoAfterOpen(DataSet: TDataSet);
     procedure DoAfterPost(DataSet: TDataSet);
@@ -118,16 +118,16 @@ begin
   if path = '' then
     path := Application.Location + 'data';
 
-  Dbf1.FilePath := AppendPathDelim(path);
-  Dbf1.Tablename := DBF_FILENAME;
+  Database.FilePath := AppendPathDelim(path);
+  Database.Tablename := DBF_FILENAME;
 
-  if not FileExists(Dbf1.FilePath + Dbf1.TableName) then
-    CreateDataset(Dbf1);
+  if not FileExists(Database.FilePath + Database.TableName) then
+    CreateDataset(Database);
 
-  Dbf1.AfterDelete := @DoAfterDelete;
-  Dbf1.AfterOpen := @DoAfterOpen;
-  Dbf1.AfterScroll := @DoAfterScroll;
-  Dbf1.AfterPost := @DoAfterPost;
+  Database.AfterDelete := @DoAfterDelete;
+  Database.AfterOpen := @DoAfterOpen;
+  Database.AfterScroll := @DoAfterScroll;
+  Database.AfterPost := @DoAfterPost;
 end;
 
 destructor TMainDatamodule.Destroy;
@@ -167,9 +167,9 @@ begin
         if FHashes.IndexOf(hash) > -1 then
         begin
           ADuplicatesList.Add(ExtractFileName(AFileName));
-          Dbf1.Edit
+          Database.Edit
         end else
-          Dbf1.Insert;
+          Database.Insert;
 
         // Add/replace the image
         s := ExtractFileExt(AFileName);
@@ -198,7 +198,7 @@ begin
         FKeywordsField.AsString := AKeywords;
         stream.Position := 0;
         TBlobField(FIconField).LoadFromStream(stream);
-        Dbf1.Post;
+        Database.Post;
 
         // Store hash value of the new image.
         FHashes.Add(hash);
@@ -247,7 +247,7 @@ var
 begin
   List := TStringList.Create;
   infos := TStringList.Create;
-  Dbf1.DisableControls;
+  Database.DisableControls;
   try
     FindAllFiles(List, ADirectory, ICON_FILE_MASK, false);
     infos.LoadFromFile(AppendPathDelim(ADirectory) + INFO_FILE_NAME);
@@ -260,7 +260,7 @@ begin
       DoProgress(0, i, List.Count-1);
     end;
   finally
-    Dbf1.EnableControls;
+    Database.EnableControls;
     infos.Free;
     List.Free;
   end;
@@ -276,19 +276,19 @@ begin
     path := ANewDatabase;
   path := AppendPathDelim(path);
 
-  if AnsiSameText(path, Dbf1.FilePath) then
+  if AnsiSameText(path, Database.FilePath) then
     exit;
 
-  Dbf1.Close;
-  Dbf1.FilePath := path;
-  Dbf1.TableName := DBF_FILENAME;
+  Database.Close;
+  Database.FilePath := path;
+  Database.TableName := DBF_FILENAME;
 
-  if not FileExists(Dbf1.FilePath + Dbf1.TableName) then
-    CreateDataset(Dbf1);
+  if not FileExists(Database.FilePath + Database.TableName) then
+    CreateDataset(Database);
 
-  Dbf1.Open;
-  Dbf1.IndexName := 'idxByName';
-  Dbf1.First;
+  Database.Open;
+  Database.IndexName := 'idxByName';
+  Database.First;
 end;
 
 procedure TMainDatamodule.DoAfterDelete(Dataset: TDataset);
@@ -375,7 +375,7 @@ begin
     FHashes.Delete(idx);
 
   // Delete the icon record
-  Dbf1.Delete;
+  Database.Delete;
   DoAfterDelete(Dataset);
 end;
 
@@ -410,37 +410,37 @@ var
   id: Integer;
 begin
   // Post given keywords and style to current record
-  Dbf1.Edit;
+  Database.Edit;
     KeywordsToField(AKeywords, FKeywordsField);
     StyleToField(AStyle, FStyleField);
-  Dbf1.Post;
+  Database.Post;
 
   // Post the same keywords and style to all records having the same NAMEBASE.
   iconNameBase := FNameBaseField.AsString;
   if iconNameBase <> '' then
   begin
     id := IconIDField.AsInteger;
-    Dbf1.DisableControls;
-    oldFilter := Dbf1.Filter;
-    wasFiltered := Dbf1.Filtered;
+    Database.DisableControls;
+    oldFilter := Database.Filter;
+    wasFiltered := Database.Filtered;
     try
-      Dbf1.FilterOptions := [foCaseInsensitive];
-      Dbf1.Filter := Format('NAMEBASE = %s', [QuotedStr(iconNameBase + '*')]);
-      Dbf1.Filtered := true;
-      Dbf1.First;
-      while not Dbf1.EoF do
+      Database.FilterOptions := [foCaseInsensitive];
+      Database.Filter := Format('NAMEBASE = %s', [QuotedStr(iconNameBase + '*')]);
+      Database.Filtered := true;
+      Database.First;
+      while not Database.EoF do
       begin
-        Dbf1.Edit;
+        Database.Edit;
           KeywordsToField(AKeywords, FKeywordsField);
           StyleToField(AStyle, FStylefield);
-        Dbf1.Post;
-        Dbf1.Next;
+        Database.Post;
+        Database.Next;
       end;
     finally
-      Dbf1.Filter := oldFilter;
-      Dbf1.Filtered := wasFiltered;
-      Dbf1.EnableControls;
-      Dbf1.Locate(IconIDField.FieldName, id, []);   // Workaround for bookmark not valid here (why?)
+      Database.Filter := oldFilter;
+      Database.Filtered := wasFiltered;
+      Database.EnableControls;
+      Database.Locate(IconIDField.FieldName, id, []);   // Workaround for bookmark not valid here (why?)
     end;
   end;
 end;
@@ -462,24 +462,24 @@ begin
   FHashes.Clear;
   FSizes.Clear;
 
-  bm := Dbf1.GetBookmark;
-  Dbf1.DisableControls;
+  bm := Database.GetBookmark;
+  Database.DisableControls;
   try
-    Dbf1.First;
-    while not Dbf1.EoF do
+    Database.First;
+    while not Database.EoF do
     begin
       hashStr := FIconHashField.AsString;
       FHashes.Add(hashStr);
       sizeStr := FSizeField.AsString;
       if FSizes.IndexOf(sizeStr) = -1 then
         FSizes.Add(sizeStr);
-      Dbf1.Next;
+      Database.Next;
     end;
     TStringList(FSizes).Sort; //CustomSort(@CompareSizes);
   finally
-    Dbf1.GotoBookmark(bm);
-    Dbf1.FreeBookmark(bm);
-    Dbf1.EnableControls;
+    Database.GotoBookmark(bm);
+    Database.FreeBookmark(bm);
+    Database.EnableControls;
   end;
 end;
 
@@ -524,18 +524,18 @@ begin
   if filter <> '' then
   begin
     Delete(filter, 1, 5);
-    Dbf1.Filter := filter;
-    Dbf1.Filtered := True;
+    Database.Filter := filter;
+    Database.Filtered := True;
   end else
   begin
-    Dbf1.Filter := '';
-    Dbf1.Filtered := False;
+    Database.Filter := '';
+    Database.Filtered := False;
   end;
 end;
 
 function TMainDatamodule.GetDataset: TDataset;
 begin
-  Result := Dbf1;
+  Result := Database;
 end;
 
 function TMainDatamodule.GetFilterByKeywords(const AKeywords: String): String;
@@ -603,7 +603,7 @@ procedure TMainDatamodule.LoadPicture(APicture: TPicture);
 var
   stream: TStream;
 begin
-  stream := Dbf1.CreateBlobStream(FIconField, bmRead);
+  stream := Database.CreateBlobStream(FIconField, bmRead);
   try
     if stream.Size = 0 then
     begin
@@ -619,11 +619,11 @@ end;
 
 procedure TMainDatamodule.OpenDataset;
 begin
-  Dbf1.Open;
-//  Dbf1.IndexName := 'idxByName';
-  Dbf1.IndexFieldNames := 'idxByNameBase;idxWidth';
-  Dbf1.Last;
-  Dbf1.First;
+  Database.Open;
+//  Database.IndexName := 'idxByName';
+  Database.IndexFieldNames := 'idxByNameBase;idxWidth';
+  Database.Last;
+  Database.First;
 
   FillHashesAndSizes;
 end;

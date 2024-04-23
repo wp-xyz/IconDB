@@ -31,7 +31,6 @@ type
     cmbFilterBySize: TComboBox;
     CoolBar: TCoolBar;
     DataSource1: TDataSource;
-    Dbf1: TDbf;
     DBGrid: TDBGrid;
     acFileExit: TFileExit;
     ImageList1: TImageList;

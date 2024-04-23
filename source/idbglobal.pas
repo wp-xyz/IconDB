@@ -37,8 +37,8 @@ var
     DatabaseFolder: '';
     RowLines: 1;
     FixedThumbnailSize: false;
-    ThumbnailWidth: 68;
-    ThumbnailHeight: 68;
+    ThumbnailWidth: 80;
+    ThumbnailHeight: 80;
     ThumbnailBorder: 4
   );
 
@@ -79,8 +79,9 @@ begin
   Settings.DatabaseFolder := AIniFile.ReadString(Section, 'DatabaseFolder', '');
   Settings.RowLines := AIniFile.ReadInteger(Section, 'RowLines', 1);
   Settings.FixedThumbnailSize := AIniFile.ReadBool(Section, 'FixedThumbnailSize', false);
-  Settings.ThumbnailWidth := AIniFile.ReadInteger(Section, 'ThumbnailWidth', 80);
-  Settings.ThumbnailHeight := AIniFile.ReadInteger(Section, 'ThumbnailHeight', 80);
+  Settings.ThumbnailWidth := AIniFile.ReadInteger(Section, 'ThumbnailWidth', Settings.ThumbnailWidth);
+  Settings.ThumbnailHeight := AIniFile.ReadInteger(Section, 'ThumbnailHeight', Settings.ThumbnailHeight);
+  Settings.ThumbnailBorder := AInifile.ReadInteger(Section, 'ThumbnailBorder', Settings.ThumbnailBorder);
 end;
 
 procedure WriteSettingsToIni(AIniFile: TCustomIniFile; Section: String);
@@ -91,6 +92,7 @@ begin
   AIniFile.WriteBool(Section, 'FixedThumbnailSize', Settings.FixedThumbnailSize);
   AIniFile.WriteInteger(Section, 'ThumbnailWidth', Settings.ThumbnailWidth);
   AIniFile.WriteInteger(Section, 'ThumbnailHeight', Settings.ThumbnailHeight);
+  AIniFile.WriteInteger(Section, 'ThumbnailBorder', Settings.ThumbnailBorder);
 end;
 
 procedure ReadFormFromIni(AIniFile: TCustomIniFile; AForm: TForm;

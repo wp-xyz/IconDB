@@ -4,7 +4,7 @@ object MainDatamodule: TMainDatamodule
   HorizontalOffset = 668
   VerticalOffset = 265
   Width = 436
-  object Dbf1: TDbf
+  object Database: TDbf
     IndexDefs = <>
     TableLevel = 4
     FilterOptions = []
