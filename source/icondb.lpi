@@ -95,6 +95,14 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="idbThumbnailsDB"/>
       </Unit>
+      <Unit>
+        <Filename Value="idbkeywordfiltereditor.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="KeywordFilterEditorForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="idbKeywordFilterEditor"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

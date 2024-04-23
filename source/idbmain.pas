@@ -25,6 +25,8 @@ type
     acEditMetadata: TAction;
     acDeleteIcon: TAction;
     acSettings: TAction;
+    acKeywordFilter: TAction;
+    acExit: TAction;
     ActionList: TActionList;
     cmbFilterByKeywords: TComboBox;
     cmbFilterByStyle: TComboBox;
@@ -32,8 +34,6 @@ type
     CoolBar: TCoolBar;
     DataSource1: TDataSource;
     DBGrid: TDBGrid;
-    acFileExit: TFileExit;
-    ImageList1: TImageList;
     InfoIconName: TDBText;
     DetailsImage: TImage;
     InfoIconSize: TDBText;
@@ -66,13 +66,16 @@ type
     ToolButton3: TToolButton;
     tbFilter: TToolButton;
     tbClearFilter: TToolButton;
+    ToolButton4: TToolButton;
     ToolButton6: TToolButton;
     tbExit: TToolButton;
     procedure acAddIconsExecute(Sender: TObject);
     procedure acClearFilterExecute(Sender: TObject);
     procedure acDeleteIconExecute(Sender: TObject);
     procedure acEditMetadataExecute(Sender: TObject);
+    procedure acExitExecute(Sender: TObject);
     procedure acFilterExecute(Sender: TObject);
+    procedure acKeywordFilterExecute(Sender: TObject);
     procedure acSettingsExecute(Sender: TObject);
     procedure cmbFilterByKeywordsCloseUp(Sender: TObject);
     procedure cmbFilterByKeywordsEditingDone(Sender: TObject);
@@ -87,6 +90,7 @@ type
     procedure ScrollBoxResize(Sender: TObject);
     procedure StatusbarTimerTimer(Sender: TObject);
   private
+    FClosing: Boolean;
     procedure DatasetAfterDelete(ADataset: TDataset);
     procedure DatasetAfterOpen(ADataset: TDataset);
     procedure DatasetAfterPost(ADataset: TDataset);
@@ -121,7 +125,7 @@ implementation
 {$R *.lfm}
 
 uses
-  idbGlobal, idbKeywords, idbSettings, idbDuplicates;
+  idbGlobal, idbKeywords, idbSettings, idbKeywordFilterEditor, idbDuplicates;
 
 
 { TMainForm }
@@ -166,7 +170,7 @@ end;
 
 procedure TMainForm.acClearFilterExecute(Sender: TObject);
 begin
-  cmbFilterByKeywords.Clear;
+  cmbFilterByKeywords.Text := '';
   acFilter.Checked := false;
   acFilterExecute(nil);
 end;
@@ -198,19 +202,60 @@ begin
   end;
 end;
 
+procedure TMainForm.acExitExecute(Sender: TObject);
+begin
+  FClosing := true;
+  Close;
+end;
+
 procedure TMainForm.acFilterExecute(Sender: TObject);
 begin
+  if FClosing then
+    exit;
+
   Screen.Cursor := crHourglass;
   try
     Application.ProcessMessages;
     if acFilter.Checked then
       MainDatamodule.FilterByKeywords(cmbFilterByKeywords.Text)
     else
+    begin
+      if not MainDatamodule.Dataset.Filtered then exit;
       MainDatamodule.FilterByKeywords('');
+    end;
     UpdateIconDetails;
     PopulateThumbnails;
   finally
     Screen.Cursor := crDefault;
+  end;
+end;
+
+procedure TMainForm.acKeywordFilterExecute(Sender: TObject);
+var
+  F: TKeywordFilterEditorForm;
+  idx: Integer;
+begin
+  F := TKeywordFilterEditorForm.Create(nil);
+  try
+    F.Filter := cmbFilterByKeywords.Text;
+    if F.ShowModal = mrOK then
+    begin
+      cmbFilterByKeywords.Text := F.Filter;
+      idx := cmbFilterByKeywords.Items.IndexOf(cmbFilterByKeywords.Text);
+      if idx = -1 then
+      begin
+        cmbFilterByKeywords.Items.Insert(0, cmbFilterByKeywords.Text);
+        while cmbFilterByKeywords.Items.Count > MAX_FILTER_HISTORY_COUNT do
+          cmbFilterByKeywords.Items.Delete(cmbFilterByKeywords.Items.Count-1);
+      end else
+        cmbFilterByKeywords.Items.Move(idx, 0);
+      cmbFilterByKeywords.ItemIndex := 0;
+
+      acFilter.Checked := true;
+      acFilterExecute(nil);
+    end;
+  finally
+    F.Free;
   end;
 end;
 
@@ -235,16 +280,28 @@ begin
 end;
 
 procedure TMainForm.cmbFilterByKeywordsCloseUp(Sender: TObject);
+var
+  s: String;
+  idx: Integer;
 begin
-  (*
-  if cmbFilterByKeywords.ItemIndex > -1 then
+  if FClosing then
+    exit;
+
+  idx := cmbFilterByKeywords.ItemIndex;
+  if idx > -1 then
   begin
-    cmbFilterByKeywords.Text := cmbFilterByKeywords.Items[cmbFilterByKeywords.ItemIndex];
-    cmbFilterByKeywords.Items.Move(cmbFilterByKeywords.ItemIndex, 0);
+    s := cmbFilterByKeywords.Items[idx];
+    if s = '' then    // Should not happen, just in case...
+    begin
+      cmbFilterByKeywords.Items.Delete(idx);
+      exit;
+    end;
+    cmbFilterByKeywords.Items.Move(idx, 0);
+    cmbFilterByKeywords.ItemIndex := 0;
+
     acFilter.Checked := true;
     acFilterExecute(nil);
   end;
-  *)
 end;
 
 procedure TMainForm.cmbFilterByKeywordsEditingDone(Sender: TObject);
@@ -262,6 +319,7 @@ begin
       cmbFilterByKeywords.Items.Delete(cmbFilterByKeywords.Items.Count-1);
   end else
     cmbFilterByKeywords.Items.Move(idx, 0);
+  cmbFilterByKeywords.ItemIndex := 0;
 
   acFilter.Checked := true;
   acFilterExecute(nil);
@@ -485,11 +543,32 @@ end;
 procedure TMainForm.ReadIni;
 var
   ini: TCustomIniFile;
+  list: TStringList;
+  i, j: Integer;
+  s: String;
 begin
   ini := CreateIni;
   try
     ReadFormFromIni(ini, Self, 'MainForm');
     ReadSettingsFromIni(ini, 'Settings');
+    list := TStringList.Create;
+    try
+      list.CaseSensitive := false;
+      ini.ReadSection('FilterByKeywords', list);
+      cmbFilterByKeywords.Items.Clear;
+      for i:=list.Count-1 downto 0 do
+      begin
+        s := trim(ini.ReadString('FilterByKeywords', list[i], ''));
+        if s <> '' then
+        begin
+          j := cmbFilterByKeywords.Items.IndexOf(s);
+          if j > -1 then cmbFilterByKeywords.Items.Delete(j);
+          cmbFilterByKeywords.Items.Insert(0, s);
+        end;
+      end;
+    finally
+      list.Free;
+    end;
   finally
     ini.Free;
   end;
@@ -636,11 +715,14 @@ end;
 procedure TMainForm.WriteIni;
 var
   ini: TCustomIniFile;
+  i: Integer;
 begin
   ini := CreateIni;
   try
     WriteFormToIni(ini, self, 'MainForm');
     WriteSettingsToIni(ini, 'Settings');
+    for i := 0 to cmbFilterByKeywords.Items.Count-1 do
+      ini.WriteString('FilterByKeywords', Format('Item%d', [i+1]), cmbFilterByKeywords.Items[i]);
   finally
     ini.Free;
   end;

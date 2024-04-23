@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, StrUtils,
-  FileUtil, Graphics, LazFileUtils, Dialogs, Forms,
+  FileUtil, Graphics, LazFileUtils, Dialogs, Forms, Controls,
   db, dbf;
 
 type
@@ -17,6 +17,7 @@ type
 
   TMainDatamodule = class(TDataModule)
     Database: TDbf;
+    MainImages: TImageList;
     procedure DoAfterDelete(Dataset: TDataset);
     procedure DoAfterOpen(DataSet: TDataSet);
     procedure DoAfterPost(DataSet: TDataSet);
@@ -29,7 +30,8 @@ type
     FFilterByKeywords: String;
     FFilterBySize: String;
     FFilterByStyle: String;
-    FHashes: TStringList;
+    FHashes: TStrings;
+    FKeywords: TStrings;
     FHeightField: TField;
     FKeywordsField: TField;
     FIconField: TField;
@@ -50,7 +52,7 @@ type
     procedure CreateDataset(ADataset: TDbf);
     function AddIconFromFile(const AFileName: String;
       ADuplicatesList: TStrings; AStyle: Integer; AKeywords: String): Boolean;
-    procedure FillHashesAndSizes;
+    procedure FillLists;
     procedure FilterDataset;
     function GetFilterByKeywords(const AKeywords: String): String;
     function GetFilterBySize(const AWidth, AHeight: Integer): String;
@@ -62,6 +64,8 @@ type
     destructor Destroy; override;
 
     function AddIconsFromDirectory(const ADirectory: String; ADuplicatesList: TStrings): Integer;
+    procedure AddKeywords(AKeywords: String);
+    procedure AddSize(ASize: String);
     procedure ChangeDatabase(ANewDatabase: String);
     procedure DeleteIcon;
     procedure DoProgress(AMin, AValue, AMax: Integer);
@@ -74,6 +78,7 @@ type
 
     property Dataset: TDataset read GetDataset;
     property ImageSizes: TStrings read FSizes;
+    property Keywords: TStrings read FKeywords;
     property AfterDelete: TDatasetNotifyEvent read FOnAfterDelete write FOnAfterDelete;
     property AfterOpen: TDatasetNotifyEvent read FOnAfterOpen write FOnAfterOpen;
     property AfterPost: TDatasetNotifyEvent read FOnAfterPost write FOnAfterPost;
@@ -110,9 +115,13 @@ begin
   inherited;
 
   FHashes := TStringList.Create;
-  FHashes.Sorted := true;
+  TStringList(FHashes).Sorted := true;
 
   FSizes := TStringList.Create;
+  TStringList(FSizes).Sorted := true;
+
+  FKeywords := TStringList.Create;
+  TStringList(FKeywords).Sorted := true;
 
   path := Settings.DatabaseFolder;
   if path = '' then
@@ -132,6 +141,8 @@ end;
 
 destructor TMainDatamodule.Destroy;
 begin
+  FKeywords.Free;
+  FSizes.Free;
   FHashes.Free;
   inherited;
 end;
@@ -209,6 +220,22 @@ begin
   end;
 end;
 
+
+procedure TMainDatamodule.AddKeywords(AKeywords: String);
+var
+  strArray: TStringArray;
+  i: Integer;
+  s: String;
+begin
+  strArray := AKeywords.Split(KEYWORD_SEPARATOR);
+  for i := 0 to High(strArray) do
+  begin
+    s := trim(strArray[i]);
+    if FKeywords.IndexOf(s) < 0 then
+      FKeywords.Add(s);
+  end;
+end;
+
 function TMainDatamodule.AddIconsFromDirectory(const ADirectory: String;
   ADuplicatesList: TStrings): Integer;
 var
@@ -216,7 +243,7 @@ var
   infos: TStrings;
   i: Integer;
   style: Integer;
-  keywords: String;
+  keywordsOfFile: String;
 
   procedure FindInfo(AFileName: String; out AStyle: Integer; out AKeywords: String);
   var
@@ -254,8 +281,8 @@ begin
     Result := 0;
     for i := 0 to List.Count-1 do
     begin
-      FindInfo(ExtractFileName(List[i]), style, keywords);
-      if AddIconFromFile(List[i], ADuplicatesList, style, keywords) then
+      FindInfo(ExtractFileName(List[i]), style, keywordsOfFile);
+      if AddIconFromFile(List[i], ADuplicatesList, style, keywordsOfFile) then
         inc(Result);
       DoProgress(0, i, List.Count-1);
     end;
@@ -264,6 +291,12 @@ begin
     infos.Free;
     List.Free;
   end;
+end;
+
+procedure TMainDatamodule.AddSize(ASize: String);
+begin
+  if FSizes.IndexOf(ASize) < 0 then
+    FSizes.Add(ASize);
 end;
 
 procedure TMainDatamodule.ChangeDatabase(ANewDatabase: String);
@@ -444,20 +477,11 @@ begin
     end;
   end;
 end;
-                     {
-function CompareSizes(List: TStringList; Index1, Index2: Integer): Integer;
-var
-  s1, s2: Integer;
-begin
-  s1 := List[Index1];
-  s2 := List[Index2];
-                      }
 
-procedure TMainDatamodule.FillHashesAndSizes;
+procedure TMainDatamodule.FillLists;
 var
   bm: TBookmark;
-  hashStr: String;
-  sizeStr: String;
+  j: Integer;
 begin
   FHashes.Clear;
   FSizes.Clear;
@@ -468,14 +492,14 @@ begin
     Database.First;
     while not Database.EoF do
     begin
-      hashStr := FIconHashField.AsString;
-      FHashes.Add(hashStr);
-      sizeStr := FSizeField.AsString;
-      if FSizes.IndexOf(sizeStr) = -1 then
-        FSizes.Add(sizeStr);
+      if not FIconHashField.IsNull then
+        FHashes.Add(FIconHashField.AsString);
+      if not FSizeField.IsNull then
+        AddSize(FSizeField.AsString);
+      if not FKeywordsField.IsNull then
+        AddKeywords(FKeywordsField.AsString);
       Database.Next;
     end;
-    TStringList(FSizes).Sort; //CustomSort(@CompareSizes);
   finally
     Database.GotoBookmark(bm);
     Database.FreeBookmark(bm);
@@ -543,22 +567,40 @@ var
   L: TStrings;
   s: String;
   i: Integer;
+  cmd: String = '';
 begin
   Result := '';
   L := TStringList.Create;
   try
-    L.Delimiter := ';';
+    L.Delimiter := ' ';
     L.strictDelimiter := true;
     L.DelimitedText := AKeywords;
     for i := 0 to L.Count-1 do
     begin
       if L[i] <> '' then
       begin
-        s := Format('KEYWORDS = %s', [QuotedStr('*' + L[i] + '*')]);
-        if Result = '' then
-          Result := s
-        else
-          Result := Result + ' or ' + s;
+        if SameText(L[i], 'AND') then
+          cmd := ' AND '
+        else if SameText(L[i], 'OR') then
+          cmd := ' OR '
+        else if SameText(L[i], 'NOT') then
+        begin
+          if cmd = '' then
+            cmd := 'AND NOT '
+          else
+            cmd := cmd + 'NOT ';
+        end else
+        begin
+          s := Format('(KEYWORDS = %s)', [QuotedStr('*' + L[i] + '*')]);
+          if Result = '' then
+            Result := s
+          else
+          begin
+            if cmd = '' then cmd := ' AND ';
+            Result := Result + cmd + s;
+          end;
+          cmd := '';
+        end;
       end;
     end;
   finally
@@ -625,7 +667,7 @@ begin
   Database.Last;
   Database.First;
 
-  FillHashesAndSizes;
+  FillLists;
 end;
 
 end.
