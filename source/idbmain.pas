@@ -22,7 +22,7 @@ type
     acAddIcons: TAction;
     acFilter: TAction;
     acClearFilter: TAction;
-    acEditKeywords: TAction;
+    acEditMetadata: TAction;
     acDeleteIcon: TAction;
     acSettings: TAction;
     ActionList: TActionList;
@@ -36,21 +36,22 @@ type
     acFileExit: TFileExit;
     ImageList1: TImageList;
     InfoIconName: TDBText;
-    Image1: TImage;
+    DetailsImage: TImage;
     InfoIconSize: TDBText;
+    InfoIconStyle: TLabel;
     InfoIconType: TDBText;
     InfoIconHash: TDBText;
     InfoKeywords: TLabel;
     lblIconName: TLabel;
+    lblIconStyle: TLabel;
     lblIconType: TLabel;
     lblIconSize: TLabel;
     lblIconHash: TLabel;
     lblKeywords: TLabel;
     PageControl1: TPageControl;
-    Panel1: TPanel;
+    DetailImagePanel: TPanel;
     FilterPanel: TPanel;
-    Panel2: TPanel;
-    ScrollBox: TScrollBox;
+    DetailPanel: TPanel;
     SelectDirectoryDialog1: TSelectDirectoryDialog;
     Splitter1: TSplitter;
     StatusBar: TStatusBar;
@@ -71,7 +72,7 @@ type
     procedure acAddIconsExecute(Sender: TObject);
     procedure acClearFilterExecute(Sender: TObject);
     procedure acDeleteIconExecute(Sender: TObject);
-    procedure acEditKeywordsExecute(Sender: TObject);
+    procedure acEditMetadataExecute(Sender: TObject);
     procedure acFilterExecute(Sender: TObject);
     procedure acSettingsExecute(Sender: TObject);
     procedure cmbFilterByKeywordsCloseUp(Sender: TObject);
@@ -83,6 +84,7 @@ type
       DataCol: Integer; Column: TColumn; State: TGridDrawState);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure DetailPanelResize(Sender: TObject);
     procedure ScrollBoxResize(Sender: TObject);
     procedure StatusbarTimerTimer(Sender: TObject);
   private
@@ -98,7 +100,7 @@ type
     procedure UpdateIconDetails;
     procedure UpdateImage;
     procedure UpdateImageSizes;
-    procedure UpdateKeywords;
+    procedure UpdateMetadata;
     procedure UpdateThumbnailSize;
 
   private
@@ -176,7 +178,7 @@ begin
     MainDatamodule.DeleteIcon;
 end;
 
-procedure TMainForm.acEditKeywordsExecute(Sender: TObject);
+procedure TMainForm.acEditMetadataExecute(Sender: TObject);
 var
   F: TEditKeywordsForm;
 begin
@@ -229,6 +231,7 @@ end;
 
 procedure TMainForm.cmbFilterByKeywordsCloseUp(Sender: TObject);
 begin
+  (*
   if cmbFilterByKeywords.ItemIndex > -1 then
   begin
     cmbFilterByKeywords.Text := cmbFilterByKeywords.Items[cmbFilterByKeywords.ItemIndex];
@@ -236,12 +239,16 @@ begin
     acFilter.Checked := true;
     acFilterExecute(nil);
   end;
+  *)
 end;
 
 procedure TMainForm.cmbFilterByKeywordsEditingDone(Sender: TObject);
 var
   idx: Integer;
 begin
+  if not cmbFilterByKeywords.Focused then
+    exit;
+
   idx := cmbFilterByKeywords.Items.IndexOf(cmbFilterByKeywords.Text);
   if idx = -1 then
   begin
@@ -306,7 +313,7 @@ end;
 
 procedure TMainForm.DBGridDblClick(Sender: TObject);
 begin
-  acEditKeywordsExecute(nil);
+  acEditMetadataExecute(nil);
 end;
 
 procedure TMainForm.DBGridDrawColumnCell(Sender: TObject; const Rect: TRect;
@@ -408,6 +415,7 @@ begin
   FThumbnailViewer.DescriptionFieldName := 'KEYWORDS';
   FThumbnailViewer.ClassificationFieldName := 'STYLE';
   FThumbnailViewer.FocusedColor := clBlack;
+  FThumbnailViewer.OnDblClick := @acEditMetadataExecute;
 //  FThumbnailViewer.BevelOuter := bvNone;
 //  FThumbnailViewer.AutoSize := true;
 //  FThumbnailViewer.Color := clBlack;
@@ -423,6 +431,11 @@ begin
   FThumbnailViewer.DisableAlign;
   FThumbnailViewer.Clear;
   FThumbnailViewer.EnableAlign;
+end;
+
+procedure TMainForm.DetailPanelResize(Sender: TObject);
+begin
+  DetailImagePanel.Height := DetailImagePanel.Width;
 end;
 
 procedure TMainForm.ScrollBoxResize(Sender: TObject);
@@ -548,12 +561,12 @@ end;
 procedure TMainForm.UpdateIconDetails;
 begin
   UpdateImage;
-  UpdateKeywords;
+  UpdateMetadata;
 end;
 
 procedure TMainForm.UpdateImage;
 begin
-  MainDatamodule.LoadPicture(Image1.Picture);
+  MainDatamodule.LoadPicture(DetailsImage.Picture);
 end;
 
 procedure TMainForm.UpdateImageSizes;
@@ -563,7 +576,7 @@ begin
   cmbFilterBySize.ItemIndex := 0;
 end;
 
-procedure TMainForm.UpdateKeywords;
+procedure TMainForm.UpdateMetadata;
 var
   field: TField;
 begin
@@ -572,6 +585,12 @@ begin
     infoKeywords.Caption := ''
   else
     infoKeywords.Caption := StringReplace(field.AsString, ';', '; ', [rfReplaceAll]);
+
+  field := MainDatamodule.StyleField;
+  if field.IsNull then
+    infoIconStyle.Caption := '(style unknown)'
+  else
+    infoIconStyle.Caption := GetStyleName(field.AsInteger);
 end;
 
 procedure TMainForm.UpdateThumbnailSize;

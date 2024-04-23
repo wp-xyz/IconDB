@@ -92,6 +92,8 @@ type
     property ThumbnailHeight: Integer read FThumbnailHeight write SetThumbnailHeight;
     property ThumbnailSpacing: Integer read FThumbnailSpacing write SetThumbnailSpacing;
     property ThumbnailWidth: Integer read FThumbnailWidth write SetThumbnailWidth;
+
+    property OnDblClick;
   end;
 
 

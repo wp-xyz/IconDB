@@ -405,9 +405,9 @@ procedure TMainDatamodule.EditKeywordsAndStyle(const AKeywords: String; const AS
 
 var
   iconNameBase: String;
-  bm: TBookmark;
   oldFilter: String;
   wasFiltered: Boolean;
+  id: Integer;
 begin
   // Post given keywords and style to current record
   Dbf1.Edit;
@@ -415,11 +415,11 @@ begin
     StyleToField(AStyle, FStyleField);
   Dbf1.Post;
 
-  // Post the same keywords to all records having the same NAMEBASE.
+  // Post the same keywords and style to all records having the same NAMEBASE.
   iconNameBase := FNameBaseField.AsString;
   if iconNameBase <> '' then
   begin
-    bm := Dbf1.GetBookmark;
+    id := IconIDField.AsInteger;
     Dbf1.DisableControls;
     oldFilter := Dbf1.Filter;
     wasFiltered := Dbf1.Filtered;
@@ -439,10 +439,8 @@ begin
     finally
       Dbf1.Filter := oldFilter;
       Dbf1.Filtered := wasFiltered;
-      if Dbf1.BookmarkValid(bm) then
-        Dbf1.GoToBookmark(bm);
-      Dbf1.FreeBookmark(bm);
       Dbf1.EnableControls;
+      Dbf1.Locate(IconIDField.FieldName, id, []);   // Workaround for bookmark not valid here (why?)
     end;
   end;
 end;

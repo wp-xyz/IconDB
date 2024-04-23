@@ -1,10 +1,10 @@
 object MainForm: TMainForm
   Left = 326
-  Height = 487
+  Height = 553
   Top = 127
   Width = 902
   Caption = 'Icon Database'
-  ClientHeight = 487
+  ClientHeight = 553
   ClientWidth = 902
   LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
@@ -27,7 +27,7 @@ object MainForm: TMainForm
       Left = 24
       Height = 44
       Top = 5
-      Width = 821
+      Width = 820
       Align = alNone
       AutoSize = True
       BorderSpacing.Left = 22
@@ -52,22 +52,22 @@ object MainForm: TMainForm
       object tbEditKeywords: TToolButton
         Left = 71
         Top = 0
-        Action = acEditKeywords
+        Action = acEditMetadata
       end
       object tbDeleteIcon: TToolButton
-        Left = 139
+        Left = 138
         Top = 0
         Action = acDeleteIcon
       end
       object ToolButton3: TToolButton
-        Left = 206
+        Left = 205
         Height = 44
         Top = 0
         Caption = 'ToolButton3'
         Style = tbsDivider
       end
       object FilterPanel: TPanel
-        Left = 211
+        Left = 210
         Height = 44
         Top = 0
         Width = 421
@@ -83,7 +83,7 @@ object MainForm: TMainForm
           AnchorSideRight.Side = asrBottom
           Left = 240
           Height = 23
-          Hint = 'Keyword filter'
+          Hint = 'Filter by keywords'
           Top = 11
           Width = 175
           Anchors = [akTop, akRight]
@@ -101,7 +101,7 @@ object MainForm: TMainForm
           AnchorSideTop.Side = asrCenter
           Left = 96
           Height = 23
-          Hint = 'Style filter'
+          Hint = 'Filter by icon styles'
           Top = 11
           Width = 132
           Anchors = [akTop]
@@ -127,7 +127,7 @@ object MainForm: TMainForm
           AnchorSideTop.Side = asrCenter
           Left = 6
           Height = 23
-          Hint = 'Size filter'
+          Hint = 'Filter by icon sizes'
           Top = 11
           Width = 84
           BorderSpacing.Left = 6
@@ -148,35 +148,35 @@ object MainForm: TMainForm
         end
       end
       object tbFilter: TToolButton
-        Left = 632
+        Left = 631
         Top = 0
         Action = acFilter
         Style = tbsCheck
       end
       object tbClearFilter: TToolButton
-        Left = 672
+        Left = 671
         Top = 0
         Action = acClearFilter
       end
       object ToolButton6: TToolButton
-        Left = 712
+        Left = 711
         Height = 44
         Top = 0
         Caption = 'ToolButton6'
         Style = tbsDivider
       end
       object tbExit: TToolButton
-        Left = 781
+        Left = 780
         Top = 0
         Action = acFileExit
       end
       object ToolButton1: TToolButton
-        Left = 717
+        Left = 716
         Top = 0
         Action = acSettings
       end
       object ToolButton2: TToolButton
-        Left = 776
+        Left = 775
         Height = 44
         Top = 0
         Caption = 'ToolButton2'
@@ -187,13 +187,13 @@ object MainForm: TMainForm
   object StatusBar: TStatusBar
     Left = 0
     Height = 23
-    Top = 464
+    Top = 530
     Width = 902
     Panels = <>
   end
   object PageControl1: TPageControl
     Left = 0
-    Height = 410
+    Height = 476
     Top = 54
     Width = 698
     ActivePage = pgThumbnails
@@ -202,29 +202,14 @@ object MainForm: TMainForm
     TabOrder = 2
     object pgThumbnails: TTabSheet
       Caption = 'Thumbnails'
-      ClientHeight = 382
-      ClientWidth = 690
-      object ScrollBox: TScrollBox
-        Left = 0
-        Height = 382
-        Top = 0
-        Width = 690
-        HorzScrollBar.Page = 1
-        VertScrollBar.Page = 1
-        VertScrollBar.Tracking = True
-        Align = alClient
-        TabOrder = 0
-        Visible = False
-        OnResize = ScrollBoxResize
-      end
     end
     object pgGrid: TTabSheet
       Caption = 'Grid'
-      ClientHeight = 382
+      ClientHeight = 448
       ClientWidth = 690
       object DBGrid: TDBGrid
         Left = 0
-        Height = 382
+        Height = 448
         Top = 0
         Width = 682
         Align = alClient
@@ -246,17 +231,18 @@ object MainForm: TMainForm
       end
     end
   end
-  object Panel2: TPanel
+  object DetailPanel: TPanel
     Left = 711
-    Height = 394
+    Height = 460
     Top = 62
     Width = 183
     Align = alRight
     BorderSpacing.Around = 8
     BevelOuter = bvNone
-    ClientHeight = 394
+    ClientHeight = 460
     ClientWidth = 183
     TabOrder = 3
+    OnResize = DetailPanelResize
     object InfoIconName: TDBText
       AnchorSideLeft.Control = lblIconName
       AnchorSideTop.Control = lblIconName
@@ -269,8 +255,8 @@ object MainForm: TMainForm
       DataSource = DataSource1
     end
     object lblIconName: TLabel
-      AnchorSideLeft.Control = Panel1
-      AnchorSideTop.Control = Panel1
+      AnchorSideLeft.Control = DetailImagePanel
+      AnchorSideTop.Control = DetailImagePanel
       AnchorSideTop.Side = asrBottom
       Left = 0
       Height = 15
@@ -283,7 +269,7 @@ object MainForm: TMainForm
       ParentFont = False
     end
     object lblIconSize: TLabel
-      AnchorSideLeft.Control = Panel1
+      AnchorSideLeft.Control = DetailImagePanel
       AnchorSideTop.Control = InfoIconType
       AnchorSideTop.Side = asrBottom
       Left = 0
@@ -297,12 +283,12 @@ object MainForm: TMainForm
       ParentFont = False
     end
     object lblKeywords: TLabel
-      AnchorSideLeft.Control = Panel1
+      AnchorSideLeft.Control = DetailImagePanel
       AnchorSideTop.Control = InfoIconHash
       AnchorSideTop.Side = asrBottom
       Left = 0
       Height = 15
-      Top = 323
+      Top = 361
       Width = 53
       BorderSpacing.Top = 8
       BorderSpacing.Right = 8
@@ -314,22 +300,22 @@ object MainForm: TMainForm
       AnchorSideLeft.Control = InfoIconName
       AnchorSideTop.Control = lblKeywords
       AnchorSideTop.Side = asrBottom
-      AnchorSideRight.Control = Panel2
+      AnchorSideRight.Control = DetailPanel
       AnchorSideRight.Side = asrBottom
       AnchorSideBottom.Control = StatusBar
       Left = 12
-      Height = 119
-      Top = 338
+      Height = 147
+      Top = 376
       Width = 163
       Anchors = [akTop, akLeft, akRight, akBottom]
       BorderSpacing.Right = 8
       BorderSpacing.Bottom = 6
       WordWrap = True
     end
-    object Panel1: TPanel
-      AnchorSideLeft.Control = Panel2
-      AnchorSideTop.Control = Panel2
-      AnchorSideRight.Control = Panel2
+    object DetailImagePanel: TPanel
+      AnchorSideLeft.Control = DetailPanel
+      AnchorSideTop.Control = DetailPanel
+      AnchorSideRight.Control = DetailPanel
       AnchorSideRight.Side = asrBottom
       Left = 0
       Height = 163
@@ -341,7 +327,7 @@ object MainForm: TMainForm
       ClientHeight = 163
       ClientWidth = 183
       TabOrder = 0
-      object Image1: TImage
+      object DetailsImage: TImage
         Left = 8
         Height = 147
         Top = 8
@@ -353,7 +339,7 @@ object MainForm: TMainForm
       end
     end
     object lblIconType: TLabel
-      AnchorSideLeft.Control = Panel1
+      AnchorSideLeft.Control = DetailImagePanel
       AnchorSideTop.Control = InfoIconName
       AnchorSideTop.Side = asrBottom
       Left = 0
@@ -388,12 +374,12 @@ object MainForm: TMainForm
       DataSource = DataSource1
     end
     object lblIconHash: TLabel
-      AnchorSideLeft.Control = Panel1
-      AnchorSideTop.Control = InfoIconSize
+      AnchorSideLeft.Control = DetailImagePanel
+      AnchorSideTop.Control = InfoIconStyle
       AnchorSideTop.Side = asrBottom
       Left = 0
       Height = 15
-      Top = 285
+      Top = 323
       Width = 53
       BorderSpacing.Top = 8
       BorderSpacing.Right = 8
@@ -407,15 +393,39 @@ object MainForm: TMainForm
       AnchorSideTop.Side = asrBottom
       Left = 12
       Height = 15
-      Top = 300
+      Top = 338
       Width = 71
       BorderSpacing.Left = 12
       DataSource = DataSource1
     end
+    object lblIconStyle: TLabel
+      AnchorSideLeft.Control = DetailImagePanel
+      AnchorSideTop.Control = InfoIconSize
+      AnchorSideTop.Side = asrBottom
+      Left = 0
+      Height = 15
+      Top = 285
+      Width = 51
+      BorderSpacing.Top = 8
+      BorderSpacing.Right = 8
+      Caption = 'Icon style:'
+      Font.Style = [fsItalic]
+      ParentFont = False
+    end
+    object InfoIconStyle: TLabel
+      AnchorSideLeft.Control = InfoIconName
+      AnchorSideTop.Control = lblIconStyle
+      AnchorSideTop.Side = asrBottom
+      Left = 12
+      Height = 15
+      Top = 300
+      Width = 69
+      Caption = 'InfoIconStyle'
+    end
   end
   object Splitter1: TSplitter
     Left = 698
-    Height = 410
+    Height = 476
     Top = 54
     Width = 5
     Align = alRight
@@ -1586,11 +1596,11 @@ object MainForm: TMainForm
       ImageIndex = 1
       OnExecute = acClearFilterExecute
     end
-    object acEditKeywords: TAction
-      Caption = 'Keywords...'
+    object acEditMetadata: TAction
+      Caption = 'Metadata...'
       Hint = 'Enter keywords and styles'
       ImageIndex = 3
-      OnExecute = acEditKeywordsExecute
+      OnExecute = acEditMetadataExecute
     end
     object acDeleteIcon: TAction
       Caption = 'Delete icon'
