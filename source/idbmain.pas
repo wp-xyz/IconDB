@@ -333,18 +333,21 @@ var
 begin
   Screen.Cursor := crHourglass;
   try
-    if cmbFilterBySize.ItemIndex = 0 then // all sizes
-      sizeStr := cmbFilterBySize.Items[cmbFilterBySize.Items.Count-1]
-    else
-      sizeStr := cmbFilterBySize.Items[cmbFilterBySize.ItemIndex];
+    case cmbFilterBySize.ItemIndex of
+      0  : sizeStr := cmbFilterBySize.Items[cmbFilterBySize.Items.Count-1];
+      1  : sizeStr := '32x32';
+      2  : sizeStr := '48x48';
+      else sizeStr := cmbFilterBySize.Items[cmbFilterBySize.ItemIndex];
+    end;
     sa := sizeStr.Split('x');
     w := StrToInt(trim(sa[0]));
     h := StrToInt(trim(sa[1]));
-    if cmbFilterBySize.ItemIndex = 0 then
-      MainDatamodule.FilterBySize(-1, -1)
-    else
-      MainDatamodule.FilterBySize(w, h);
-
+    case cmbFilterBySize.ItemIndex of
+      0: MainDatamodule.FilterBySize(-1, -1);
+      1: MainDatamodule.FilterBySize(-2, -2);
+      2: MainDatamodule.FilterBySize(-3, -3);
+      else MainDatamodule.FilterBySize(w, h);
+    end;
     UpdateThumbnailSize;
     PopulateThumbnails;
   finally
@@ -666,6 +669,8 @@ end;
 procedure TMainForm.UpdateImageSizes;
 begin
   cmbFilterBySize.Items.Assign(MainDatamodule.ImageSizes);
+  cmbFilterBySize.Items.Insert(0, '24x24 36x36 48x48');
+  cmbFilterBySize.Items.Insert(0, '16x16 24x24 32x32');
   cmbFilterBySize.Items.Insert(0, '(all sizes)');
   cmbFilterBySize.ItemIndex := 0;
 end;
@@ -693,10 +698,12 @@ var
   sizeStr: String;
   sa: TStringArray;
 begin
-  if cmbFilterBySize.ItemIndex = 0 then // all sizes
-    sizeStr := cmbFilterBySize.Items[cmbFilterBySize.Items.Count-1]
-  else
-    sizeStr := cmbFilterBySize.Items[cmbFilterBySize.ItemIndex];
+  case cmbFilterBySize.ItemIndex of
+    0  : sizeStr := cmbFilterBySize.Items[cmbFilterBySize.Items.Count-1];
+    1  : sizeStr := '32x32';
+    2  : sizeStr := '48x48';
+    else sizeStr := cmbFilterBySize.Items[cmbFilterBySize.ItemIndex];
+  end;
   sa := sizeStr.Split('x');
   w := StrToInt(trim(sa[0]));
   h := StrToInt(trim(sa[1]));

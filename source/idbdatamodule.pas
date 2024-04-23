@@ -518,19 +518,13 @@ end;
 
 procedure TMainDatamodule.FilterBySize(const AWidth, AHeight: Integer);
 begin
-  if (AWidth = -1) or (AHeight = -1) then
-    FFilterBySize := ''
-  else
-    FFilterBySize := GetFilterBySize(AWidth, AHeight);
+  FFilterBySize := GetFilterBySize(AWidth, AHeight);
   FilterDataset;
 end;
 
 procedure TMainDatamodule.FilterByStyle(const AStyle: Integer);
 begin
-  if AStyle < 0 then
-    FFilterByStyle := ''
-  else
-    FFilterByStyle := GetFilterByStyle(AStyle);
+  FFilterByStyle := GetFilterByStyle(AStyle);
   FilterDataset;
 end;
 
@@ -610,7 +604,16 @@ end;
 
 function TMainDatamodule.GetFilterBySize(const AWidth, AHeight: Integer): String;
 begin
-  Result := Format('(WIDTH = %d) AND (HEIGHT = %d)', [AWidth, AHeight]);
+  if (AWidth = -1) and (AHeight = -1) then
+    Result := ''
+  else
+  if (AWidth = -2) and (AHeight = -2) then
+    Result := '((WIDTH=16) OR (WIDTH=24) OR (WIDTH=32)) AND ((HEIGHT=16) OR (HEIGHT=24) OR (HEIGHT=32))'
+  else
+  if (AWidth = -3) and (AHeight = -3) then
+    Result := '((WIDTH=24) OR (WIDTH=36) OR (WIDTH=48)) AND ((HEIGHT=24) OR (HEIGHT=36) OR (HEIGHT=48))'
+  else
+    Result := Format('(WIDTH = %d) AND (HEIGHT = %d)', [AWidth, AHeight]);
 end;
 
 function TMainDatamodule.GetFilterByStyle(const AStyle: Integer): String;
