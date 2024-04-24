@@ -39,6 +39,8 @@ type
     FIconIDField: TField;
     FIconHashField: TField;
     FIconTypeField: TField;
+    FMetadataModifiedField: TField;
+    FMetadataDirty: Boolean;
     FSizes: TStrings;
     FSizeField: TField;
     FStyleField: TField;
@@ -76,10 +78,13 @@ type
     procedure FilterByStyle(const AStyle: Integer);
     procedure LoadPicture(APicture: TPicture);
     procedure OpenDataset;
+    procedure WriteMetadataFiles(ModifiedOnly: Boolean);
 
     property Dataset: TDataset read GetDataset;
     property ImageSizes: TStrings read FSizes;
     property Keywords: TStrings read FKeywords;
+    property MetadataDirty: Boolean read FMetadataDirty;
+
     property AfterDelete: TDatasetNotifyEvent read FOnAfterDelete write FOnAfterDelete;
     property AfterOpen: TDatasetNotifyEvent read FOnAfterOpen write FOnAfterOpen;
     property AfterPost: TDatasetNotifyEvent read FOnAfterPost write FOnAfterPost;
@@ -92,6 +97,7 @@ type
     property IconField: TField read FIconField;
     property IconTypeField: TField read FIconTypeField;
     property KeywordsField: TField read FKeywordsField;
+    property MetadataModifiedField: TField read FMetadataModifiedField;
     property NameField: TField read FNameField;
     property SizeField: TField read FSizeField;
     property StyleField: TField read FStyleField;
@@ -339,6 +345,7 @@ begin
   FIconTypeField := Dataset.FieldByName('ICONTYPE');
   FSizeField := Dataset.FieldByName('SIZE');
   FStyleField := Dataset.FieldByName('STYLE');
+  FMetadataModifiedField := Dataset.FieldByName('METADATAMODIFIED');
 
   if Assigned(FOnAfterOpen) then FOnAfterOpen(Dataset);
 end;
@@ -377,6 +384,7 @@ begin
   ADataset.FieldDefs.Add('STYLE', ftInteger);
   ADataset.FieldDefs.Add('KEYWORDS', ftString, 255);
   ADataset.FieldDefs.Add('ICON', ftBlob);
+  ADataset.FieldDefs.Add('METADATAMODIFIED', ftInteger);
   ADataset.CreateTable;
 
   ADataset.Open;
@@ -389,6 +397,7 @@ begin
   ADataset.AddIndex('idxByHeight', 'HEIGHT', []);
   ADataset.AddIndex('idxByIconHash', 'ICONHASH', [ixCaseInsensitive]);
   ADataset.AddIndex('idxByStyle', 'STYLE', []);
+  ADataset.AddIndex('idxMetaMod', 'METADATAMODIFIED', []);
 
   ADataset.Close;
 end;
@@ -443,7 +452,9 @@ begin
   Database.Edit;
     KeywordsToField(AKeywords, FKeywordsField);
     StyleToField(AStyle, FStyleField);
+    FMetadataModifiedField.AsInteger := 1;
   Database.Post;
+  FMetadataDirty := true;
 
   // Post the same keywords and style to all records having the same NAMEBASE.
   iconNameBase := FNameBaseField.AsString;
@@ -463,6 +474,7 @@ begin
         Database.Edit;
           KeywordsToField(AKeywords, FKeywordsField);
           StyleToField(AStyle, FStylefield);
+          FMetadataModifiedField.AsInteger := 1;
         Database.Post;
         Database.Next;
       end;
@@ -680,6 +692,93 @@ begin
   Database.First;
 
   FillLists;
+end;
+
+procedure TMainDatamodule.WriteMetadataFiles(ModifiedOnly: Boolean);
+
+  procedure CollectDirectories(AList: TStrings);
+  var
+    dir: String;
+  begin
+    Database.First;
+    while not Database.EoF do
+    begin
+      dir := DirectoryField.AsString;
+      if AList.IndexOf(dir) = -1 then AList.Add(dir);
+      Database.Next;
+    end;
+  end;
+
+var
+  id: Integer;
+  savedFilter: String;
+  wasFiltered: Boolean;
+  directories: TStringList;
+  infoFile: TStringList;
+  infoFileName: String;
+  iconFileName: String;
+  iconFileNameInInfo: String;
+  keywrds: String;
+  style: String;
+  s: String;
+  i, j, k: Integer;
+begin
+  id := IconIDField.AsInteger;
+  savedFilter := Database.Filter;
+  wasFiltered := Database.Filtered;
+  directories := TStringList.Create;
+  infoFile := TStringList.Create;
+  try
+    Database.Filtered := false;
+    if ModifiedOnly then
+    begin
+      Database.Filter := 'METADATAMODIFIED = 1';
+      Database.Filtered := true;
+    end;
+    CollectDirectories(directories);
+    for i := 0 to directories.Count-1 do
+    begin
+      infoFileName := AppendPathDelim(directories[i]) + INFO_FILE_NAME;
+      infoFile.Clear;
+      if FileExists(infoFileName) then
+        infoFile.LoadFromFile(infoFileName)
+      else
+      begin
+        infoFile.Add('#File structure: "filename|style|keyword1;keyword2;..."');
+        infoFile.Add('#Allowed styles: classic, flat, outline, outline 2-color');
+        infoFile.Add('#');
+      end;
+      Database.First;
+      while not Database.EoF do
+      begin
+        iconFileName := NameField.AsString + IconTypeField.AsString;
+        keywrds := KeywordsField.AsString;
+        style := GetStyleName(StyleField.AsInteger);
+        for j := 0 to infoFile.Count-1 do
+        begin
+          s := infoFile[j];
+          if (s = '') or (s[1] = '#') then
+            continue;
+          iconFileNameInInfo := Copy(s, 1, pos('|', s)-1);
+          if iconFileNameInInfo = iconFileName then
+          begin
+            infoFile[j] := Format('%s|%s|%s', [iconFileName, style, keywrds]);
+            break;
+          end;
+        end;
+        Database.Next;
+      end;
+      infoFile.SaveToFile(infoFileName);
+    end;
+    FMetadataDirty := false;
+  finally
+    infoFile.Free;
+    directories.Free;
+    Database.Filtered := false;
+    Database.Filter := savedFilter;
+    Database.Filtered := wasFiltered;
+    Database.Locate(IconIDField.FieldName, id, []);
+  end;
 end;
 
 end.

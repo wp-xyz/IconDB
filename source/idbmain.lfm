@@ -8,6 +8,7 @@ object MainForm: TMainForm
   ClientHeight = 553
   ClientWidth = 950
   LCLVersion = '3.99.0.0'
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   object CoolBar: TCoolBar

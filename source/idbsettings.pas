@@ -6,14 +6,15 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ButtonPanel, StdCtrls,
-  Spin, EditBtn,
-  idbGlobal;
+  Spin, EditBtn, Buttons,
+  idbGlobal, idbDatamodule;
 
 type
 
   { TSettingsForm }
 
   TSettingsForm = class(TForm)
+    btnWriteMetadata: TBitBtn;
     ButtonPanel: TButtonPanel;
     rbVariableThumbnailSize: TRadioButton;
     rbFixedThumbnailSize: TRadioButton;
@@ -29,6 +30,7 @@ type
     seFixedThumbnailWidth: TSpinEdit;
     seFixedThumbnailHeight: TSpinEdit;
     seThumbnailBorder: TSpinEdit;
+    procedure btnWriteMetadataClick(Sender: TObject);
   private
 
   public
@@ -43,6 +45,16 @@ var
 implementation
 
 {$R *.lfm}
+
+procedure TSettingsForm.btnWriteMetadataClick(Sender: TObject);
+begin
+  Screen.Cursor := crHourglass;
+  try
+    MainDatamodule.WriteMetaDataFiles(false);
+  finally
+    Screen.Cursor := crDefault;
+  end;
+end;
 
 procedure TSettingsForm.ControlsToSettings;
 begin

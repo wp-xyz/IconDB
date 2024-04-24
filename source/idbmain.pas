@@ -86,6 +86,7 @@ type
     procedure DBGridDblClick(Sender: TObject);
     procedure DBGridDrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: Integer; Column: TColumn; State: TGridDrawState);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure DetailPanelResize(Sender: TObject);
@@ -460,6 +461,23 @@ begin
         s := field.AsString;
     end;
     DBGrid.Canvas.TextRect(R, R.Left, R.Top, s, ts);
+  end;
+end;
+
+procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+var
+  res: TModalResult;
+begin
+  CanClose := true;
+  if MainDatamodule.MetadataDirty then
+  begin
+    res := MessageDlg('The database contains unsaved metadata modifications. Save?',
+      mtConfirmation, [mbYes, mbNo, mbCancel], 0);
+    case res of
+      mrYes: MainDatamodule.WriteMetadataFiles(true);
+      mrNo: ;
+      mrCancel: CanClose := false;
+    end;
   end;
 end;
 

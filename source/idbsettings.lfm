@@ -23,6 +23,18 @@ object SettingsForm: TSettingsForm
     CancelButton.DefaultCaption = True
     TabOrder = 3
     ShowButtons = [pbOK, pbCancel]
+    object btnWriteMetadata: TBitBtn
+      AnchorSideTop.Control = ButtonPanel
+      Left = 0
+      Height = 25
+      Top = 6
+      Width = 107
+      AutoSize = True
+      BorderSpacing.Top = 6
+      Caption = 'Write metadata'
+      TabOrder = 4
+      OnClick = btnWriteMetadataClick
+    end
   end
   object gbDBGrid: TGroupBox
     AnchorSideLeft.Control = Owner
