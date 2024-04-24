@@ -48,6 +48,7 @@ type
     FMultiSelect: Boolean;
     function GetThumbnail(AIndex: Integer): TBasicThumbnail;
     function GetThumbnailCount: Integer;
+    function GetVisibleRowCount: Integer;
     procedure SetFocusedBorderColor(AValue: TColor);
     procedure SetFocusedColor(AValue: TColor);
     procedure SetMultiSelect(AValue: Boolean);
@@ -59,8 +60,9 @@ type
     procedure SetThumbnailWidth(AValue: Integer);
 
   protected
+    procedure Click; override;
     procedure DoOnResize; override;
-    procedure KeyUp(var Key: Word; Shift: TShiftState); override;
+    procedure KeyDown(var Key: Word; Shift: TShiftState); override;
     procedure MouseDown(Button: TMouseButton; Shift:TShiftState; X, Y: Integer); override;
     procedure Paint; override;
     procedure SetSelectedIndex(AValue: Integer); virtual;
@@ -78,9 +80,11 @@ type
     function GetThumbnailIndexAt(X, Y: Integer): Integer;
     function IndexOf(AThumbnail: TBasicThumbnail): Integer;
     procedure LayoutThumbnails; virtual;
+    procedure ScrollIntoView; virtual;
 
     property Thumbnail[AIndex: Integer]: TBasicThumbnail read GetThumbnail;
     property ThumbnailCount: Integer read GetThumbnailCount;
+    property VisibleRowCount: Integer read GetVisibleRowCount;
 
     property FocusedBorderColor: TColor read FFocusedBorderColor write FFocusedBorderColor default clWindowText;
     property FocusedColor: TColor read FFocusedColor write SetFocusedColor default clBtnFace;
@@ -174,6 +178,12 @@ begin
   VertScrollbar.Position := 0;
 end;
 
+procedure TBasicThumbnailViewer.Click;
+begin
+  inherited;
+  SetFocus;
+end;
+
 procedure TBasicThumbnailViewer.Delete(AIndex: Integer);
 begin
   FThumbnailList.Delete(AIndex);
@@ -235,6 +245,11 @@ begin
     Result := -1;
 end;
 
+function TBasicThumbnailViewer.GetVisibleRowCount: Integer;
+begin
+  Result := (ClientHeight - FThumbnailSpacing) div (FThumbnailHeight + FThumbnailSpacing);
+end;
+
 function TBasicThumbnailviewer.IndexOf(AThumbnail: TBasicThumbnail): Integer;
 begin
   Result := FThumbnailList.IndexOf(AThumbnail);
@@ -274,7 +289,7 @@ begin
 end;
 
 // FIX ME: Is not called...
-procedure TBasicThumbnailViewer.KeyUp(var Key: Word; Shift: TShiftState);
+procedure TBasicThumbnailViewer.KeyDown(var Key: Word; Shift: TShiftState);
 var
   idx: Integer;
 begin
@@ -299,7 +314,7 @@ begin
         if idx >= 0 then
           SelectedIndex := idx
       end;
-    VK_NEXT:
+    VK_RIGHT:
       if FSelectedIndex = -1 then
         SelectedIndex := 0
       else
@@ -308,7 +323,7 @@ begin
         if idx < ThumbnailCount then
           SelectedIndex := idx;
       end;
-    VK_PRIOR:
+    VK_LEFT:
       if FSelectedIndex = -1 then
         SelectedIndex := 0
       else
@@ -316,6 +331,38 @@ begin
         idx := idx - 1;
         if idx >= 0 then
           SelectedIndex := idx;
+      end;
+    VK_HOME:
+      if (ssCtrl in Shift) then
+        SelectedIndex := 0
+      else
+        SelectedIndex := (SelectedIndex div FColCount) * FColCount;
+    VK_END:
+      if (ssCtrl in Shift) then
+        SelectedIndex := ThumbnailCount-1
+      else
+      begin
+        idx := (SelectedIndex div FColCount + 1) * FColCount - 1;
+        if idx < ThumbnailCount then
+          SelectedIndex := idx
+        else
+          SelectedIndex := ThumbnailCount - 1;
+      end;
+    VK_PRIOR:
+      begin
+        idx := SelectedIndex - (VisibleRowCount - 1) * FColCount;
+        if idx >= 0 then
+          SelectedIndex := idx
+        else
+          SelectedIndex := SelectedIndex - SelectedIndex div FColCount * FColCount;
+      end;
+    VK_NEXT:
+      begin
+        idx := SelectedIndex + (VisibleRowCount - 1) * FColCount;
+        if idx < ThumbnailCount then
+          SelectedIndex := idx
+        else
+          SelectedIndex := SelectedIndex + (ThumbnailCount - 1 - SelectedIndex) div FColCount * FColCount;
       end;
   end;
 end;
@@ -390,6 +437,25 @@ begin
   end;
 end;
 
+procedure TBasicThumbnailViewer.ScrollIntoView;
+var
+  thumb: TBasicThumbnail;
+  y, h: Integer;
+begin
+  if FSelectedIndex = -1 then
+    exit;
+  thumb := FThumbnailList[FSelectedIndex];
+  y := thumb.Top - FThumbnailSpacing;
+  if thumb.Top < VertScrollbar.Position then
+    VertScrollbar.Position := y
+  else
+  begin
+    h := VisibleRowCount * FThumbnailHeight;
+    if y + FThumbnailHeight > VertScrollbar.Position + h then
+      VertScrollbar.Position := y - h;
+  end;
+end;
+
 procedure TBasicThumbnailViewer.SetFocusedBorderColor(AValue: TColor);
 begin
   if AValue = FFocusedBorderColor then
@@ -432,6 +498,7 @@ begin
     SingleSelect(FThumbnailList[AValue])
   else
     SingleSelect(nil);
+  ScrollIntoView;
 end;
 
 procedure TBasicThumbnailviewer.SetThumbnailBorderColor(AValue: TColor);

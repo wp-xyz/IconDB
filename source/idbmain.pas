@@ -536,9 +536,11 @@ begin
   FThumbnailViewer.ClassificationFieldName := 'STYLE';
   FThumbnailViewer.FocusedColor := clBlack;
   FThumbnailViewer.OnDblClick := @acEditMetadataExecute;
+  FThumbnailViewer.TabStop := true;
 //  FThumbnailViewer.BevelOuter := bvNone;
 //  FThumbnailViewer.AutoSize := true;
 //  FThumbnailViewer.Color := clBlack;
+  ActiveControl := FThumbnailViewer;
 
   UpdateImageSizes;
   UpdateThumbnailSize;
