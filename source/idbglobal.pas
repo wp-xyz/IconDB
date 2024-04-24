@@ -9,7 +9,7 @@ uses
 
 const
   APP_CAPTION = 'Icon Database';
-  APP_CAPTION_COUNT = 'Icon Database (%d icons)';
+  APP_CAPTION_COUNT = 'Icon Database (%d icons in %s)';
   DBF_FILENAME = 'icon_db.dbf';
   KEYWORD_SEPARATOR = ';';
   ICON_FILE_MASK = '*.png';

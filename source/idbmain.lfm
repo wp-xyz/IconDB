@@ -251,7 +251,7 @@ object MainForm: TMainForm
       AnchorSideTop.Side = asrBottom
       Left = 12
       Height = 15
-      Top = 186
+      Top = 230
       Width = 76
       BorderSpacing.Left = 12
       DataSource = DataSource1
@@ -262,7 +262,7 @@ object MainForm: TMainForm
       AnchorSideTop.Side = asrBottom
       Left = 0
       Height = 15
-      Top = 171
+      Top = 215
       Width = 57
       BorderSpacing.Top = 8
       BorderSpacing.Right = 8
@@ -276,7 +276,7 @@ object MainForm: TMainForm
       AnchorSideTop.Side = asrBottom
       Left = 0
       Height = 15
-      Top = 285
+      Top = 329
       Width = 46
       BorderSpacing.Top = 8
       BorderSpacing.Right = 8
@@ -286,11 +286,11 @@ object MainForm: TMainForm
     end
     object lblKeywords: TLabel
       AnchorSideLeft.Control = DetailImagePanel
-      AnchorSideTop.Control = InfoIconHash
+      AnchorSideTop.Control = InfoIconStyle
       AnchorSideTop.Side = asrBottom
       Left = 0
       Height = 15
-      Top = 399
+      Top = 443
       Width = 53
       BorderSpacing.Top = 8
       BorderSpacing.Right = 8
@@ -306,8 +306,8 @@ object MainForm: TMainForm
       AnchorSideRight.Side = asrBottom
       AnchorSideBottom.Control = StatusBar
       Left = 12
-      Height = 109
-      Top = 414
+      Height = 65
+      Top = 458
       Width = 163
       Anchors = [akTop, akLeft, akRight, akBottom]
       BorderSpacing.Right = 8
@@ -316,14 +316,16 @@ object MainForm: TMainForm
     end
     object DetailImagePanel: TPanel
       AnchorSideLeft.Control = DetailPanel
-      AnchorSideTop.Control = DetailPanel
+      AnchorSideTop.Control = cmbSortIndex
+      AnchorSideTop.Side = asrBottom
       AnchorSideRight.Control = DetailPanel
       AnchorSideRight.Side = asrBottom
       Left = 0
       Height = 163
-      Top = 0
+      Top = 44
       Width = 183
       Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Top = 4
       BevelInner = bvRaised
       BevelOuter = bvLowered
       ClientHeight = 163
@@ -346,7 +348,7 @@ object MainForm: TMainForm
       AnchorSideTop.Side = asrBottom
       Left = 0
       Height = 15
-      Top = 247
+      Top = 291
       Width = 50
       BorderSpacing.Top = 8
       BorderSpacing.Right = 8
@@ -360,7 +362,7 @@ object MainForm: TMainForm
       AnchorSideTop.Side = asrBottom
       Left = 12
       Height = 15
-      Top = 262
+      Top = 306
       Width = 68
       BorderSpacing.Left = 12
       DataSource = DataSource1
@@ -371,17 +373,17 @@ object MainForm: TMainForm
       AnchorSideTop.Side = asrBottom
       Left = 12
       Height = 15
-      Top = 300
+      Top = 344
       Width = 64
       DataSource = DataSource1
     end
     object lblIconHash: TLabel
       AnchorSideLeft.Control = DetailImagePanel
-      AnchorSideTop.Control = InfoIconStyle
+      AnchorSideTop.Control = InfoIconSize
       AnchorSideTop.Side = asrBottom
       Left = 0
       Height = 15
-      Top = 361
+      Top = 367
       Width = 53
       BorderSpacing.Top = 8
       BorderSpacing.Right = 8
@@ -395,18 +397,18 @@ object MainForm: TMainForm
       AnchorSideTop.Side = asrBottom
       Left = 12
       Height = 15
-      Top = 376
+      Top = 382
       Width = 71
       BorderSpacing.Left = 12
       DataSource = DataSource1
     end
     object lblIconStyle: TLabel
       AnchorSideLeft.Control = DetailImagePanel
-      AnchorSideTop.Control = InfoIconSize
+      AnchorSideTop.Control = InfoIconHash
       AnchorSideTop.Side = asrBottom
       Left = 0
       Height = 15
-      Top = 323
+      Top = 405
       Width = 51
       BorderSpacing.Top = 8
       BorderSpacing.Right = 8
@@ -420,7 +422,7 @@ object MainForm: TMainForm
       AnchorSideTop.Side = asrBottom
       Left = 12
       Height = 15
-      Top = 338
+      Top = 420
       Width = 69
       Caption = 'InfoIconStyle'
     end
@@ -430,7 +432,7 @@ object MainForm: TMainForm
       AnchorSideTop.Side = asrBottom
       Left = 0
       Height = 15
-      Top = 209
+      Top = 253
       Width = 72
       BorderSpacing.Top = 8
       BorderSpacing.Right = 8
@@ -444,12 +446,47 @@ object MainForm: TMainForm
       AnchorSideTop.Side = asrBottom
       Left = 12
       Height = 15
-      Top = 224
+      Top = 268
       Width = 92
       BorderSpacing.Left = 12
       Caption = 'InfoIconDirectory'
       ParentShowHint = False
       ShowHint = True
+    end
+    object Label1: TLabel
+      AnchorSideLeft.Control = DetailPanel
+      AnchorSideTop.Control = DetailPanel
+      Left = 0
+      Height = 15
+      Top = 0
+      Width = 53
+      Caption = 'Sort index'
+    end
+    object cmbSortIndex: TComboBox
+      AnchorSideLeft.Control = DetailPanel
+      AnchorSideTop.Control = Label1
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = DetailPanel
+      AnchorSideRight.Side = asrBottom
+      Left = 0
+      Height = 23
+      Top = 17
+      Width = 183
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Top = 2
+      ItemHeight = 15
+      Items.Strings = (
+        'by icon name'
+        'by icon name (descending)'
+        'by icon name base'
+        'by icon ID'
+        'by icon ID (descending)'
+        'by icon style'
+        'by icon width'
+      )
+      Style = csDropDownList
+      TabOrder = 1
+      OnChange = cmbSortIndexChange
     end
   end
   object Splitter1: TSplitter

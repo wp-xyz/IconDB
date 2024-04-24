@@ -31,6 +31,7 @@ type
     cmbFilterByKeywords: TComboBox;
     cmbFilterByStyle: TComboBox;
     cmbFilterBySize: TComboBox;
+    cmbSortIndex: TComboBox;
     CoolBar: TCoolBar;
     DataSource1: TDataSource;
     DBGrid: TDBGrid;
@@ -42,6 +43,7 @@ type
     InfoIconType: TDBText;
     InfoIconHash: TDBText;
     InfoKeywords: TLabel;
+    Label1: TLabel;
     lblIconName: TLabel;
     lblIconDirectory: TLabel;
     lblIconStyle: TLabel;
@@ -83,6 +85,7 @@ type
     procedure cmbFilterByKeywordsEditingDone(Sender: TObject);
     procedure cmbFilterBySizeChange(Sender: TObject);
     procedure cmbFilterByStyleChange(Sender: TObject);
+    procedure cmbSortIndexChange(Sender: TObject);
     procedure DBGridDblClick(Sender: TObject);
     procedure DBGridDrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: Integer; Column: TColumn; State: TGridDrawState);
@@ -370,6 +373,17 @@ begin
   end;
 end;
 
+procedure TMainForm.cmbSortIndexChange(Sender: TObject);
+begin
+  Screen.Cursor := crHourglass;
+  try
+    MainDatamodule.SortBy(cmbSortIndex.ItemIndex);
+    PopulateThumbnails;
+  finally
+    Screen.Cursor := crDefault;
+  end;
+end;
+
 procedure TMainForm.DatasetAfterDelete(ADataset: TDataset);
 begin
   UpdateCaption(ADataset.RecordCount);
@@ -474,7 +488,15 @@ begin
     res := MessageDlg('The database contains unsaved metadata modifications. Save?',
       mtConfirmation, [mbYes, mbNo, mbCancel], 0);
     case res of
-      mrYes: MainDatamodule.WriteMetadataFiles(true);
+      mrYes:
+        begin
+          Screen.Cursor := crHourglass;
+          try
+            MainDatamodule.WriteMetadataFiles(true);
+          finally
+            Screen.Cursor := crDefault;
+          end;
+        end;
       mrNo: ;
       mrCancel: CanClose := false;
     end;
@@ -521,6 +543,8 @@ begin
   UpdateImageSizes;
   UpdateThumbnailSize;
   PopulateThumbnails;
+
+  cmbSortIndex.ItemIndex := 0;
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
@@ -606,6 +630,20 @@ begin
 
   with DBGrid.Columns.Add do
   begin
+    FieldName := 'ICON';
+    Title.Caption := 'Image';
+    Title.Alignment := taCenter;
+    Width := 80;
+  end;
+  with DBGrid.Columns.Add do
+  begin
+    FieldName := 'ICONID';
+    Title.Caption := 'ID';
+    Title.Alignment := taCenter;
+    Width := 40;
+  end;
+  with DBGrid.Columns.Add do
+  begin
     FieldName := 'NAME';
     Title.Caption := 'Name';
     Title.Alignment := taCenter;
@@ -641,13 +679,6 @@ begin
     Title.Alignment := taCenter;
     Width := 160;
   end;
-  with DBGrid.Columns.Add do
-  begin
-    FieldName := 'ICON';
-    Title.Caption := 'Image';
-    Title.Alignment := taCenter;
-    Width := 80;
-  end;
 
   UpdateDBGridRowHeight(Settings.RowLines);
 end;
@@ -655,7 +686,7 @@ end;
 procedure TMainForm.UpdateCaption(ARecordCount: Integer);
 begin
   if ARecordCount > 0 then
-    Caption := Format(APP_CAPTION_COUNT, [ARecordCount])
+    Caption := Format(APP_CAPTION_COUNT, [ARecordCount, MainDatamodule.DatabaseName])
   else
     Caption := APP_CAPTION;
 end;
@@ -734,6 +765,17 @@ begin
     finally
       bmp.Free;
     end;
+  end;
+
+  field := MainDatamodule.MetadataModifiedField;
+  if field.IsNull or (field.AsInteger <> 1) then
+  begin
+    lblIconStyle.Caption := 'Icon style:';
+    lblKeywords.Caption := 'Keywords:';
+  end else
+  begin
+    lblIconStyle.Caption := 'Icon style: *';
+    lblKeywords.Caption := 'Keywords: *';
   end;
 end;
 
