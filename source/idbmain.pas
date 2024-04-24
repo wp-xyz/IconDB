@@ -8,7 +8,7 @@ interface
 uses
   Classes, SysUtils, db, dbf, FileUtil, StrUtils, IniFiles,
   Forms, Controls, Graphics, Dialogs, DBGrids, DBCtrls,
-  ExtCtrls, StdCtrls, Grids, Buttons, ComCtrls, ActnList, StdActns, Types,
+  ExtCtrls, StdCtrls, Grids, Buttons, ComCtrls, FileCtrl, ActnList, Types,
   {$ifdef APP_DEBUG}
   LazLogger,
   {$endif}
@@ -34,6 +34,7 @@ type
     CoolBar: TCoolBar;
     DataSource1: TDataSource;
     DBGrid: TDBGrid;
+    InfoIconDirectory: TLabel;
     InfoIconName: TDBText;
     DetailsImage: TImage;
     InfoIconSize: TDBText;
@@ -42,6 +43,7 @@ type
     InfoIconHash: TDBText;
     InfoKeywords: TLabel;
     lblIconName: TLabel;
+    lblIconDirectory: TLabel;
     lblIconStyle: TLabel;
     lblIconType: TLabel;
     lblIconSize: TLabel;
@@ -477,7 +479,7 @@ begin
   MainDatamodule.OpenDataset;
 
   SetupDBGrid;
-  InfoIconName.Datafield := 'NAME';
+  InfoIconName.DataField := 'NAME';
   InfoIconType.DataField := 'ICONTYPE';
   InfoIconSize.DataField := 'SIZE';
   InfoIconHash.DataField := 'ICONHASH';
@@ -680,6 +682,9 @@ end;
 procedure TMainForm.UpdateMetadata;
 var
   field: TField;
+  dir: String;
+  wLbl, wText: Integer;
+  bmp: TBitmap;
 begin
   field := MainDatamodule.KeywordsField;
   if field.IsNull then
@@ -692,6 +697,26 @@ begin
     infoIconStyle.Caption := '(style unknown)'
   else
     infoIconStyle.Caption := GetStyleName(field.AsInteger);
+
+  field := MainDatamodule.DirectoryField;
+  if not field.IsNull then
+  begin
+    dir := field.AsString;
+    wLbl := DetailPanel.Width - infoIconDirectory.Left;
+    bmp := TBitmap.Create;
+    try
+      bmp.Canvas.Font.Assign(infoIconDirectory.Font);
+      wText := bmp.Canvas.TextWidth(dir);
+      if wText > wLbl then
+      begin
+        infoIconDirectory.Caption := MinimizeName(dir, bmp.Canvas, wLbl);
+        infoIconDirectory.Hint := dir;
+      end else
+        infoIconDirectory.Caption := dir;
+    finally
+      bmp.Free;
+    end;
+  end;
 end;
 
 procedure TMainForm.UpdateThumbnailSize;

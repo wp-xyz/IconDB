@@ -26,6 +26,7 @@ type
     FNameField: TField;
     FNameBaseField: TField;
     FNameSuffixField: TField;
+    FDirectoryField: TField;
     FWidthField: TField;
     FFilterByKeywords: String;
     FFilterBySize: String;
@@ -85,6 +86,7 @@ type
     property AfterScroll: TDatasetNotifyEvent read FOnAfterScroll write FOnAfterScroll;
     property OnProgress: TProgressEvent read FOnProgress write FOnProgress;
 
+    property DirectoryField: TField read FDirectoryField;
     property HeightField: TField read FHeightField;
     property IconIDField: TField read FIconIDField;
     property IconField: TField read FIconField;
@@ -109,8 +111,6 @@ uses
   idbGlobal, idbDuplicates;
 
 constructor TMainDatamodule.Create(AOwner: TComponent);
-var
-  path: String;
 begin
   inherited;
 
@@ -122,16 +122,6 @@ begin
 
   FKeywords := TStringList.Create;
   TStringList(FKeywords).Sorted := true;
-
-  path := Settings.DatabaseFolder;
-  if path = '' then
-    path := Application.Location + 'data';
-
-  Database.FilePath := AppendPathDelim(path);
-  Database.Tablename := DBF_FILENAME;
-
-  if not FileExists(Database.FilePath + Database.TableName) then
-    CreateDataset(Database);
 
   Database.AfterDelete := @DoAfterDelete;
   Database.AfterOpen := @DoAfterOpen;
@@ -200,6 +190,7 @@ begin
             FNameBaseField.AsString := sBase;
           end;
         end;
+        FDirectoryField.AsString := ExtractFileDir(AFileName);
         sz := reader.ImageSize(stream);
         FWidthField.AsInteger := sz.X;
         FHeightField.AsInteger := sz.Y;
@@ -246,7 +237,7 @@ var
   keywordsOfFile: String;
   infoFile: String;
 
-  procedure FindInfo(AFileName: String; out AStyle: Integer; out AKeywords: String);
+  procedure GetMetadata(AFileName: String; out AStyle: Integer; out AKeywords: String);
   var
     i, j: Integer;
     strArray: TStringArray;
@@ -284,7 +275,7 @@ begin
     Result := 0;
     for i := 0 to List.Count-1 do
     begin
-      FindInfo(ExtractFileName(List[i]), style, keywordsOfFile);
+      GetMetaData(ExtractFileName(List[i]), style, keywordsOfFile);
       if AddIconFromFile(List[i], ADuplicatesList, style, keywordsOfFile) then
         inc(Result);
       DoProgress(0, i, List.Count-1);
@@ -338,6 +329,7 @@ begin
   FNameField := Dataset.FieldByName('NAME');
   FNameBaseField := Dataset.FieldByName('NAMEBASE');
   FNameSuffixField := Dataset.FieldByName('NAMESUFFIX');
+  FDirectoryfield := Dataset.FieldByName('DIRECTORY');
   FWidthField := Dataset.FieldByName('WIDTH');
   FHeightField := Dataset.FieldByName('HEIGHT');
   FKeywordsField := Dataset.FieldByName('KEYWORDS');
@@ -373,6 +365,7 @@ begin
 
   ADataset.FieldDefs.Clear;
   ADataset.FieldDefs.Add('ICONID', ftAutoInc, 0, true);
+  ADataset.FieldDefs.Add('DIRECTORY', ftString, 255, true);
   ADataset.FieldDefs.Add('NAME', ftString, 40, true);
   ADataset.FieldDefs.Add('NAMEBASE', ftString, 35);
   ADataset.FieldDefs.Add('NAMESUFFIX', ftInteger);
@@ -667,7 +660,19 @@ begin
 end;
 
 procedure TMainDatamodule.OpenDataset;
+var
+  path: String;
 begin
+  path := Settings.DatabaseFolder;
+  if path = '' then
+    path := Application.Location + 'data';
+
+  Database.FilePath := AppendPathDelim(path);
+  Database.Tablename := DBF_FILENAME;
+
+  if not FileExists(Database.FilePath + Database.TableName) then
+    CreateDataset(Database);
+
   Database.Open;
 //  Database.IndexName := 'idxByName';
   Database.IndexFieldNames := 'idxByNameBase;idxWidth';
