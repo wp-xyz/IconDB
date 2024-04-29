@@ -14,6 +14,7 @@ const
   KEYWORD_SEPARATOR = ';';
   ICON_FILE_MASK = '*.png';
   INFO_FILE_NAME = 'info.txt';      // Contains style and keywords for each icon
+
   MAX_FILTER_HISTORY_COUNT = 24;
 
   CLASSIC_STYLE = 0;

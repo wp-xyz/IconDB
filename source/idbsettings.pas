@@ -50,7 +50,7 @@ procedure TSettingsForm.btnWriteMetadataClick(Sender: TObject);
 begin
   Screen.Cursor := crHourglass;
   try
-    MainDatamodule.WriteMetaDataFiles(false);
+    MainDatamodule.WriteMetaDataFiles(false, true);
   finally
     Screen.Cursor := crDefault;
   end;

@@ -80,7 +80,7 @@ type
     procedure LoadPicture(APicture: TPicture);
     procedure OpenDataset;
     procedure SortBy(AValue: Integer);
-    procedure WriteMetadataFiles(ModifiedOnly: Boolean);
+    procedure WriteMetadataFiles(ModifiedOnly: Boolean; NewStructure: Boolean = false);
 
     property DatabaseName: String read GetDatabaseName;
     property Dataset: TDataset read GetDataset;
@@ -726,7 +726,7 @@ begin
   end;
 end;
 
-procedure TMainDatamodule.WriteMetadataFiles(ModifiedOnly: Boolean);
+procedure TMainDatamodule.WriteMetadataFiles(ModifiedOnly: Boolean; NewStructure: Boolean = false);
 
   procedure CollectDirectories(AList: TStrings);
   var
@@ -740,13 +740,19 @@ procedure TMainDatamodule.WriteMetadataFiles(ModifiedOnly: Boolean);
       dir := AppendPathDelim(DirectoryField.AsString);
       if AList.IndexOf(dir) = -1 then
       begin
-        infoFileName := dir + INFO_FILE_NAME;
+        if newStructure then
+          infoFileName := dir + 'metadata.txt'
+        else
+          infoFileName := dir + INFO_FILE_NAME;
         infoFile := TStringList.Create;
         if FileExists(infoFileName) then
           infoFile.LoadFromFile(infoFileName)
         else
         begin
-          infoFile.Add('#File structure: "filename|style|keyword1;keyword2;..."');
+          if Newstructure then
+            infoFile.Add('#File structure: "filename|width|height|style|keyword1;keyword2;..."')
+          else
+            infoFile.Add('#File structure: "filename|style|keyword1;keyword2;..."');
           infoFile.Add('#Allowed styles: classic, flat, outline, outline 2-color');
           infoFile.Add('#');
         end;
@@ -784,6 +790,7 @@ var
   style: String;
   s: String;
   i: Integer;
+  w, h: Integer;
   found: Boolean;
 begin
   id := IconIDField.AsInteger;
@@ -815,6 +822,8 @@ begin
       iconFileName := NameField.AsString + IconTypeField.AsString;
       keywrds := KeywordsField.AsString;
       style := GetStyleName(StyleField.AsInteger);
+      w := WidthField.AsInteger;
+      h := HeightField.AsInteger;
       found := false;
       // Find icon's entry in 'info.txt' file and replace it
       for i := 0 to infoFile.Count-1 do
@@ -826,12 +835,20 @@ begin
         if iconFileNameInInfo = iconFileName then
         begin
           found := true;
-          infoFile[i] := Format('%s|%s|%s', [iconFileName, style, keywrds]);
+          if NewStructure then
+            infoFile[i] := Format('%s|%d|%d|%s|%s', [iconFileName, w, h, style, keywrds])
+          else
+            infoFile[i] := Format('%s|%s|%s', [iconFileName, style, keywrds]);
           break;
         end;
       end;
       if not found then
-        infoFile.Add(Format('%s|%s|%s', [iconFileName, style, keywrds]));
+      begin
+        if NewStructure then
+          infoFile[i] := Format('%s|%d|%d|%s|%s', [iconFileName, w, h, style, keywrds])
+        else
+          infoFile.Add(Format('%s|%s|%s', [iconFileName, style, keywrds]));
+      end;
 
       // Remove "modified" flag
       if ModifiedOnly then
@@ -866,7 +883,10 @@ begin
     for i := 0 to directories.Count-1 do
     begin
       infoFile := TStringList(directories.Objects[i]);
-      infoFile.SaveToFile(directories[i] + INFO_FILE_NAME);
+      if NewStructure then
+        infoFile.SaveToFile(directories[i] + 'metadata.txt')
+      else
+        infoFile.SaveToFile(directories[i] + INFO_FILE_NAME);
     end;
 
     FMetadataDirty := false;
