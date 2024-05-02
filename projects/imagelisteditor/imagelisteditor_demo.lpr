@@ -1,4 +1,4 @@
-program icondb;
+program ImageListEditor_Demo;
 
 {$mode objfpc}{$H+}
 
@@ -7,17 +7,16 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, idbMain, dbflaz, idbKeywords, idbDatamodule, idbGlobal, idbSettings,
-  idbDuplicates, idbThumbnails, idbThumbnailsDB, idbKeywordFilterEditor
-  { you can add units after this };
+  Forms, ile_Main, ImageListEditor,
+  BasicThumbnails, IconThumbNails;
 
 {$R *.res}
 
 begin
   RequireDerivedFormResource:=True;
+  Application.Title:='ImageListEditor_Demo';
   Application.Scaled:=True;
   Application.Initialize;
-  Application.CreateForm(TMainDatamodule, MainDatamodule);
   Application.CreateForm(TMainForm, MainForm);
   Application.Run;
 end.

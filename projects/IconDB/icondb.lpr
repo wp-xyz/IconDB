@@ -1,4 +1,4 @@
-program project1;
+program icondb;
 
 {$mode objfpc}{$H+}
 
@@ -7,8 +7,8 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, Unit1, ileBasicThumbnails, ileIconThumbNails, ImageListEditor,
-  ileKeywordFilterEditor;
+  Forms, idbMain, dbflaz, idbKeywords, idbDatamodule, idbGlobal, idbSettings,
+  idbDuplicates, idbThumbnailsDB, BasicThumbnails;
 
 {$R *.res}
 
@@ -16,8 +16,8 @@ begin
   RequireDerivedFormResource:=True;
   Application.Scaled:=True;
   Application.Initialize;
-  Application.CreateForm(TForm1, Form1);
-  Application.CreateForm(TKeywordFilterEditorForm, KeywordFilterEditorForm);
+  Application.CreateForm(TMainDatamodule, MainDatamodule);
+  Application.CreateForm(TMainForm, MainForm);
   Application.Run;
 end.
 

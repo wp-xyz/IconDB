@@ -1,4 +1,4 @@
-unit Unit1;
+unit ile_Main;
 
 {$mode objfpc}{$H+}
 
@@ -9,9 +9,9 @@ uses
 
 type
 
-  { TForm1 }
+  { TMainForm }
 
-  TForm1 = class(TForm)
+  TMainForm = class(TForm)
     Button1: TButton;
     ImageList1: TImageList;
     Label1: TLabel;
@@ -26,7 +26,7 @@ type
   end;
 
 var
-  Form1: TForm1;
+  MainForm: TMainForm;
 
 implementation
 
@@ -35,9 +35,9 @@ implementation
 uses
   ImageListEditor;
 
-{ TForm1 }
+{ TMainForm }
 
-procedure TForm1.Button1Click(Sender: TObject);
+procedure TMainForm.Button1Click(Sender: TObject);
 var
   F: TImageListEditorDlg;
 begin
@@ -54,7 +54,7 @@ begin
   end;
 end;
 
-procedure TForm1.ScrollBox1Paint(Sender: TObject);
+procedure TMainForm.ScrollBox1Paint(Sender: TObject);
 const
   DIST = 6;
 var
@@ -76,7 +76,7 @@ begin
   end;
 end;
 
-procedure TForm1.ScrollBox1Resize(Sender: TObject);
+procedure TMainForm.ScrollBox1Resize(Sender: TObject);
 var
   cols, rows: Integer;
   w, h: Integer;

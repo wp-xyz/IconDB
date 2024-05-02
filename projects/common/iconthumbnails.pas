@@ -1,4 +1,4 @@
-unit ileIconThumbNails;
+unit IconThumbNails;
 
 {$mode ObjFPC}{$H+}
 
@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, fgl, StrUtils, LazFileUtils, Graphics,
-  ileBasicThumbnails;
+  BasicThumbnails;
 
 type
   TIconItem = class;
@@ -403,7 +403,11 @@ procedure TIconViewer.FilterIcons;
 var
   i: Integer;
   item: TIconItem;
+  oldNameBase: String = '';
 begin
+  if SelectedIcon <> nil then
+    oldNameBase := SelectedIcon.NameBase;
+
   ThumbnailList.Clear;
 
   for i := 0 to FIconList.Count-1 do
@@ -427,6 +431,16 @@ begin
   end;
 
   LayoutThumbnails;
+
+  if oldNameBase <> '' then
+    for i := 0 to ThumbnailCount-1 do
+      if (TIconThumbnail(Thumbnail[i]).Item.NameBase = oldNameBase) then
+      begin
+        SelectedIndex := i;
+        exit;
+      end;
+
+  SelectedIndex := -1;
 end;
 
 { Finds the icon list entry for the specified item which has the same

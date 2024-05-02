@@ -8,7 +8,7 @@
         <CompatibilityMode Value="True"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <Title Value="project1"/>
+      <Title Value="ImageListEditor_Demo"/>
       <Scaled Value="True"/>
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
@@ -35,62 +35,50 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="6">
+    <Units Count="3">
       <Unit0>
-        <Filename Value="project1.lpr"/>
+        <Filename Value="imagelisteditor_demo.lpr"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="ImageListEditor_Demo"/>
       </Unit0>
       <Unit1>
-        <Filename Value="unit1.pas"/>
+        <Filename Value="ile_main.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="Form1"/>
+        <ComponentName Value="MainForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="Unit1"/>
+        <UnitName Value="ile_Main"/>
       </Unit1>
       <Unit2>
-        <Filename Value="ilebasicthumbnails.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="ileBasicThumbnails"/>
-      </Unit2>
-      <Unit3>
-        <Filename Value="ileiconthumbnails.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="ileIconThumbNails"/>
-      </Unit3>
-      <Unit4>
         <Filename Value="imagelisteditor.pp"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="ImageListEditorDlg"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="ImageListEditor"/>
-      </Unit4>
-      <Unit5>
-        <Filename Value="ilekeywordfiltereditor.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="KeywordFilterEditorForm"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="ileKeywordFilterEditor"/>
-      </Unit5>
+      </Unit2>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="project1"/>
+      <Filename Value="..\..\bin\$(TargetCPU)-$(TargetOS)\ImageListEditor_Demo"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+      <OtherUnitFiles Value="..\common"/>
+      <UnitOutputDirectory Value="..\..\ppu\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsDwarf3"/>
-        <UseHeaptrc Value="True"/>
       </Debugging>
+      <Options>
+        <Win32>
+          <GraphicApplication Value="True"/>
+        </Win32>
+      </Options>
     </Linking>
   </CompilerOptions>
   <Debugging>

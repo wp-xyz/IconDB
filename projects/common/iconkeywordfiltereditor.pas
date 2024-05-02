@@ -1,4 +1,4 @@
-unit idbKeywordFilterEditor;
+unit IconKeywordFilterEditor;
 
 {$mode ObjFPC}{$H+}
 
@@ -6,8 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  Buttons, ButtonPanel, Spin,
-  idbDataModule;
+  Buttons, ButtonPanel, Spin;
 
 type
 
@@ -28,10 +27,12 @@ type
     FilterPanel: TPanel;
     Label1: TLabel;
     Label2: TLabel;
+    Label3: TLabel;
     lblColumns: TLabel;
     lbKeywords: TListBox;
     KeywordPanel: TPanel;
-    Panel2: TPanel;
+    CenterPanel: TPanel;
+    RightPanel: TPanel;
     seColumns: TSpinEdit;
     procedure btnClearClick(Sender: TObject);
     procedure btnAddClick(Sender: TObject);
@@ -40,15 +41,16 @@ type
     procedure btnNOTClick(Sender: TObject);
     procedure btnORClick(Sender: TObject);
     procedure FormActivate(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
     procedure lbKeywordsDblClick(Sender: TObject);
     procedure seColumnsChange(Sender: TObject);
   private
     function GetFilter: String;
     procedure SetFilter(AValue: String);
+    procedure SetKeywords(AValue: TStrings);
 
   public
     property Filter: String read GetFilter write SetFilter;
+    property Keywords: TStrings write SetKeywords;
 
   end;
 
@@ -131,15 +133,22 @@ begin
 end;
 
 procedure TKeywordFilterEditorForm.FormActivate(Sender: TObject);
+var
+  w: Integer;
 begin
+  w := btnNew.Width;
+  if btnEdit.Width > w then w := btnEdit.Width;
+  if lblColumns.Width > w then w := lblColumns.Width;
+  btnNew.Constraints.MinWidth := w;
+  btnEdit.Constraints.MinWidth := w;
+
   Constraints.MinWidth :=
     btnAdd.Width + btnAND.Width + btnOR.Width + btnNOT.Width + btnClear.Width +
     btnAdd.BorderSpacing.Right * 4 + KeywordPanel.BorderSpacing.Around * 2;
-end;
 
-procedure TKeywordFilterEditorForm.FormCreate(Sender: TObject);
-begin
-  lbKeywords.Items.Assign(MainDatamodule.Keywords);
+  Constraints.MinHeight :=
+    RightPanel.Top + RightPanel.Height - KeywordPanel.BorderSpacing.Around +
+    ButtonPanel.Height + 2*ButtonPanel.BorderSpacing.Around
 end;
 
 function TKeywordFilterEditorForm.GetFilter: String;
@@ -160,6 +169,11 @@ end;
 procedure TKeywordFilterEditorForm.SetFilter(AValue: String);
 begin
   edFilter.Text := trim(AValue);
+end;
+
+procedure TKeywordFilterEditorForm.SetKeywords(AValue: TStrings);
+begin
+  lbKeywords.Items.Assign(AValue);
 end;
 
 end.

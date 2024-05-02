@@ -488,7 +488,7 @@ object ImageListEditorDlg: TImageListEditorDlg
         Left = 6
         Height = 23
         Top = 0
-        Width = 100
+        Width = 82
         Align = alLeft
         BorderSpacing.Left = 6
         ItemHeight = 15
@@ -508,10 +508,10 @@ object ImageListEditorDlg: TImageListEditorDlg
         Shape = bsTopLine
       end
       object cmbFilterByStyle: TComboBox
-        Left = 112
+        Left = 94
         Height = 23
         Top = 0
-        Width = 100
+        Width = 116
         Align = alLeft
         BorderSpacing.Left = 6
         BorderSpacing.Right = 6
@@ -522,10 +522,10 @@ object ImageListEditorDlg: TImageListEditorDlg
         OnChange = cmbFilterByStyleChange
       end
       object cmbFilterByKeywords: TComboBox
-        Left = 218
+        Left = 216
         Height = 23
         Top = 0
-        Width = 330
+        Width = 332
         Align = alClient
         BorderSpacing.Right = 3
         ItemHeight = 15

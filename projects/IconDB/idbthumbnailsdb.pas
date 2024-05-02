@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, DB, Graphics,
-  idbThumbnails;
+  BasicThumbnails;
 
 type
   TDBThumbnail = class(TBasicThumbnail)

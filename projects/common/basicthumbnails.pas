@@ -1,4 +1,4 @@
-unit ileBasicThumbnails;
+unit BasicThumbnails;
 
 {$mode ObjFPC}{$H+}
 

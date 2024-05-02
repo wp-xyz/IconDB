@@ -12,7 +12,7 @@ uses
   {$ifdef APP_DEBUG}
   LazLogger,
   {$endif}
-  idbDatamodule, idbThumbnails, idbThumbnailsDB;
+  idbDatamodule, BasicThumbnails, idbThumbnailsDB;
 
 type
 
@@ -131,7 +131,7 @@ implementation
 {$R *.lfm}
 
 uses
-  idbGlobal, idbKeywords, idbSettings, idbKeywordFilterEditor, idbDuplicates;
+  idbGlobal, idbKeywords, idbSettings, IconKeywordFilterEditor, idbDuplicates;
 
 
 { TMainForm }
@@ -492,7 +492,7 @@ begin
         begin
           Screen.Cursor := crHourglass;
           try
-            MainDatamodule.WriteMetadataFiles(true);
+            MainDatamodule.WriteMetadataFiles(false, true);
           finally
             Screen.Cursor := crDefault;
           end;

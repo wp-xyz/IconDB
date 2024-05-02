@@ -31,9 +31,10 @@ uses
   // LCL
   LCLIntf, LCLType, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
   ExtDlgs, ColorBox, Buttons, ButtonPanel, ImgList, LCLTaskDialog, FileCtrl, ComCtrls,
-  ileIconThumbnails, ileKeywordFilterEditor,
   // LazUtils
   GraphType, LazLoggerBase,
+  // Thumbnails
+  IconThumbnails, IconKeywordFilterEditor,
   // IdeIntf
   IDEDialogs, PropEdits, ComponentEditors, ObjInspStrConsts, IDEWindowIntf;
 

@@ -86,22 +86,22 @@
         <UnitName Value="idbDuplicates"/>
       </Unit>
       <Unit>
-        <Filename Value="idbthumbnails.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="idbThumbnails"/>
-      </Unit>
-      <Unit>
         <Filename Value="idbthumbnailsdb.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="idbThumbnailsDB"/>
       </Unit>
       <Unit>
-        <Filename Value="idbkeywordfiltereditor.pas"/>
+        <Filename Value="..\common\iconkeywordfiltereditor.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="KeywordFilterEditorForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="idbKeywordFilterEditor"/>
+        <UnitName Value="IconKeywordFilterEditor"/>
+      </Unit>
+      <Unit>
+        <Filename Value="..\common\basicthumbnails.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="BasicThumbnails"/>
       </Unit>
     </Units>
   </ProjectOptions>
@@ -109,11 +109,12 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="..\bin\$(TargetCPU)-$(TargetOS)\icondb"/>
+      <Filename Value="..\..\bin\$(TargetCPU)-$(TargetOS)\icondb"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <UnitOutputDirectory Value="..\ppu\lib\$(TargetCPU)-$(TargetOS)"/>
+      <OtherUnitFiles Value="..\common"/>
+      <UnitOutputDirectory Value="..\..\ppu\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>
       <Debugging>

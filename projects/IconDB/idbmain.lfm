@@ -552,7 +552,7 @@ object MainForm: TMainForm
       OnExecute = acKeywordFilterExecute
     end
     object acExit: TAction
-      Caption = 'acExit'
+      Caption = 'Exit'
       Hint = 'Close application'
       ImageIndex = 5
       OnExecute = acExitExecute

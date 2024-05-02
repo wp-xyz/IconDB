@@ -35,3 +35,7 @@ lib/
 
 # Some Helper apps
 
+/projects/imagelisteditor/ileiconviewer.pas
+/projects/IconDB/idbkeywordfiltereditor.pas
+/projects/IconDB/idbkeywordfiltereditor.lfm
+/projects/IconDB/idbthumbnails.pas
