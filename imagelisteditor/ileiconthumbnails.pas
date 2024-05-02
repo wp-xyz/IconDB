@@ -37,6 +37,7 @@ type
     function GetNameBase: String;
     function GetPicture: TPicture;
     function GetSizeAsString: String;
+    function GetStyleAsString: String;
   public
     constructor Create(AFileName, AKeywords: String; AStyle: TIconStyle; AWidth, AHeight: Integer);
     destructor Destroy; override;
@@ -53,6 +54,7 @@ type
     property Picture: TPicture read GetPicture;
     property SizeAsString: String read GetSizeAsString;
     property Style: TIconStyle read FStyle;
+    property StyleAsString: String read GetStyleAsString;
     property Width: Integer read FWidth;
   end;
 
@@ -232,7 +234,12 @@ end;
 
 function TIconItem.GetSizeAsString: String;
 begin
-  Result := Format('%dx%d', [FWidth, FHeight]);
+  Result := Format('%d x %d', [FWidth, FHeight]);
+end;
+
+function TIconItem.GetStyleAsString: String;
+begin
+  Result := ICONSTYLE_NAMES[FStyle];
 end;
 
 function TIconItem.HasKeyword(AKeyword: String): Boolean;
@@ -619,13 +626,17 @@ procedure TIconViewer.SetSelectedIndex(AValue: Integer);
 var
   thumb: TIconThumbnail;
 begin
-  inherited;
-  if (SelectedIndex > -1) then
+  if AValue = SelectedIndex then
+    exit;
+
+  if (AValue > -1) then
   begin
-    thumb := Thumbnail[SelectedIndex] as TIconThumbnail;
+    thumb := Thumbnail[AValue] as TIconThumbnail;
     FSelectedIcon := thumb.Item;
   end else
     FSelectedIcon := nil;
+
+  inherited;
 end;
 
 end.

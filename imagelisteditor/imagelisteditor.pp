@@ -30,7 +30,7 @@ uses
   Classes, SysUtils, Math,
   // LCL
   LCLIntf, LCLType, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  ExtDlgs, ColorBox, Buttons, ButtonPanel, ImgList, LCLTaskDialog, ComCtrls,
+  ExtDlgs, ColorBox, Buttons, ButtonPanel, ImgList, LCLTaskDialog, FileCtrl, ComCtrls,
   ileIconThumbnails, ileKeywordFilterEditor,
   // LazUtils
   GraphType, LazLoggerBase,
@@ -56,7 +56,7 @@ type
   TImageListEditorDlg = class(TForm)
     btnAddFromLib: TButton;
     btnReplaceFromLib: TButton;
-    bvBottomLine: TBevel;
+    bvFilter: TBevel;
     BtnAdd: TButton;
     BtnClear: TButton;
     BtnDelete: TButton;
@@ -68,17 +68,27 @@ type
     BtnPanel: TButtonPanel;
     BtnAddSliced: TButton;
     BtnPasteFromClipboard: TButton;
+    bvIconDetails: TBevel;
     ColorBoxTransparent: TColorBox;
-    cbFilterBySize: TComboBox;
-    cbFilterByStyle: TComboBox;
-    cbFilterByKeywords: TComboBox;
+    cmbFilterBySize: TComboBox;
+    cmbFilterByStyle: TComboBox;
+    cmbFilterByKeywords: TComboBox;
     GroupBoxIconLib: TGroupBox;
     GroupBoxL: TGroupBox;
     GroupBoxR: TGroupBox;
     ImageList: TImageList;
+    infoKeywords: TLabel;
+    infoStyle: TLabel;
+    infoSize: TLabel;
+    lblFileName: TLabel;
+    infoFileName: TLabel;
+    lblStyle: TLabel;
+    lblSize: TLabel;
+    lblKeywords: TLabel;
     LabelTransparent: TLabel;
     OpenDialog: TOpenPictureDialog;
     FilterPanel: TPanel;
+    Panel1: TPanel;
     RadioGroup: TRadioGroup;
     Preview: TScrollBox;
     SaveDialog: TSavePictureDialog;
@@ -99,9 +109,9 @@ type
     procedure btnReplaceFromLibClick(Sender: TObject);
     procedure btnSaveAllClick(Sender: TObject);
     procedure BtnSaveClick(Sender: TObject);
-    procedure cbFilterByKeywordsEditingDone(Sender: TObject);
-    procedure cbFilterBySizeChange(Sender: TObject);
-    procedure cbFilterByStyleChange(Sender: TObject);
+    procedure cmbFilterByKeywordsEditingDone(Sender: TObject);
+    procedure cmbFilterBySizeChange(Sender: TObject);
+    procedure cmbFilterByStyleChange(Sender: TObject);
     procedure ColorBoxTransparentClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var {%H-}CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -115,6 +125,7 @@ type
     procedure ImageListBoxSelectionChange(Sender: TObject; {%H-}User: boolean);
     procedure FormResize(Sender: TObject);
     procedure BtnKeywordFilterEditorClick(Sender: TObject);
+    procedure infoFileNameResize(Sender: TObject);
   private
     FImageList: TImageList;
     FModified: Boolean;
@@ -138,7 +149,9 @@ type
     procedure AddKeywordFilterToHistory(AFilter: String);
     procedure LoadFromIconLib(Replace: Boolean);
     procedure IconViewerDblClick(Sender: TObject);
+    procedure IconViewerSelect(Sender: TObject);
     procedure UpdateIconCount;
+    procedure UpdateIconDetails;
   protected
     procedure DoDestroy; override;
   public
@@ -281,18 +294,21 @@ begin
   FIconViewer.Parent := GroupBoxIconLib;
   FIconViewer.FocusedColor := clBlack;
   FIconViewer.OnDblClick := @IconViewerDblClick;
+  FIconViewer.OnSelect := @IconViewerSelect;
   FIconViewer.AddIconFolder('C:\Lazarus\lazarus-main_fpc3.2.2\images\general_purpose\');
   FIconViewer.AddIconFolder('C:\Lazarus\lazarus-main_fpc3.2.2\images\components\');
   FIconViewer.AddIconFolder('C:\Lazarus\lazarus-main_fpc3.2.2\components\chmhelp\lhelp\images\');
   FIconViewer.AddIconFolder('C:\Lazarus\lazarus-main_fpc3.2.2\components\lazcontrols\');
 
-  IconStylesToStrings(cbFilterByStyle.Items);
-  cbFilterByStyle.ItemIndex := 0;
-  cbFilterByStyleChange(nil);
+  IconStylesToStrings(cmbFilterByStyle.Items);
+  cmbFilterByStyle.ItemIndex := 0;
+  cmbFilterByStyleChange(nil);
 
-  FIconViewer.GetIconSizesAsStrings(cbFilterBySize.Items);
-  cbFilterBySize.Items.Insert(0, '(any size)');
-  cbFilterBySize.ItemIndex := 0;
+  FIconViewer.GetIconSizesAsStrings(cmbFilterBySize.Items);
+  cmbFilterBySize.Items.Insert(0, '(any size)');
+  cmbFilterBySize.ItemIndex := 0;
+
+  UpdateIconDetails;
 
   Caption := sccsILEdtCaption;
 
@@ -351,18 +367,23 @@ begin
   L := TStringList.Create;
   try
     F.Position := poOwnerFormCenter;
-    F.Filter := cbFilterByKeywords.Text;
+    F.Filter := cmbFilterByKeywords.Text;
     FIconViewer.GetKeywordsAsStrings(L);
     F.Keywords := L;
     if F.ShowModal = mrOK then
     begin
-      cbFilterByKeywords.Text := F.Filter;
-      cbFilterByKeywords.EditingDone;
+      cmbFilterByKeywords.Text := F.Filter;
+      cmbFilterByKeywords.EditingDone;
     end;
   finally
     L.Free;
     F.Free;
   end;
+end;
+
+procedure TImageListEditorDlg.infoFileNameResize(Sender: TObject);
+begin
+  infoFileName.Caption := MinimizeName(infoFileName.Hint, Canvas, infoFileName.Width);
 end;
 
 procedure TImageListEditorDlg.FormClose(Sender: TObject;
@@ -706,45 +727,48 @@ begin
   end;
 end;
 
-procedure TImageListEditorDlg.cbFilterByKeywordsEditingDone(Sender: TObject);
+procedure TImageListEditorDlg.cmbFilterByKeywordsEditingDone(Sender: TObject);
 var
   filter: String;
 begin
-  if not cbFilterByKeywords.Focused then
+  if not cmbFilterByKeywords.Focused then
     exit;
 
-  if cbFilterByKeywords.ItemIndex > -1 then
-    filter := cbFilterByKeywords.Items[cbFilterByKeywords.ItemIndex]
+  if cmbFilterByKeywords.ItemIndex > -1 then
+    filter := cmbFilterByKeywords.Items[cmbFilterByKeywords.ItemIndex]
   else
-    filter := cbFilterByKeywords.Text;
+    filter := cmbFilterByKeywords.Text;
 
   FIconViewer.FilterByIconKeywords := filter;
   AddKeywordFilterToHistory(filter);
-  cbFilterByKeywords.Text := filter;
+  cmbFilterByKeywords.Text := filter;
 
   FIconViewer.ScrollIntoView;
   FIconViewer.Invalidate;
   UpdateIconCount;
+  UpdateIconDetails;
 
 end;
 
-procedure TImageListEditorDlg.cbFilterBySizeChange(Sender: TObject);
+procedure TImageListEditorDlg.cmbFilterBySizeChange(Sender: TObject);
 begin
-  if cbFilterBySize.ItemIndex <= 0 then
+  if cmbFilterBySize.ItemIndex <= 0 then
     FIconViewer.FilterByIconSize := ''
   else
-    FIconViewer.FilterByIconSize := cbFilterBySize.Items[cbFilterBySize.ItemIndex];
+    FIconViewer.FilterByIconSize := cmbFilterBySize.Items[cmbFilterBySize.ItemIndex];
   FIconViewer.ScrollIntoView;
   FIconViewer.Invalidate;
   UpdateIconCount;
+  UpdateIconDetails;
 end;
 
-procedure TImageListEditorDlg.cbFilterByStyleChange(Sender: TObject);
+procedure TImageListEditorDlg.cmbFilterByStyleChange(Sender: TObject);
 begin
-  FIconViewer.FilterByIconStyle := TIconStyle(cbFilterByStyle.ItemIndex);
+  FIconViewer.FilterByIconStyle := TIconStyle(cmbFilterByStyle.ItemIndex);
   FIconViewer.ScrollIntoView;
   FIconViewer.Invalidate;
   UpdateIconCount;
+  UpdateIconDetails;
 end;
 
 procedure TImageListEditorDlg.ColorBoxTransparentClick(Sender: TObject);
@@ -831,14 +855,14 @@ begin
   if AFilter = '' then
     exit;
 
-  idx := cbFilterByKeywords.Items.IndexOf(AFilter);
+  idx := cmbFilterByKeywords.Items.IndexOf(AFilter);
   if idx = -1 then
-    cbFilterByKeywords.Items.Insert(0, AFilter)
+    cmbFilterByKeywords.Items.Insert(0, AFilter)
   else
-    cbFilterByKeywords.Items.Move(idx, 0);
+    cmbFilterByKeywords.Items.Move(idx, 0);
 
-  while cbFilterByKeywords.Items.Count > MAX_FILTER_HISTORY do
-    cbFilterByKeywords.Items.Delete(cbFilterByKeywords.Items.Count-1);
+  while cmbFilterByKeywords.Items.Count > MAX_FILTER_HISTORY do
+    cmbFilterByKeywords.Items.Delete(cmbFilterByKeywords.Items.Count-1);
 end;
 
 procedure TImageListEditorDlg.LoadFromIconLib(Replace: Boolean);
@@ -884,9 +908,44 @@ begin
   LoadFromIconLib(false);
 end;
 
+procedure TImageListEditorDlg.IconViewerSelect(Sender: TObject);
+begin
+  UpdateIconDetails;
+end;
+
 procedure TImageListEditorDlg.UpdateIconCount;
 begin
   GroupboxIconLib.Caption := Format('Icon library (%d icons)', [FIconViewer.ThumbnailCount]);
+end;
+
+procedure TImageListEditorDlg.UpdateIconDetails;
+var
+  keywordList: TStrings;
+  keywords: String;
+begin
+  if FIconViewer.SelectedIcon = nil then
+  begin
+    infoFileName.Caption := ' ';
+    infoSize.Caption := ' ';
+    infoStyle.Caption := ' ';
+    infoKeywords.Caption := ' ';
+  end else
+  begin
+    keywordList := TStringList.Create;
+    try
+      FIconViewer.SelectedIcon.KeywordsAsStrings(keywordList);
+      keywordList.Delimiter := ';';
+      keywordList.StrictDelimiter := true;
+      keywords := keywordList.DelimitedText;
+    finally
+      keywordList.Free;
+    end;
+    infoFileName.Hint := FIconViewer.SelectedIcon.FileName;
+    infoFileName.Caption := MinimizeName(infoFileName.Hint, Canvas, infoFileName.Width);
+    infoSize.Caption := FIconViewer.SelectedIcon.SizeAsString;
+    infoStyle.Caption := FIconViewer.SelectedIcon.StyleAsString;
+    infoKeywords.Caption := StringReplace(keywords, ';', '; ', [rfReplaceAll]);
+  end;
 end;
 
 procedure TImageListEditorDlg.btnApplyClick(Sender: TObject);
@@ -897,14 +956,16 @@ end;
 procedure TImageListEditorDlg.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if cbFilterByKeywords.Focused and (Key = VK_RETURN) then
+  if cmbFilterByKeywords.Focused and (Key = VK_RETURN) then
   begin
-    cbFilterByKeywords.EditingDone;
+    cmbFilterByKeywords.EditingDone;
     Key := 0;
   end
 end;
 
 procedure TImageListEditorDlg.FormShow(Sender: TObject);
+var
+  w: Integer;
 begin
   AlignButtons([
     BtnAdd,
@@ -932,6 +993,13 @@ begin
     ImageListbox.BorderSpacing.Around + BtnPanel.Height + BtnPanel.BorderSpacing.Around;
   if Width < Constraints.MinWidth then Width := Constraints.MinWidth; // Enforce Constraints
   if Height < Constraints.MinHeight then Height := Constraints.MinHeight;
+
+  w := lblFileName.Width;
+  if lblSize.Width > w then w := lblSize.Width;
+  if lblKeywords.Width > w then w := lblKeywords.Width;
+  infoFileName.BorderSpacing.Left := lblFileName.Left + w + 8;
+  infoSize.BorderSpacing.Left := infoFileName.BorderSpacing.Left;
+  infoKeywords.BorderSpacing.Left := infoFileName.BorderSpacing.Left;
 
   UpdateIconCount;
 end;

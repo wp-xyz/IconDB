@@ -44,6 +44,7 @@ type
     FTotalHeight: Integer;
     FColCount, FRowCount: Integer;
     FMultiSelect: Boolean;
+    FOnSelect: TNotifyEvent;
     function GetThumbnail(AIndex: Integer): TBasicThumbnail;
     function GetVisibleRowCount: Integer;
     procedure SetFocusedBorderColor(AValue: TColor);
@@ -100,6 +101,7 @@ type
     property ThumbnailWidth: Integer read FThumbnailWidth write SetThumbnailWidth;
 
     property OnDblClick;
+    property OnSelect: TNotifyEvent read FOnSelect write FOnSelect;
   end;
 
 
@@ -505,6 +507,9 @@ begin
   else
     SingleSelect(nil);
   ScrollIntoView;
+
+  if Assigned(FOnSelect) then
+    FOnSelect(self);
 end;
 
 procedure TBasicThumbnailviewer.SetThumbnailBorderColor(AValue: TColor);
