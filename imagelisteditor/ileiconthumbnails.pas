@@ -5,7 +5,7 @@ unit ileIconThumbNails;
 interface
 
 uses
-  Classes, SysUtils, fgl, LazFileUtils, Graphics,
+  Classes, SysUtils, fgl, StrUtils, LazFileUtils, Graphics,
   ileBasicThumbnails;
 
 type
@@ -33,6 +33,8 @@ type
   protected
     function GetKeywords(AIndex: Integer): String;
     function GetKeywordCount: Integer;
+    function GetName: String;
+    function GetNameBase: String;
     function GetPicture: TPicture;
     function GetSizeAsString: String;
   public
@@ -46,13 +48,15 @@ type
     property Height: Integer read FHeight;
     property KeywordCount: Integer read GetKeywordCount;
     property Keywords[AIndex: Integer]: String read GetKeywords;
+    property Name: String read GetName;
+    property NameBase: String read GetNameBase;
     property Picture: TPicture read GetPicture;
     property SizeAsString: String read GetSizeAsString;
     property Style: TIconStyle read FStyle;
     property Width: Integer read FWidth;
   end;
 
-  TIconList = specialize TFPGList<TIconItem>;
+  TIconList = specialize TFPGObjectList<TIconItem>;
 
   TIconViewer = class(TBasicThumbnailViewer)
   private
@@ -64,7 +68,6 @@ type
     FFilterByIconWidth: Integer;
     FFilterByIconHeight: Integer;
     FFilterByIconKeywords: String;
-    FFilterDirty: Boolean;
     FLargestIconWidth: Integer;
     FLargestIconHeight: Integer;
     FAutoThumbnailSize: Boolean;
@@ -73,19 +76,24 @@ type
     procedure SetFilterByIconStyle(AValue: TIconStyle);
 
   protected
+    FSelectedIcon: TIconItem;
     function AcceptIcon(AIcon: TIconItem): Boolean; virtual;
     function AcceptKeywords(AIcon: TIconItem): Boolean;
     function AddIcon(AFileName, AKeywords: String; AStyle: TIconStyle; AWidth, AHeight: Integer): TIconItem;
     procedure FilterIcons;
-    procedure Paint; override;
     function ReadMetadataFile(AFileName: String): Boolean;
+    procedure SetSelectedIndex(AValue: Integer); override;
 
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure AddIconFolder(AFolder: String);
     procedure Clear; override;
+    function FindIconSize(AIcon: TIconItem; AWidth, AHeight: Integer): TIconItem;
+    function FindLargestIcon(AIcon: TIconItem): TIconItem;
     procedure GetIconSizesAsStrings(AList: TStrings);
+    procedure GetKeywordsAsStrings(AList: TStrings);
+    function IndexOfThumbnail(AIcon: TIconItem): Integer;
 
     property AutoThumbnailSize: Boolean read FAutoThumbnailSize write FAutoThumbnailSize default true;
     property FilterByIconKeywords: string read FFilterByIconKeywords write SetFilterByIconKeywords;
@@ -93,6 +101,7 @@ type
     property FilterByIconStyle: TIconStyle read FFilterByIconStyle write SetFilterByIconStyle;
     property LargestIconWidth: Integer read FLargestIconWidth;
     property LargestIconHeight: Integer read FLargestIconHeight;
+    property SelectedIcon: TIconItem read FSelectedIcon;
 
   end;
 
@@ -171,6 +180,7 @@ begin
   FKeywords := TStringList.Create;
   TStringList(FKeywords).Sorted := true;
   TStringList(FKeywords).CaseSensitive := false;
+  TStringList(FKeywords).Duplicates := dupIgnore;
   FKeywords.Delimiter := ';';
   FKeywords.StrictDelimiter := true;
   FKeywords.DelimitedText := AKeywords;
@@ -193,6 +203,21 @@ end;
 function TIconItem.GetKeywordCount: Integer;
 begin
   Result := FKeywords.Count;
+end;
+
+function TIconItem.GetName: String;
+begin
+  Result := ChangeFileExt(ExtractFileName(FFileName), '');
+end;
+
+function TIconItem.GetNameBase: String;
+var
+  p: Integer;
+begin
+  Result := GetName;
+  p := RPos('_', Result);
+  if p > 0 then
+    Result := Copy(Result, 1, p-1);
 end;
 
 function TIconItem.GetPicture: TPicture;
@@ -273,9 +298,61 @@ begin
   end;
 end;
 
+{ Implements a simple parser for logical expressions between keywords, e.g.
+     keyword1 AND keyword2
+     keyword1 OR NOT keyword2 AND keyword3 AND NOT keyword4
+     keyword1 keyword2  -- defaults to AND
+  No brackets allowed! }
 function TIconViewer.AcceptKeywords(AIcon: TIconItem): Boolean;
+type
+  TOperationKind = (opkAND, opkOR, opkNOT);
+  TOperation = record
+    Kind: TOperationKind;
+    Left, Right: Boolean;
+    Complete: Boolean;
+  end;
+const
+  DEFAULT_OPERATION = opkAND;
+var
+  operation: TOperation;
+  i: Integer;
+  parts: TStringArray;
 begin
-  Result := AIcon.HasKeywordPart(FFilterByIconKeywords);
+  Result := True;
+  parts := FFilterByIconKeywords.Split(' ');
+
+  operation := Default(TOperation);
+  operation.Kind := DEFAULT_OPERATION;
+  operation.Left := true;
+
+  i := 0;
+  while i < Length(parts) do
+  begin
+    case Uppercase(parts[i]) of
+      'AND': operation.Kind := opkAND;
+      'OR': operation.Kind := opkOR;
+      'NOT':
+        begin
+          inc(i);
+          operation.Right := not AIcon.HasKeywordPart(parts[i]);
+          operation.Complete := true;
+        end;
+      else
+        operation.Right := AIcon.HasKeywordPart(parts[i]);
+        operation.Complete := true;
+    end;
+    if operation.Complete then
+    begin
+      case operation.Kind of
+        opkAND: operation.Left := operation.Left and operation.Right;
+        opkOR:  operation.Left := operation.Left or operation.Right;
+      end;
+      operation.Complete := false;
+      operation.Kind := DEFAULT_OPERATION;
+    end;
+    inc(i);
+  end;
+  Result := operation.Left;
 end;
 
 { Adds the associated icon to the unfiltered icon list. }
@@ -286,7 +363,7 @@ var
 begin
   Result := TIconItem.Create(AFileName, AKeywords, AStyle, AWidth, AHeight);
   FIconList.Add(Result);
-  sizeStr := Format('%dx%d', [AWidth, AHeight]);
+  sizeStr := Format('%d x %d', [AWidth, AHeight]);
   if FSizes.IndexOf(sizeStr) = -1 then
     FSizes.Add(sizestr);
 end;
@@ -298,8 +375,11 @@ begin
   AFolder := AppendPathDelim(AFolder);
   metadataFile := AFolder + METADATA_FILE_NAME;
   if ReadMetadataFile(metadataFile) then
+  begin
     FIconFolders.Add(AFolder);
-  FFilterDirty := true;
+    FilterIcons;
+    SelectedIndex := -1;
+  end;
 end;
 
 procedure TIconViewer.Clear;
@@ -318,6 +398,7 @@ var
   item: TIconItem;
 begin
   ThumbnailList.Clear;
+
   for i := 0 to FIconList.Count-1 do
   begin
     item := FIconList[i];
@@ -341,19 +422,114 @@ begin
   LayoutThumbnails;
 end;
 
+{ Finds the icon list entry for the specified item which has the same
+  namebase, but the specified size.
+  When AWidth = -1 and AHeight = -1 then the file without appendix is used. }
+function TIconViewer.FindIconSize(AIcon: TIconItem; AWidth, AHeight: Integer): TIconItem;
+var
+  i: Integer;
+  iconNameBase: String;
+  item: TIconItem;
+  itemNameBase: String;
+begin
+  iconNameBase := AIcon.NameBase;
+  for i := 0 to FIconList.Count-1 do
+  begin
+    item := FIconList[i];
+    itemNameBase := item.NameBase;
+    if SameText(itemNameBase, iconNameBase) then
+    begin
+      // Items with appendix
+      if Length(item.Name) <> Length(itemNameBase) then
+      begin
+        if (item.Width = AWidth) and (item.Height = AHeight) then
+        begin
+          Result := item;
+          exit;
+        end;
+      end else
+      begin
+        // Item without appendix
+        Result := item;
+        exit;
+      end;
+    end;
+  end;
+  Result := nil;
+end;
+
+function TIconViewer.FindLargestIcon(AIcon: TIconItem): TIconItem;
+var
+  i: Integer;
+  iconNameBase: String;
+  item: TIconItem;
+  itemNameBase: String;
+  w, h: Integer;
+begin
+  Result := nil;
+  iconNameBase := AIcon.NameBase;
+  w := 0;
+  for i := 0 to FIconList.Count-1 do
+  begin
+    item := FIconList[i];
+    itemNameBase := item.NameBase;
+    if SameText(itemNameBase, iconNameBase) then
+    begin
+      if item.Width > w then  // considering only width
+      begin
+        w := item.Width;
+        Result := item;
+      end;
+    end;
+  end;
+end;
+
 procedure TIconViewer.GetIconSizesAsStrings(AList: TStrings);
 begin
   AList.Assign(FSizes);
 end;
 
-procedure TIconViewer.Paint;
+procedure TIconViewer.GetKeywordsAsStrings(AList: TStrings);
+var
+  i, j, k: Integer;
+  keyword: String;
+  item: TIconItem;
+  list: TStringList;
 begin
-  if FFilterDirty then
-  begin
-    FilterIcons;
-    FFilterDirty := false;
+  list := TStringList.Create;
+  try
+    list.CaseSensitive := false;
+    list.Sorted := true;
+    for i := 0 to FIconList.Count-1 do
+    begin
+      item := FIconList[i];
+      for j := 0 to item.KeywordCount-1 do
+      begin
+        keyword := item.Keywords[j];
+        if not list.Find(keyword, k) then
+          list.Add(keyword);
+      end;
+    end;
+    AList.Assign(list);
+  finally
+    list.Free;
   end;
-  inherited;
+end;
+
+function TIconViewer.IndexOfThumbnail(AIcon: TIconItem): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if AIcon = nil then
+    exit;
+
+  for i := 0 to ThumbnailCount-1 do
+    if TIconThumbnail(Thumbnail[i]).Item = AIcon then
+    begin
+      Result := i;
+      exit;
+    end;
 end;
 
 { Structure of metadata.txt lines:
@@ -405,7 +581,7 @@ begin
   if FFilterByIconKeywords <> AValue then
   begin
     FFilterByIconKeywords := AValue;
-    FFilterDirty := true;
+    FilterIcons;
   end;
 end;
 
@@ -426,7 +602,7 @@ begin
       FFilterByIconWidth := StrToInt(Trim(sa[0]));
       FFilterByIconHeight := StrToInt(Trim(sa[1]));
     end;
-    FFilterDirty := true;
+    FilterIcons;
   end;
 end;
 
@@ -435,8 +611,21 @@ begin
   if FFilterByIconStyle <> AValue then
   begin
     FFilterByIconStyle := AValue;
-    FFilterDirty := true;
+    FilterIcons;
   end;
+end;
+
+procedure TIconViewer.SetSelectedIndex(AValue: Integer);
+var
+  thumb: TIconThumbnail;
+begin
+  inherited;
+  if (SelectedIndex > -1) then
+  begin
+    thumb := Thumbnail[SelectedIndex] as TIconThumbnail;
+    FSelectedIcon := thumb.Item;
+  end else
+    FSelectedIcon := nil;
 end;
 
 end.

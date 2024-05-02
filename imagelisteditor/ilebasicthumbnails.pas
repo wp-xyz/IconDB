@@ -45,7 +45,6 @@ type
     FColCount, FRowCount: Integer;
     FMultiSelect: Boolean;
     function GetThumbnail(AIndex: Integer): TBasicThumbnail;
-    function GetThumbnailCount: Integer;
     function GetVisibleRowCount: Integer;
     procedure SetFocusedBorderColor(AValue: TColor);
     procedure SetFocusedColor(AValue: TColor);
@@ -62,6 +61,7 @@ type
     FThumbnailWidth: Integer;
     procedure Click; override;
     procedure DoOnResize; override;
+    function GetThumbnailCount: Integer; virtual;
     procedure KeyDown(var Key: Word; Shift: TShiftState); override;
     procedure MouseDown(Button: TMouseButton; Shift:TShiftState; X, Y: Integer); override;
     procedure Paint; override;
@@ -444,8 +444,12 @@ var
   thumb: TBasicThumbnail;
   y, h: Integer;
 begin
-  if FSelectedIndex = -1 then
+  if (FSelectedIndex < 0) or (FSelectedIndex >= FThumbnailList.Count) then
+  begin
+    VertScrollbar.Position := 0;
     exit;
+  end;
+
   thumb := FThumbnailList[FSelectedIndex];
   y := thumb.Top - FThumbnailSpacing;
   if thumb.Top < VertScrollbar.Position then

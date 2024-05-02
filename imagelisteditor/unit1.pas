@@ -45,7 +45,10 @@ begin
   try
     F.LoadFromImageList(ImageList1);
     if F.ShowModal = mrOK then
+    begin
       F.SaveToImageList;
+      Scrollbox1.Invalidate;
+    end;
   finally
     F.Free;
   end;
