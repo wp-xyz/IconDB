@@ -38,8 +38,29 @@
         <Filename Value="ilmain.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="MainForm"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="ilMain"/>
+      </Unit>
+      <Unit>
+        <Filename Value="..\common\iconthumbnails.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="IconThumbNails"/>
+      </Unit>
+      <Unit>
+        <Filename Value="ilmetadata.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="MetadataForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="ilMetadata"/>
+      </Unit>
+      <Unit>
+        <Filename Value="..\common\iconkeywordfiltereditor.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="KeywordFilterEditorForm"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="IconKeywordFilterEditor"/>
       </Unit>
     </Units>
   </ProjectOptions>
@@ -47,13 +68,17 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="IconLib"/>
+      <Filename Value="..\..\bin\$(TargetCPU)-$(TargetOS)\IconLib"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+      <OtherUnitFiles Value="..\common"/>
+      <UnitOutputDirectory Value="..\..\ppu\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>
+      <Debugging>
+        <DebugInfoType Value="dsDwarf3"/>
+      </Debugging>
       <Options>
         <Win32>
           <GraphicApplication Value="True"/>

@@ -636,7 +636,7 @@ object ImageListEditorDlg: TImageListEditorDlg
       end
       object lblKeywords: TLabel
         AnchorSideLeft.Control = Panel1
-        AnchorSideTop.Control = infoStyle
+        AnchorSideTop.Control = lblSize
         AnchorSideTop.Side = asrBottom
         Left = 12
         Height = 15

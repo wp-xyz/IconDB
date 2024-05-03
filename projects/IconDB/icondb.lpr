@@ -1,4 +1,4 @@
-program icondb;
+program IconDB;
 
 {$mode objfpc}{$H+}
 

@@ -926,15 +926,15 @@ var
 begin
   if FIconViewer.SelectedIcon = nil then
   begin
-    infoFileName.Caption := ' ';
-    infoSize.Caption := ' ';
-    infoStyle.Caption := ' ';
-    infoKeywords.Caption := ' ';
+    infoFileName.Caption := '';
+    infoSize.Caption := '';
+    infoStyle.Caption := '';
+    infoKeywords.Caption := '';
   end else
   begin
     keywordList := TStringList.Create;
     try
-      FIconViewer.SelectedIcon.KeywordsAsStrings(keywordList);
+      FIconViewer.SelectedIcon.ExportKeywordsToStrings(keywordList);
       keywordList.Delimiter := ';';
       keywordList.StrictDelimiter := true;
       keywords := keywordList.DelimitedText;
