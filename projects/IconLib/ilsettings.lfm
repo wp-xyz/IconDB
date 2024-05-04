@@ -1,0 +1,55 @@
+object SettingsForm: TSettingsForm
+  Left = 314
+  Height = 428
+  Top = 130
+  Width = 486
+  Caption = 'Settings'
+  ClientHeight = 428
+  ClientWidth = 486
+  LCLVersion = '3.99.0.0'
+  object ButtonPanel1: TButtonPanel
+    Left = 6
+    Height = 34
+    Top = 388
+    Width = 474
+    OKButton.Name = 'OKButton'
+    OKButton.DefaultCaption = True
+    HelpButton.Name = 'HelpButton'
+    HelpButton.DefaultCaption = True
+    CloseButton.Name = 'CloseButton'
+    CloseButton.DefaultCaption = True
+    CancelButton.Name = 'CancelButton'
+    CancelButton.DefaultCaption = True
+    TabOrder = 0
+    ShowButtons = [pbOK, pbCancel]
+  end
+  object clbFolders: TCheckListBox
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = lblIncludedFolders
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = ButtonPanel1
+    Left = 8
+    Height = 357
+    Top = 25
+    Width = 470
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 2
+    BorderSpacing.Right = 8
+    ItemHeight = 0
+    TabOrder = 1
+  end
+  object lblIncludedFolders: TLabel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    Left = 8
+    Height = 15
+    Top = 8
+    Width = 111
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
+    Caption = 'Included icon folders'
+  end
+end

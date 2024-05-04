@@ -32,9 +32,11 @@ type
     FStyle: TIconStyle;
     FKeywords: TStrings;
     FPicture: TPicture;
+    FHidden: Boolean;
     FViewer: TIconViewer;
     procedure SetStyleAsString(AValue: String);
   protected
+    function GetDirectory: String;
     function GetKeywordCount: Integer;
     function GetKeywords(AIndex: Integer): String;
     function GetKeywordsAsString: String;
@@ -52,8 +54,10 @@ type
     function HasKeywordPart(AKeywordPart: String): Boolean;
     procedure SetKeywordsFromStrings(AList: TStrings);
 
+    property Directory: String read GetDirectory;
     property FileName: String read FFileName;
     property Height: Integer read FHeight;
+    property Hidden: Boolean read FHidden write FHidden;
     property KeywordCount: Integer read GetKeywordCount;
     property Keywords[AIndex: Integer]: String read GetKeywords;
     property KeywordsAsString: String read GetKeywordsAsString;
@@ -112,6 +116,7 @@ type
     procedure GetIconSizesAsStrings(AList: TStrings);
     procedure GetKeywordsAsStrings(AList: TStrings);
     function IndexOfThumbnail(AIcon: TIconItem): Integer;
+    procedure UpdateIconFolders;
     procedure WriteMetadataFiles;
 
     property AutoThumbnailSize: Boolean read FAutoThumbnailSize write FAutoThumbnailSize default true;
@@ -119,6 +124,7 @@ type
     property FilterByIconSize: string read FFilterByIconSize write SetFilterByIconSize;
     property FilterByIconStyle: TIconStyle read FFilterByIconStyle write SetFilterByIconStyle;
     property IconCount: Integer read GetIconCount;
+    property IconFolders: TStrings read FIconFolders;
     property LargestIconWidth: Integer read FLargestIconWidth;
     property LargestIconHeight: Integer read FLargestIconHeight;
     property SelectedIcon: TIconItem read FSelectedIcon;
@@ -220,6 +226,11 @@ begin
   FKeywords.Assign(AIcon.FKeywords);
   FStyle := AIcon.FStyle;
   FViewer.FMetadataDirty := true;
+end;
+
+function TIconItem.GetDirectory: String;
+begin
+  Result := ExtractFilePath(FFileName);
 end;
 
 function TIconItem.GetKeywordCount: Integer;
@@ -386,6 +397,8 @@ end;
 function TIconViewer.AcceptIcon(AIcon: TIconItem): Boolean;
 begin
   Result := false;
+  if AIcon.Hidden then
+    exit;
   if (FFilterByIconSize <> '') and ((AIcon.Width <> FFilterByIconWidth) or (AIcon.Height <> FFilterByIconHeight)) then
     exit;
   if (FFilterByIconStyle <> isAnyStyle) and (AIcon.Style <> FFilterByIconStyle) then
@@ -831,6 +844,43 @@ begin
     FSelectedIcon := nil;
 
   inherited;
+end;
+
+{ Folders and all their icons can be hidding when the folder name in the
+  IconFolder list is made to begin with a '-'. This procedure iterates over
+  all icons and sets their Hidden flag when their folder is hidden. }
+procedure TIconViewer.UpdateIconFolders;
+var
+  i, j: Integer;
+  hiddenFolders: TStringList;
+  folder: String;
+  item: TIconItem;
+begin
+  hiddenFolders := TStringList.Create;
+  try
+    hiddenFolders.Sorted := true;
+    for i := 0 to FIconFolders.count-1 do
+    begin
+      folder := FIconFolders[i];
+      if folder[1] = '-' then
+      begin
+        System.Delete(folder, 1,1);
+        hiddenFolders.Add(AppendPathDelim(folder));
+      end;
+    end;
+
+    for i := 0 to FIconList.Count-1 do
+    begin
+      item := FIconList[i];
+      folder := item.Directory;
+      item.Hidden := hiddenfolders.Find(folder, j);
+    end;
+
+    FilterIcons;
+    Invalidate;
+  finally
+    hiddenFolders.Free;
+  end;
 end;
 
 procedure TIconViewer.WriteMetadataFiles;

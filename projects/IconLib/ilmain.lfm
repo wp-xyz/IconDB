@@ -159,7 +159,7 @@ object MainForm: TMainForm
       Action = acEditMetadata
     end
     object ToolButton3: TToolButton
-      Left = 359
+      Left = 409
       Top = 0
       Action = acExit
     end
@@ -192,6 +192,11 @@ object MainForm: TMainForm
       Top = 0
       Caption = 'ToolButton8'
       Style = tbsDivider
+    end
+    object ToolButton9: TToolButton
+      Left = 359
+      Top = 0
+      Action = acSettings
     end
   end
   object Panel2: TPanel
@@ -1663,6 +1668,11 @@ object MainForm: TMainForm
       ImageIndex = 10
       OnExecute = acWriteMetadataExecute
       OnUpdate = acWriteMetadataUpdate
+    end
+    object acSettings: TAction
+      Caption = 'Settings'
+      ImageIndex = 6
+      OnExecute = acSettingsExecute
     end
   end
   object SelectDirectoryDialog: TSelectDirectoryDialog

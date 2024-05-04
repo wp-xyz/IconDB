@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ActnList,
   ExtCtrls, StdCtrls, FileUtil, LazFileUtils, FileCtrl, Buttons, Clipbrd,
-  IconThumbnails, IconKeywordFilterEditor, ilMetadata;
+  IconThumbnails, IconKeywordFilterEditor, ilMetadata, ilSettings;
 
 type
 
@@ -19,6 +19,7 @@ type
     acExit: TAction;
     acDeleteIcon: TAction;
     acCopyToClipboard: TAction;
+    acSettings: TAction;
     acWriteMetadata: TAction;
     ActionList: TActionList;
     Bevel1: TBevel;
@@ -48,6 +49,7 @@ type
     ToolButton6: TToolButton;
     ToolButton7: TToolButton;
     ToolButton8: TToolButton;
+    ToolButton9: TToolButton;
     procedure acAddFolderExecute(Sender: TObject);
     procedure acCopyToClipboardExecute(Sender: TObject);
     procedure acCopyToClipboardUpdate(Sender: TObject);
@@ -56,6 +58,7 @@ type
     procedure acEditMetadataExecute(Sender: TObject);
     procedure acEditMetadataUpdate(Sender: TObject);
     procedure acExitExecute(Sender: TObject);
+    procedure acSettingsExecute(Sender: TObject);
     procedure acWriteMetadataExecute(Sender: TObject);
     procedure acWriteMetadataUpdate(Sender: TObject);
     procedure btnKeywordEditorClick(Sender: TObject);
@@ -170,6 +173,24 @@ end;
 procedure TMainForm.acExitExecute(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TMainForm.acSettingsExecute(Sender: TObject);
+var
+  F: TSettingsForm;
+begin
+  F := TSettingsForm.Create(self);
+  try
+    F.Position := poMainFormCenter;
+    F.IconFoldersToSettings(FIconViewer.IconFolders);
+    if F.ShowModal = mrOK then
+    begin
+      F.IconFoldersFromSettings(FIconViewer.IconFolders);
+      FIconViewer.UpdateIconFolders;
+    end;
+  finally
+    F.Free;
+  end;
 end;
 
 procedure TMainForm.acWriteMetadataExecute(Sender: TObject);
