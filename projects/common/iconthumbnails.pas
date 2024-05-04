@@ -5,11 +5,13 @@ unit IconThumbNails;
 interface
 
 uses
-  Classes, SysUtils, fgl, FPImage, StrUtils, FileUtil, LazFileUtils, Graphics,
+  Classes, SysUtils, fgl, FPImage, StrUtils,
+  FileUtil, LazFileUtils, Graphics, Controls, Dialogs, Forms,
   BasicThumbnails;
 
 type
   TIconItem = class;
+  TIconViewer = class;
 
   TIconStyle = (isAnyStyle, isClassic, isFlat, isOutline, isOutline2);
 
@@ -30,10 +32,12 @@ type
     FStyle: TIconStyle;
     FKeywords: TStrings;
     FPicture: TPicture;
+    FViewer: TIconViewer;
     procedure SetStyleAsString(AValue: String);
   protected
-    function GetKeywords(AIndex: Integer): String;
     function GetKeywordCount: Integer;
+    function GetKeywords(AIndex: Integer): String;
+    function GetKeywordsAsString: String;
     function GetName: String;
     function GetNameBase: String;
     function GetPicture: TPicture;
@@ -52,6 +56,7 @@ type
     property Height: Integer read FHeight;
     property KeywordCount: Integer read GetKeywordCount;
     property Keywords[AIndex: Integer]: String read GetKeywords;
+    property KeywordsAsString: String read GetKeywordsAsString;
     property Name: String read GetName;
     property NameBase: String read GetNameBase;
     property Picture: TPicture read GetPicture;
@@ -79,6 +84,7 @@ type
     FLargestIconWidth: Integer;
     FLargestIconHeight: Integer;
     FAutoThumbnailSize: Boolean;
+    FMetadataDirty: Boolean;
     function GetIconCount: Integer;
     procedure SetFilterByIconKeywords(AValue: String);
     procedure SetFilterByIconSize(AValue: String);
@@ -106,6 +112,7 @@ type
     procedure GetIconSizesAsStrings(AList: TStrings);
     procedure GetKeywordsAsStrings(AList: TStrings);
     function IndexOfThumbnail(AIcon: TIconItem): Integer;
+    procedure WriteMetadataFiles;
 
     property AutoThumbnailSize: Boolean read FAutoThumbnailSize write FAutoThumbnailSize default true;
     property FilterByIconKeywords: string read FFilterByIconKeywords write SetFilterByIconKeywords;
@@ -126,7 +133,7 @@ implementation
 
 const
   ICON_MARGIN = 8;  // or, more precisely: double of margin
-  METADATA_FILE_NAME = 'metadata.txt';
+  METADATA_FILENAME = 'metadata.txt';
   ICONSTYLE_NAMES: Array[TIconStyle] of String = (
     '(any style)', 'classic', 'flat', 'outline', 'outline 2-color'
   );
@@ -212,6 +219,12 @@ procedure TIconItem.CopyKeywordsAndStyleFrom(AIcon: TIconItem);
 begin
   FKeywords.Assign(AIcon.FKeywords);
   FStyle := AIcon.FStyle;
+  FViewer.FMetadataDirty := true;
+end;
+
+function TIconItem.GetKeywordCount: Integer;
+begin
+  Result := FKeywords.Count;
 end;
 
 function TIconItem.GetKeywords(AIndex: Integer): String;
@@ -219,9 +232,18 @@ begin
   Result := FKeywords[AIndex];
 end;
 
-function TIconItem.GetKeywordCount: Integer;
+function TIconItem.GetKeywordsAsString: String;
+var
+  i: Integer;
 begin
-  Result := FKeywords.Count;
+  if FKeywords.Count = 0 then
+    Result := ''
+  else
+  begin
+    Result := FKeywords[0];
+    for i := 1 to FKeywords.Count-1 do
+      Result := Result + ';' + FKeywords[i];
+  end;
 end;
 
 function TIconItem.GetName: String;
@@ -231,12 +253,17 @@ end;
 
 function TIconItem.GetNameBase: String;
 var
-  p: Integer;
+  p, n: Integer;
+  suffix: String;
 begin
   Result := GetName;
   p := RPos('_', Result);
   if p > 0 then
-    Result := Copy(Result, 1, p-1);
+  begin
+    suffix := Copy(Result, p+1);
+    if TryStrToInt(suffix, n) then
+      Result := Copy(Result, 1, p-1);
+  end;
 end;
 
 function TIconItem.GetPicture: TPicture;
@@ -339,7 +366,15 @@ begin
 end;
 
 destructor TIconViewer.Destroy;
+var
+  res: Integer;
 begin
+  if FMetadataDirty then
+  begin
+    res := MessageDlg('Save modifications?', mtConfirmation, [mbYes, mbNo], 0);
+    if res = mrYes then
+      WriteMetadataFiles;
+  end;
   FSizes.Free;
   FIconList.Free;
   FIconFolders.Free;
@@ -433,6 +468,7 @@ begin
   if idx = -1 then
   begin
     Result := TIconItem.Create(AFileName, AKeywords, AStyle, AWidth, AHeight);
+    Result.FViewer := Self;
     FIconList.Add(Result);
   end else
     Result := FIconList[idx];
@@ -447,7 +483,7 @@ var
   metadataFile: String;
 begin
   AFolder := AppendPathDelim(AFolder);
-  metadataFile := AFolder + METADATA_FILE_NAME;
+  metadataFile := AFolder + METADATA_FILENAME;
   if FileExists(metadataFile) then
     ReadMetaDataFile(metadataFile)
   else
@@ -795,6 +831,46 @@ begin
     FSelectedIcon := nil;
 
   inherited;
+end;
+
+procedure TIconViewer.WriteMetadataFiles;
+var
+  folder: String;
+  metadata: TStringList;
+  item: TIconItem;
+  i, j: Integer;
+  filename: String;
+begin
+  Screen.Cursor := crHourglass;
+  try
+    for i := 0 to FIconFolders.Count-1 do
+    begin
+      folder := AppendPathDelim(FIconFolders[i]);
+      metadata := TStringList.Create;
+      try
+        if FileExists(folder + METADATA_FILENAME) then
+          CopyFile(folder + METADATA_FILENAME, folder + METADATA_FILENAME + '.bak');
+        metadata.Add('# IconLib Metadata file, v1.0');
+        metadata.Add('# File structure: "filename|width|height|style|keyword1;keyword2;..."');
+        metadata.Add('# Allowed styles: classic, flat, outline, outline 2-color');
+        metadata.Add('#');
+        for j := 0 to FIconList.Count-1 do
+        begin
+          item := FIconList[j];
+          filename := ExtractFileName(item.FileName);
+          if ExtractFilePath(item.FileName) = folder then
+            metadata.Add('%s|%d|%d|%s|%s', [
+              fileName, item.Width, item.Height, item.StyleAsString, item.KeywordsAsString]);
+        end;
+        metadata.SaveToFile(folder + METADATA_FILENAME);
+        FMetadataDirty := false;
+      finally
+        metadata.Free;
+      end;
+    end;
+  finally
+    Screen.Cursor := crDefault;
+  end;
 end;
 
 end.

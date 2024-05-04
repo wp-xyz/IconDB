@@ -19,6 +19,7 @@ type
     acExit: TAction;
     acDeleteIcon: TAction;
     acCopyToClipboard: TAction;
+    acWriteMetadata: TAction;
     ActionList: TActionList;
     Bevel1: TBevel;
     Bevel2: TBevel;
@@ -42,15 +43,21 @@ type
     ToolButton1: TToolButton;
     ToolButton2: TToolButton;
     ToolButton3: TToolButton;
+    ToolButton4: TToolButton;
     ToolButton5: TToolButton;
     ToolButton6: TToolButton;
     ToolButton7: TToolButton;
+    ToolButton8: TToolButton;
     procedure acAddFolderExecute(Sender: TObject);
     procedure acCopyToClipboardExecute(Sender: TObject);
+    procedure acCopyToClipboardUpdate(Sender: TObject);
     procedure acDeleteIconExecute(Sender: TObject);
+    procedure acDeleteIconUpdate(Sender: TObject);
     procedure acEditMetadataExecute(Sender: TObject);
     procedure acEditMetadataUpdate(Sender: TObject);
     procedure acExitExecute(Sender: TObject);
+    procedure acWriteMetadataExecute(Sender: TObject);
+    procedure acWriteMetadataUpdate(Sender: TObject);
     procedure btnKeywordEditorClick(Sender: TObject);
     procedure cmbFilterByKeywordsChange(Sender: TObject);
     procedure cmbFilterBySizeChange(Sender: TObject);
@@ -126,6 +133,11 @@ begin
     Clipboard.Assign(FIconViewer.SelectedIcon.Picture);
 end;
 
+procedure TMainForm.acCopyToClipboardUpdate(Sender: TObject);
+begin
+  acCopyToClipboard.Enabled := (FIconViewer.SelectedIcon <> nil);
+end;
+
 procedure TMainForm.acDeleteIconExecute(Sender: TObject);
 var
   res: TModalResult;
@@ -138,6 +150,11 @@ begin
     UpdateIconCount;
     UpdateIconDetails;
   end;
+end;
+
+procedure TMainForm.acDeleteIconUpdate(Sender: TObject);
+begin
+  acDeleteIcon.Enabled := (FIconViewer.SelectedIcon <> nil);
 end;
 
 procedure TMainForm.acEditMetadataExecute(Sender: TObject);
@@ -153,6 +170,16 @@ end;
 procedure TMainForm.acExitExecute(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TMainForm.acWriteMetadataExecute(Sender: TObject);
+begin
+  FIconViewer.WriteMetadataFiles;
+end;
+
+procedure TMainForm.acWriteMetadataUpdate(Sender: TObject);
+begin
+  acWriteMetadata.Enabled := FIconViewer.IconCount > 0;
 end;
 
 procedure TMainForm.btnKeywordEditorClick(Sender: TObject);
