@@ -65,7 +65,7 @@ type
     procedure acWriteMetadataExecute(Sender: TObject);
     procedure acWriteMetadataUpdate(Sender: TObject);
     procedure btnKeywordEditorClick(Sender: TObject);
-    procedure cmbFilterByKeywordsChange(Sender: TObject);
+    procedure cmbFilterByKeywordsEditingDone(Sender: TObject);
     procedure cmbFilterBySizeChange(Sender: TObject);
     procedure cmbFilterByStyleChange(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -75,6 +75,7 @@ type
   private
     FActivated: Boolean;
     FIconViewer: TIconViewer;
+    procedure AddKeywordFilterToHistory(AFilter: String);
     procedure EditMetadata(AIcon: TIconItem);
     procedure IconViewerDblClickHandler(Sender: TObject);
     procedure IconViewerSelectHandler(Sender: TObject);
@@ -105,6 +106,7 @@ const
   METADATA_FILENAME = 'metadata.txt';
   APP_CAPTION = 'Icon library';
   APP_CAPTION_MASK = 'Icon library (%d icons out of %d)';
+  MAX_KEYWORDS_HISTORY = 20;
 
 { TMainForm }
 
@@ -228,6 +230,23 @@ begin
   acWriteMetadata.Enabled := FIconViewer.IconCount > 0;
 end;
 
+procedure TMainForm.AddKeywordFilterToHistory(AFilter: String);
+var
+  idx: Integer;
+begin
+  if AFilter = '' then
+    exit;
+
+  idx := cmbFilterByKeywords.Items.IndexOf(AFilter);
+  if idx = -1 then
+    cmbFilterByKeywords.Items.Insert(0, AFilter)
+  else
+    cmbFilterByKeywords.Items.Move(idx, 0);
+
+  while cmbFilterByKeywords.Items.Count > MAX_KEYWORDS_HISTORY do
+    cmbFilterByKeywords.Items.Delete(cmbFilterByKeywords.Items.Count-1);
+end;
+
 procedure TMainForm.btnKeywordEditorClick(Sender: TObject);
 var
   F: TKeywordFilterEditorForm;
@@ -252,11 +271,18 @@ begin
   end;
 end;
 
-procedure TMainForm.cmbFilterByKeywordsChange(Sender: TObject);
+procedure TMainForm.cmbFilterByKeywordsEditingDone(Sender: TObject);
+var
+  filter: String;
+  idx: Integer;
 begin
-  FIconViewer.FilterByIconKeywords := cmbFilterByKeywords.Text;
-  FIconViewer.Invalidate;
+  filter := cmbFilterByKeywords.Text;
+  FIconViewer.FilterByIconKeywords := filter;
   UpdateIconCount;
+
+  // Add to history list
+  AddKeywordFilterToHistory(filter);
+  cmbFilterByKeywords.Text := filter;
 end;
 
 procedure TMainForm.cmbFilterBySizeChange(Sender: TObject);
@@ -360,6 +386,7 @@ var
   R: TRect;
   list: TStrings;
   i: Integer;
+  s: String;
 begin
   ini := CreateIniFile;
   try
@@ -384,6 +411,14 @@ begin
         for i := 0 to list.Count-1 do
           list[i] := ini.ReadString('IconFolders', list[i], '');
         FIconViewer.ReadIconFolders(list);
+
+        list.Clear;
+        ini.ReadSection('KeywordsHistory', list);
+        for i := 0 to list.Count-1 do
+          list[i] := ini.ReadString('KeywordsHistory', list[i], '');
+        for i := list.Count-1 downto 0 do
+          if list[i] = '' then list.Delete(i);
+        cmbFilterByKeywords.Items.Assign(list);
       finally
         list.Free;
       end;
@@ -489,6 +524,11 @@ begin
       FIconViewer.WriteIconFolders(list);
       for i := 0 to list.Count-1 do
         ini.WriteString('IconFolders', 'Folder' + IntToStr(i), list[i]);
+
+      list.Clear;
+      list.Assign(cmbFilterByKeywords.Items);
+      for i := 0 to list.Count-1 do
+        ini.WriteString('KeywordsHistory', 'Item' + IntToStr(i), list[i]);
     finally
       list.Free;
     end;

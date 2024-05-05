@@ -6,6 +6,7 @@ object MainForm: TMainForm
   Caption = 'Icon Library'
   ClientHeight = 467
   ClientWidth = 814
+  ShowHint = True
   LCLVersion = '3.99.0.0'
   OnActivate = FormActivate
   OnCreate = FormCreate
@@ -222,11 +223,13 @@ object MainForm: TMainForm
       AnchorSideBottom.Side = asrBottom
       Left = 6
       Height = 23
+      Hint = 'Filter by icon size'
       Top = 2
       Width = 74
       BorderSpacing.Left = 6
       BorderSpacing.Top = 2
       BorderSpacing.Bottom = 6
+      DropDownCount = 24
       ItemHeight = 15
       Style = csDropDownList
       TabOrder = 0
@@ -239,10 +242,12 @@ object MainForm: TMainForm
       AnchorSideBottom.Side = asrBottom
       Left = 86
       Height = 23
+      Hint = 'Filter by icon style'
       Top = 2
       Width = 108
       BorderSpacing.Left = 6
       BorderSpacing.Top = 2
+      DropDownCount = 24
       ItemHeight = 15
       Style = csDropDownList
       TabOrder = 1
@@ -256,6 +261,7 @@ object MainForm: TMainForm
       AnchorSideBottom.Side = asrBottom
       Left = 200
       Height = 23
+      Hint = 'Filter by keywords'
       Top = 2
       Width = 583
       Anchors = [akTop, akLeft, akRight]
@@ -264,10 +270,11 @@ object MainForm: TMainForm
       BorderSpacing.Right = 2
       BorderSpacing.Bottom = 6
       Constraints.MinWidth = 300
+      DropDownCount = 24
       ItemHeight = 15
       TabOrder = 2
       TextHint = 'Enter keywords here'
-      OnChange = cmbFilterByKeywordsChange
+      OnEditingDone = cmbFilterByKeywordsEditingDone
     end
     object btnKeywordEditor: TSpeedButton
       AnchorSideTop.Control = cmbFilterByKeywords

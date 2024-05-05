@@ -101,6 +101,7 @@ type
     function AcceptIcon(AIcon: TIconItem): Boolean; virtual;
     function AcceptKeywords(AIcon: TIconItem): Boolean;
     function AddIcon(AFileName, AKeywords: String; AStyle: TIconStyle; AWidth, AHeight: Integer): TIconItem;
+    procedure DeleteIconFolder(AFolder: String);
     procedure FilterIcons;
     function FolderIsHidden(AFolder: String): Boolean;
     procedure ReadIconFolder(AFolder: String);
@@ -507,6 +508,8 @@ var
   metadataFile: String;
 begin
   AFolder := AppendPathDelim(AFolder);
+  if FIconFolders.IndexOf(AFolder) > -1 then   // Avoid duplicates
+    DeleteIconFolder(AFolder);
   ReadIconFolder(AFolder);
   if FIconFolders.IndexOf(AFolder) = -1 then
     FIconFolders.Add(AFolder);
@@ -565,6 +568,31 @@ begin
     finally
       UnlockFilter;
     end;
+  end;
+end;
+
+procedure TIconViewer.DeleteIconFolder(AFolder: String);
+var
+  i: Integer;
+  folder: String;
+begin
+  if FolderIsHidden(AFolder) then
+    System.Delete(AFolder, 1, 1);
+
+  for i := FIconFolders.Count-1 downto 0 do
+  begin
+    folder := FIconFolders[i];
+    if FolderIsHidden(folder) then
+      System.Delete(folder, 1, 1);
+    if AFolder = folder then
+      FIconFolders.Delete(i);
+  end;
+
+  for i := FIconList.Count-1 downto 0 do
+  begin
+    folder := ExtractFilePath(FIconList[i].FileName);
+    if folder = AFolder then
+      FIconList.Delete(i);
   end;
 end;
 
@@ -862,6 +890,8 @@ begin
   FIconList.Clear;
   for i := 0 to AList.Count-1 do
   begin
+    if FIconFolders.IndexOf(AList[i]) > -1 then    // Avoid duplicates
+      DeleteIconFolder(AList[i]);
     FIconFolders.Add(AList[i]);
     ReadIconFolder(AList[i]);
   end;
