@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ActnList,
-  ExtCtrls, StdCtrls, FileUtil, LazFileUtils, FileCtrl, Buttons, Clipbrd,
+  ExtCtrls, StdCtrls, FileUtil, LazFileUtils, FileCtrl, Buttons, Clipbrd, Menus,
   IconThumbnails, IconKeywordFilterEditor, ilMetadata, ilSettings;
 
 type
@@ -38,6 +38,7 @@ type
     lblStyle: TLabel;
     Panel1: TPanel;
     Panel2: TPanel;
+    DirectoriesDropdownMenu: TPopupMenu;
     SelectDirectoryDialog: TSelectDirectoryDialog;
     btnKeywordEditor: TSpeedButton;
     ToolBar1: TToolBar;
@@ -65,6 +66,7 @@ type
     procedure cmbFilterByKeywordsChange(Sender: TObject);
     procedure cmbFilterBySizeChange(Sender: TObject);
     procedure cmbFilterByStyleChange(Sender: TObject);
+    procedure DirectoriesDropdownMenuPopup(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
@@ -249,6 +251,11 @@ begin
   FIconViewer.FilterByIconStyle := TIconStyle(cmbFilterByStyle.ItemIndex);
   FIconViewer.Invalidate;
   UpdateIconCount;
+end;
+
+procedure TMainForm.DirectoriesDropdownMenuPopup(Sender: TObject);
+begin
+  FIconViewer.PopulateIconFoldersMenu(DirectoriesDropdownMenu);
 end;
 
 procedure TMainForm.FormActivate(Sender: TObject);

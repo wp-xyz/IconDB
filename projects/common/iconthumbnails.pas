@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, fgl, FPImage, StrUtils,
-  FileUtil, LazFileUtils, Graphics, Controls, Dialogs, Forms,
+  FileUtil, LazFileUtils, Graphics, Controls, Dialogs, Menus, Forms,
   BasicThumbnails;
 
 type
@@ -90,6 +90,7 @@ type
     FAutoThumbnailSize: Boolean;
     FMetadataDirty: Boolean;
     function GetIconCount: Integer;
+    procedure IconFolderClicked(Sender: TObject);
     procedure SetFilterByIconKeywords(AValue: String);
     procedure SetFilterByIconSize(AValue: String);
     procedure SetFilterByIconStyle(AValue: TIconStyle);
@@ -116,6 +117,7 @@ type
     procedure GetIconSizesAsStrings(AList: TStrings);
     procedure GetKeywordsAsStrings(AList: TStrings);
     function IndexOfThumbnail(AIcon: TIconItem): Integer;
+    procedure PopulateIconFoldersMenu(AMenu: TMenu);
     procedure UpdateIconFolders;
     procedure WriteMetadataFiles;
 
@@ -700,6 +702,45 @@ begin
   end;
 end;
 
+procedure TIconViewer.IconFolderClicked(Sender: TObject);
+var
+  i, idx: Integer;
+  folder: String;
+begin
+  if TMenuItem(Sender).Tag < 0 then
+  begin
+    for i := 0 to FIconFolders.Count -1 do
+    begin
+      folder := FIconFolders[i];
+      case TMenuItem(Sender).Tag of
+        -1: // "Show all"
+            if folder[1] = '-' then System.Delete(folder, 1, 1);
+        -2: // "Hide all"
+            if folder[1] <> '-' then folder := '-' + folder;
+        else
+            exit;
+      end;
+      FIconFolders[i] := folder;
+    end;
+  end else
+  begin
+    idx := TMenuItem(Sender).Tag;
+    folder := FIconFolders[idx];
+    if TMenuItem(Sender).Checked then
+    begin
+      if folder[1] = '-' then System.Delete(folder, 1, 1);
+    end else
+    begin
+      if folder[1] <> '-' then folder := '-' + folder;
+    end;
+    FIconFolders[idx] := folder;
+  end;
+
+  UpdateIconFolders;
+  FilterIcons;
+  Invalidate;
+end;
+
 function TIconViewer.IndexOfThumbnail(AIcon: TIconItem): Integer;
 var
   i: Integer;
@@ -714,6 +755,46 @@ begin
       Result := i;
       exit;
     end;
+end;
+
+procedure TIconViewer.PopulateIconFoldersMenu(AMenu: TMenu);
+var
+  i: Integer;
+  folder: String;
+  menuitem: TMenuItem;
+
+begin
+  AMenu.Items.Clear;
+
+  menuItem := TMenuItem.Create(AMenu);
+  menuItem.Caption := 'Show all';
+  menuItem.Tag := -1;
+  menuItem.OnClick := @IconFolderClicked;
+  AMenu.Items.Add(menuItem);
+
+  menuItem := TMenuItem.Create(AMenu);
+  menuItem.Caption := 'Hide all';
+  menuItem.Tag := -2;
+  menuItem.OnClick := @IconFolderClicked;
+  AMenu.Items.Add(menuItem);
+
+  menuItem := TMenuItem.Create(AMenu);
+  menuItem.Caption := '-';
+  AMenu.Items.Add(menuItem);
+
+  for i := 0 to FIconFolders.Count-1 do
+  begin
+    menuItem := TMenuItem.Create(AMenu);
+    folder := FIconFolders[i];
+    menuItem.Checked := folder[1] <> '-';
+    if folder[1] = '-' then
+      System.Delete(folder, 1, 1);
+    menuItem.Caption := folder;
+    menuItem.AutoCheck := true;
+    menuItem.Tag := i;
+    menuItem.OnClick := @IconFolderClicked;
+    AMenu.Items.Add(menuItem);
+  end;
 end;
 
 procedure TIconViewer.ReadIconDir(AFolder: String);

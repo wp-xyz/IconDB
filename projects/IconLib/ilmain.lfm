@@ -152,49 +152,51 @@ object MainForm: TMainForm
       Left = 1
       Top = 0
       Action = acAddFolder
+      DropdownMenu = DirectoriesDropdownMenu
+      Style = tbsDropDown
     end
     object ToolButton2: TToolButton
-      Left = 202
+      Left = 214
       Top = 0
       Action = acEditMetadata
     end
     object ToolButton3: TToolButton
-      Left = 409
+      Left = 421
       Top = 0
       Action = acExit
     end
     object ToolButton5: TToolButton
-      Left = 74
+      Left = 86
       Top = 0
       Action = acDeleteIcon
     end
     object ToolButton6: TToolButton
-      Left = 354
+      Left = 366
       Height = 48
       Top = 0
       Caption = 'ToolButton6'
       Style = tbsDivider
     end
     object ToolButton7: TToolButton
-      Left = 115
+      Left = 127
       Top = 0
       Action = acCopyToClipboard
       Caption = 'Copy to clipb.'
     end
     object ToolButton4: TToolButton
-      Left = 269
+      Left = 281
       Top = 0
       Action = acWriteMetadata
     end
     object ToolButton8: TToolButton
-      Left = 197
+      Left = 209
       Height = 48
       Top = 0
       Caption = 'ToolButton8'
       Style = tbsDivider
     end
     object ToolButton9: TToolButton
-      Left = 359
+      Left = 371
       Top = 0
       Action = acSettings
     end
@@ -1676,7 +1678,12 @@ object MainForm: TMainForm
     end
   end
   object SelectDirectoryDialog: TSelectDirectoryDialog
-    Left = 72
-    Top = 120
+    Left = 96
+    Top = 152
+  end
+  object DirectoriesDropdownMenu: TPopupMenu
+    OnPopup = DirectoriesDropdownMenuPopup
+    Left = 48
+    Top = 88
   end
 end

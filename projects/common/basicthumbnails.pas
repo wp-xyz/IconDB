@@ -214,18 +214,24 @@ procedure TBasicThumbnailViewer.GetThumbnailColRow(X, Y: Integer;
   out ACol, ARow: Integer);
 var
   w, h: Integer;
-  col, row: Integer;
 begin
-  X := X + HorzScrollbar.Position;
-  Y := Y + VertScrollbar.Position;
-  w := FThumbnailWidth + FThumbnailSpacing;
-  h := FThumbnailHeight + FThumbnailSpacing;
-  ACol := X div w;
-  if X mod w < FThumbnailSpacing then  // X is in spacing part
+  if ThumbnailCount = 0 then
+  begin
     ACol := -1;
-  ARow := Y div h;
-  if Y mod h < FThumbnailSpacing then  // Y is in spacing part
     ARow := -1;
+  end else
+  begin
+    X := X + HorzScrollbar.Position;
+    Y := Y + VertScrollbar.Position;
+    w := FThumbnailWidth + FThumbnailSpacing;
+    h := FThumbnailHeight + FThumbnailSpacing;
+    ACol := X div w;
+    if X mod w < FThumbnailSpacing then  // X is in spacing part
+      ACol := -1;
+    ARow := Y div h;
+    if Y mod h < FThumbnailSpacing then  // Y is in spacing part
+      ARow := -1;
+  end;
 end;
 
 function TBasicThumbnailViewer.GetThumbnail(AIndex: Integer): TBasicThumbnail;
