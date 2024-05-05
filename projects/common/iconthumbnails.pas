@@ -5,7 +5,7 @@ unit IconThumbNails;
 interface
 
 uses
-  Classes, SysUtils, fgl, FPImage, StrUtils,
+  Classes, SysUtils, fgl, FPImage, StrUtils, laz2_dom,
   FileUtil, LazFileUtils, Graphics, Controls, Dialogs, Menus, Forms,
   BasicThumbnails;
 
@@ -89,6 +89,7 @@ type
     FLargestIconHeight: Integer;
     FAutoThumbnailSize: Boolean;
     FMetadataDirty: Boolean;
+    FFilterLock: Integer;
     function GetIconCount: Integer;
     procedure IconFolderClicked(Sender: TObject);
     procedure SetFilterByIconKeywords(AValue: String);
@@ -101,8 +102,10 @@ type
     function AcceptKeywords(AIcon: TIconItem): Boolean;
     function AddIcon(AFileName, AKeywords: String; AStyle: TIconStyle; AWidth, AHeight: Integer): TIconItem;
     procedure FilterIcons;
-    procedure ReadIconDir(AFolder: String);
-    procedure ReadMetadataFile(AFileName: String);
+    function FolderIsHidden(AFolder: String): Boolean;
+    procedure ReadIconFolder(AFolder: String);
+    procedure ReadIcons(AFolder: String; AHidden: Boolean);
+    procedure ReadMetadataFile(AFileName: String; AHidden: Boolean);
     procedure SetSelectedIndex(AValue: Integer); override;
 
   public
@@ -112,13 +115,18 @@ type
     procedure Clear; override;
     procedure CopyMetadataToNameBase(AIcon: TIconItem);
     procedure DeleteIcon(AIcon: TIconItem);
+    function FilterLocked: Boolean;
     function FindIconSize(AIcon: TIconItem; AWidth, AHeight: Integer): TIconItem;
     function FindLargestIcon(AIcon: TIconItem): TIconItem;
     procedure GetIconSizesAsStrings(AList: TStrings);
     procedure GetKeywordsAsStrings(AList: TStrings);
     function IndexOfThumbnail(AIcon: TIconItem): Integer;
+    procedure LockFilter;
     procedure PopulateIconFoldersMenu(AMenu: TMenu);
+    procedure ReadIconFolders(AList: TStrings);
+    procedure UnlockFilter;
     procedure UpdateIconFolders;
+    procedure WriteIconFolders(AList: TStrings);
     procedure WriteMetadataFiles;
 
     property AutoThumbnailSize: Boolean read FAutoThumbnailSize write FAutoThumbnailSize default true;
@@ -145,6 +153,7 @@ const
   ICONSTYLE_NAMES: Array[TIconStyle] of String = (
     '(any style)', 'classic', 'flat', 'outline', 'outline 2-color'
   );
+  HIDDEN_FOLDER_FLAG = '-';
 
 procedure IconStylesToStrings(AList: TStrings);
 var
@@ -384,7 +393,7 @@ var
 begin
   if FMetadataDirty then
   begin
-    res := MessageDlg('Save modifications?', mtConfirmation, [mbYes, mbNo], 0);
+    res := MessageDlg('Metadata have been changed. Save?', mtConfirmation, [mbYes, mbNo], 0);
     if res = mrYes then
       WriteMetadataFiles;
   end;
@@ -498,14 +507,12 @@ var
   metadataFile: String;
 begin
   AFolder := AppendPathDelim(AFolder);
-  metadataFile := AFolder + METADATA_FILENAME;
-  if FileExists(metadataFile) then
-    ReadMetaDataFile(metadataFile)
-  else
-    ReadIconDir(AFolder);
+  ReadIconFolder(AFolder);
   if FIconFolders.IndexOf(AFolder) = -1 then
     FIconFolders.Add(AFolder);
-  FilterIcons;
+
+  if not FilterLocked then
+    FilterIcons;
   SelectedIndex := -1;
 end;
 
@@ -548,11 +555,15 @@ begin
   if iconIdx <> -1 then
   begin
     FIconList.Delete(iconIdx);
-    FilterIcons;
-    if (selIdx <> -1) then
-    begin
-      if selIdx >= ThumbnailCount then selIdx := ThumbnailCount-1;
-      SelectedIndex := selIdx;
+    LockFilter;
+    try
+      if (selIdx <> -1) then
+      begin
+        if selIdx >= ThumbnailCount then selIdx := ThumbnailCount-1;
+        SelectedIndex := selIdx;
+      end;
+    finally
+      UnlockFilter;
     end;
   end;
 end;
@@ -599,6 +610,11 @@ begin
       end;
 
   SelectedIndex := -1;
+end;
+
+function TIconViewer.FilterLocked: Boolean;
+begin
+  Result := FFilterLock <> 0;
 end;
 
 { Finds the icon list entry for the specified item which has the same
@@ -663,6 +679,14 @@ begin
   end;
 end;
 
+{ Returns whether the given folder is hidden, i.e. its icons are not displayed
+  by the viewer. A folder is hidden when its name begins with the
+  HIDDEN_FOLDER_FLAG ('-'). }
+function TIconViewer.FolderIsHidden(AFolder: String): Boolean;
+begin
+  Result := AFolder[1] = HIDDEN_FOLDER_FLAG;
+end;
+
 { Returns the number of unfiltered icons loaded. }
 function TIconViewer.GetIconCount: Integer;
 begin
@@ -702,6 +726,7 @@ begin
   end;
 end;
 
+{ OnClick handler for the menu items created by PopulateIconFoldersMenu. }
 procedure TIconViewer.IconFolderClicked(Sender: TObject);
 var
   i, idx: Integer;
@@ -714,9 +739,9 @@ begin
       folder := FIconFolders[i];
       case TMenuItem(Sender).Tag of
         -1: // "Show all"
-            if folder[1] = '-' then System.Delete(folder, 1, 1);
+            if FolderIsHidden(folder) then System.Delete(folder, 1, 1);
         -2: // "Hide all"
-            if folder[1] <> '-' then folder := '-' + folder;
+            if not FolderIsHidden(folder) then folder := HIDDEN_FOLDER_FLAG + folder;
         else
             exit;
       end;
@@ -726,19 +751,19 @@ begin
   begin
     idx := TMenuItem(Sender).Tag;
     folder := FIconFolders[idx];
-    if TMenuItem(Sender).Checked then
-    begin
-      if folder[1] = '-' then System.Delete(folder, 1, 1);
-    end else
-    begin
-      if folder[1] <> '-' then folder := '-' + folder;
+    case TMenuItem(Sender).Checked of
+      true : if FolderIsHidden(folder) then System.Delete(folder, 1, 1);  // Un-hide a hidden folder
+      false: if not FolderIsHidden(folder) then folder := HIDDEN_FOLDER_FLAG + folder;  // Hide an un-hidden folder
     end;
     FIconFolders[idx] := folder;
   end;
 
-  UpdateIconFolders;
-  FilterIcons;
-  Invalidate;
+  LockFilter;
+  try
+    UpdateIconFolders;
+  finally
+    UnlockFilter;
+  end;
 end;
 
 function TIconViewer.IndexOfThumbnail(AIcon: TIconItem): Integer;
@@ -757,6 +782,14 @@ begin
     end;
 end;
 
+procedure TIconViewer.LockFilter;
+begin
+  inc(FFilterLock);
+end;
+
+{ Populates the given menu with the names of all folders from which icons have
+  been loaded. Folder names beginning with a '-' are not checked in the menu
+  since they marked as hidden to hide those icons. }
 procedure TIconViewer.PopulateIconFoldersMenu(AMenu: TMenu);
 var
   i: Integer;
@@ -786,9 +819,8 @@ begin
   begin
     menuItem := TMenuItem.Create(AMenu);
     folder := FIconFolders[i];
-    menuItem.Checked := folder[1] <> '-';
-    if folder[1] = '-' then
-      System.Delete(folder, 1, 1);
+    menuItem.Checked := not FolderIsHidden(folder);
+    if FolderIsHidden(folder) then System.Delete(folder, 1, 1);
     menuItem.Caption := folder;
     menuItem.AutoCheck := true;
     menuItem.Tag := i;
@@ -797,7 +829,48 @@ begin
   end;
 end;
 
-procedure TIconViewer.ReadIconDir(AFolder: String);
+{ Reads the icons found in the specified folder.
+  When the folder name begins with a '-' the icons are not displayed. }
+procedure TIconViewer.ReadIconFolder(AFolder: String);
+var
+  isHidden: Boolean;
+begin
+  if AFolder = '' then
+    exit;
+  isHidden := FolderIsHidden(AFolder);
+  if isHidden then
+    System.Delete(AFolder, 1, 1);
+  if not DirectoryExists(AFolder) then
+    exit;
+
+  AFolder := AppendPathDelim(AFolder);
+  if FileExists(AFolder + METADATA_FILENAME) then
+    ReadMetadataFile(AFolder + METADATA_FILENAME, isHidden)
+  else
+    ReadIcons(AFolder, isHidden);
+end;
+
+{ Read the icons found in the given folders list.
+  Folder names beginning with a HIDDEN_FOLDER_FLAG ('-') are marked as "hidden",
+  i.e. the corresponding icons are loaded but not shown.
+  FilterIcons must be executed by the caller to avoid duplicate calls. }
+procedure TIconViewer.ReadIconFolders(AList: TStrings);
+var
+  i: Integer;
+begin
+  FIconFolders.Clear;
+  FIconList.Clear;
+  for i := 0 to AList.Count-1 do
+  begin
+    FIconFolders.Add(AList[i]);
+    ReadIconFolder(AList[i]);
+  end;
+end;
+
+{ Looks for image files (*.png, *.bmp) in the given folder and adds them to
+  the viewer.
+  When AHidden is true all icons are marked as hidden, i.e. are not displayed. }
+procedure TIconViewer.ReadIcons(AFolder: String; AHidden: Boolean);
 var
   files: TStrings;
   reader: TFPCustomImageReaderClass;
@@ -820,7 +893,7 @@ begin
             w := X;
             h := Y;
           end;
-          AddIcon(files[i], '', isAnyStyle, w, h);
+          AddIcon(files[i], '', isAnyStyle, w, h).Hidden := AHidden;
         end;
       finally
         stream.Free;
@@ -831,10 +904,15 @@ begin
   end;
 end;
 
-{ Structure of metadata.txt lines:
+{ Reads the given metadata file which contains a list of all icons and their
+  metadata to be included by the viewer.
+  When AHidden is true the icons, however, are marked as being hidden and are
+  not displayed.
+
+  metadata.txt is a text file in which the lines have the following structure:
     filename|width|height|style|keyword1;keyword2;...
     Allowed styles: classic, flat, outline, outline 2-color }
-procedure TIconViewer.ReadMetadataFile(AFileName: String);
+procedure TIconViewer.ReadMetadataFile(AFileName: String; AHidden: Boolean);
 var
   lines: TStrings;
   i: Integer;
@@ -862,7 +940,7 @@ begin
           w := StrToInt(parts[1]);
           h := StrToInt(parts[2]);
           style := StrToIconStyle(parts[3]);
-          AddIcon(fn, parts[4], style, w, h);
+          AddIcon(fn, parts[4], style, w, h).Hidden := AHidden;
         end;
       end;
     end;
@@ -876,7 +954,11 @@ begin
   if FFilterByIconKeywords <> AValue then
   begin
     FFilterByIconKeywords := AValue;
-    FilterIcons;
+    if not FilterLocked then
+    begin
+      FilterIcons;
+      Invalidate;
+    end;
   end;
 end;
 
@@ -897,7 +979,11 @@ begin
       FFilterByIconWidth := StrToInt(Trim(sa[0]));
       FFilterByIconHeight := StrToInt(Trim(sa[1]));
     end;
-    FilterIcons;
+    if not FilterLocked then
+    begin
+      FilterIcons;
+      Invalidate;
+    end;
   end;
 end;
 
@@ -906,7 +992,11 @@ begin
   if FFilterByIconStyle <> AValue then
   begin
     FFilterByIconStyle := AValue;
-    FilterIcons;
+    if not FilterLocked then
+    begin
+      FilterIcons;
+      Invalidate;
+    end;
   end;
 end;
 
@@ -927,7 +1017,17 @@ begin
   inherited;
 end;
 
-{ Folders and all their icons can be hidding when the folder name in the
+procedure TIconViewer.UnlockFilter;
+begin
+  dec(FFilterLock);
+  if FFilterLock = 0 then
+  begin
+    FilterIcons;
+    Invalidate;
+  end;
+end;
+
+{ Folders and all their icons can be hidden when the folder name in the
   IconFolder list is made to begin with a '-'. This procedure iterates over
   all icons and sets their Hidden flag when their folder is hidden. }
 procedure TIconViewer.UpdateIconFolders;
@@ -943,7 +1043,7 @@ begin
     for i := 0 to FIconFolders.count-1 do
     begin
       folder := FIconFolders[i];
-      if folder[1] = '-' then
+      if FolderIsHidden(folder) then
       begin
         System.Delete(folder, 1,1);
         hiddenFolders.Add(AppendPathDelim(folder));
@@ -957,11 +1057,19 @@ begin
       item.Hidden := hiddenfolders.Find(folder, j);
     end;
 
-    FilterIcons;
-    Invalidate;
+    if not FilterLocked then
+    begin
+      FilterIcons;
+      Invalidate;
+    end;
   finally
     hiddenFolders.Free;
   end;
+end;
+
+procedure TIconViewer.WriteIconFolders(AList: TStrings);
+begin
+  AList.Assign(FIconFolders);
 end;
 
 procedure TIconViewer.WriteMetadataFiles;
@@ -971,12 +1079,14 @@ var
   item: TIconItem;
   i, j: Integer;
   filename: String;
+  style: String;
 begin
   Screen.Cursor := crHourglass;
   try
     for i := 0 to FIconFolders.Count-1 do
     begin
       folder := AppendPathDelim(FIconFolders[i]);
+      if FolderIsHidden(folder) then System.Delete(folder, 1, 1);
       metadata := TStringList.Create;
       try
         if FileExists(folder + METADATA_FILENAME) then
@@ -990,8 +1100,11 @@ begin
           item := FIconList[j];
           filename := ExtractFileName(item.FileName);
           if ExtractFilePath(item.FileName) = folder then
+          begin
+            if item.Style = isAnyStyle then style := '' else style := item.StyleAsString;
             metadata.Add('%s|%d|%d|%s|%s', [
-              fileName, item.Width, item.Height, item.StyleAsString, item.KeywordsAsString]);
+              fileName, item.Width, item.Height, style, item.KeywordsAsString]);
+          end;
         end;
         metadata.SaveToFile(folder + METADATA_FILENAME);
         FMetadataDirty := false;

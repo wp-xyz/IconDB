@@ -9,6 +9,7 @@ object MainForm: TMainForm
   LCLVersion = '3.99.0.0'
   OnActivate = FormActivate
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   object Panel1: TPanel
     Left = 12
     Height = 51
@@ -152,7 +153,7 @@ object MainForm: TMainForm
       Left = 1
       Top = 0
       Action = acAddFolder
-      DropdownMenu = DirectoriesDropdownMenu
+      DropdownMenu = IconFoldersDropdownMenu
       Style = tbsDropDown
     end
     object ToolButton2: TToolButton
@@ -1681,9 +1682,9 @@ object MainForm: TMainForm
     Left = 96
     Top = 152
   end
-  object DirectoriesDropdownMenu: TPopupMenu
-    OnPopup = DirectoriesDropdownMenuPopup
-    Left = 48
+  object IconFoldersDropdownMenu: TPopupMenu
+    OnPopup = IconFoldersDropdownMenuPopup
+    Left = 80
     Top = 88
   end
 end

@@ -1,17 +1,17 @@
 object SettingsForm: TSettingsForm
   Left = 314
-  Height = 428
+  Height = 307
   Top = 130
-  Width = 486
+  Width = 557
   Caption = 'Settings'
-  ClientHeight = 428
-  ClientWidth = 486
+  ClientHeight = 307
+  ClientWidth = 557
   LCLVersion = '3.99.0.0'
   object ButtonPanel1: TButtonPanel
     Left = 6
     Height = 34
-    Top = 388
-    Width = 474
+    Top = 267
+    Width = 545
     OKButton.Name = 'OKButton'
     OKButton.DefaultCaption = True
     HelpButton.Name = 'HelpButton'
@@ -23,33 +23,86 @@ object SettingsForm: TSettingsForm
     TabOrder = 0
     ShowButtons = [pbOK, pbCancel]
   end
-  object clbFolders: TCheckListBox
-    AnchorSideLeft.Control = Owner
-    AnchorSideTop.Control = lblIncludedFolders
-    AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = Owner
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Control = ButtonPanel1
-    Left = 8
-    Height = 357
-    Top = 25
-    Width = 470
-    Anchors = [akTop, akLeft, akRight, akBottom]
-    BorderSpacing.Left = 8
-    BorderSpacing.Top = 2
-    BorderSpacing.Right = 8
-    ItemHeight = 0
-    TabOrder = 1
-  end
-  object lblIncludedFolders: TLabel
+  object FolderPanel: TGroupBox
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
     Left = 8
-    Height = 15
+    Height = 229
     Top = 8
-    Width = 111
-    BorderSpacing.Left = 8
-    BorderSpacing.Top = 8
-    Caption = 'Included icon folders'
+    Width = 541
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Around = 8
+    Caption = 'Icon folders'
+    ClientHeight = 209
+    ClientWidth = 537
+    TabOrder = 1
+    object clbFolders: TCheckListBox
+      AnchorSideLeft.Control = FolderPanel
+      AnchorSideTop.Control = FolderPanel
+      AnchorSideRight.Control = FolderPanel
+      AnchorSideRight.Side = asrBottom
+      AnchorSideBottom.Control = btnMoveFolderUp
+      Left = 8
+      Height = 172
+      Top = 0
+      Width = 521
+      Anchors = [akTop, akLeft, akRight, akBottom]
+      BorderSpacing.Left = 8
+      BorderSpacing.Right = 8
+      ItemHeight = 0
+      TabOrder = 0
+      OnSelectionChange = clbFoldersSelectionChange
+    end
+    object btnDeleteFolder: TButton
+      AnchorSideTop.Control = btnMoveFolderUp
+      AnchorSideRight.Control = btnMoveFolderUp
+      AnchorSideBottom.Side = asrBottom
+      Left = 150
+      Height = 25
+      Top = 178
+      Width = 75
+      Anchors = [akTop, akRight]
+      BorderSpacing.Bottom = 8
+      Caption = 'Delete'
+      Enabled = False
+      TabOrder = 1
+      OnClick = btnDeleteFolderClick
+    end
+    object btnMoveFolderUp: TButton
+      AnchorSideLeft.Control = FolderPanel
+      AnchorSideLeft.Side = asrCenter
+      AnchorSideTop.Control = btnDeleteFolder
+      AnchorSideRight.Side = asrBottom
+      AnchorSideBottom.Control = FolderPanel
+      AnchorSideBottom.Side = asrBottom
+      Left = 231
+      Height = 25
+      Top = 178
+      Width = 75
+      Anchors = [akLeft, akBottom]
+      BorderSpacing.Around = 6
+      Caption = 'Move up'
+      Enabled = False
+      TabOrder = 2
+      OnClick = btnMoveFolderUpClick
+    end
+    object btnMoveFolderDown: TButton
+      AnchorSideLeft.Control = btnMoveFolderUp
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = btnMoveFolderUp
+      AnchorSideRight.Side = asrBottom
+      Left = 312
+      Height = 25
+      Top = 178
+      Width = 75
+      BorderSpacing.Left = 6
+      BorderSpacing.Right = 6
+      Caption = 'Move down'
+      Enabled = False
+      TabOrder = 3
+      OnClick = btnMoveFolderDownClick
+    end
   end
 end

@@ -5,9 +5,11 @@ unit ilMain;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, ActnList,
+  Classes, SysUtils, IniFiles,
+  Forms, Controls, Graphics, Dialogs, ComCtrls, ActnList,
   ExtCtrls, StdCtrls, FileUtil, LazFileUtils, FileCtrl, Buttons, Clipbrd, Menus,
-  IconThumbnails, IconKeywordFilterEditor, ilMetadata, ilSettings;
+  IconThumbnails, IconKeywordFilterEditor,
+  ilGlobal, ilUtils, ilMetadata, ilSettings;
 
 type
 
@@ -38,7 +40,7 @@ type
     lblStyle: TLabel;
     Panel1: TPanel;
     Panel2: TPanel;
-    DirectoriesDropdownMenu: TPopupMenu;
+    IconFoldersDropdownMenu: TPopupMenu;
     SelectDirectoryDialog: TSelectDirectoryDialog;
     btnKeywordEditor: TSpeedButton;
     ToolBar1: TToolBar;
@@ -66,9 +68,10 @@ type
     procedure cmbFilterByKeywordsChange(Sender: TObject);
     procedure cmbFilterBySizeChange(Sender: TObject);
     procedure cmbFilterByStyleChange(Sender: TObject);
-    procedure DirectoriesDropdownMenuPopup(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure IconFoldersDropdownMenuPopup(Sender: TObject);
   private
     FActivated: Boolean;
     FIconViewer: TIconViewer;
@@ -78,6 +81,11 @@ type
     procedure UpdateCmds;
     procedure UpdateIconCount;
     procedure UpdateIconDetails;
+    procedure UpdateIconSizes(ASizeIndex: Integer);
+    procedure UpdateIconStyles(AStyleIndex: Integer);
+
+    procedure ReadIni;
+    procedure WriteIni;
 
   public
 
@@ -118,11 +126,8 @@ begin
       folder := AppendPathDelim(SelectDirectoryDialog.FileName);
       FIconViewer.AddIconFolder(folder);
       FIconViewer.Invalidate;
-      FIconViewer.GetIconSizesAsStrings(cmbFilterBySize.Items);
-      cmbFilterBySize.Items.Insert(0, '(any size)');
-      cmbFilterBySize.ItemIndex := filterBySize;
-      IconStylesToStrings(cmbFilterByStyle.Items);
-      cmbFilterByStyle.ItemIndex := filterByStyle;
+      UpdateIconSizes(filterBySize);
+      UpdateIconStyles(filterByStyle);
       UpdateIconCount;
       UpdateIconDetails;
       UpdateCmds;
@@ -180,15 +185,33 @@ end;
 procedure TMainForm.acSettingsExecute(Sender: TObject);
 var
   F: TSettingsForm;
+  list: TStrings;
+  sizeFilter, styleFilter: Integer;
 begin
+  styleFilter := cmbFilterByStyle.ItemIndex;
+  if styleFilter = -1 then styleFilter := 0;
+  sizeFilter := cmbFilterBySize.ItemIndex;
+  if sizeFilter = -1 then sizeFilter := 0;
+
+  list := TStringList.Create;
   F := TSettingsForm.Create(self);
   try
     F.Position := poMainFormCenter;
-    F.IconFoldersToSettings(FIconViewer.IconFolders);
+    FIconViewer.WriteIconFolders(list);
+    F.SetIconFolders(list);
     if F.ShowModal = mrOK then
     begin
-      F.IconFoldersFromSettings(FIconViewer.IconFolders);
-      FIconViewer.UpdateIconFolders;
+      Screen.Cursor := crHourglass;
+      FIconViewer.LockFilter;
+      try
+        F.GetIconFolders(list);
+        FIconViewer.ReadIconFolders(list);
+        UpdateIconSizes(sizeFilter);
+        UpdateIconStyles(stylefilter);
+      finally
+        FIconViewer.UnlockFilter;
+        Screen.Cursor := crDefault;
+      end;
     end;
   finally
     F.Free;
@@ -253,9 +276,14 @@ begin
   UpdateIconCount;
 end;
 
-procedure TMainForm.DirectoriesDropdownMenuPopup(Sender: TObject);
+procedure TMainForm.FormDestroy(Sender: TObject);
 begin
-  FIconViewer.PopulateIconFoldersMenu(DirectoriesDropdownMenu);
+  WriteIni;
+end;
+
+procedure TMainForm.IconFoldersDropdownMenuPopup(Sender: TObject);
+begin
+  FIconViewer.PopulateIconFoldersMenu(IconFoldersDropdownMenu);
 end;
 
 procedure TMainForm.FormActivate(Sender: TObject);
@@ -308,6 +336,9 @@ begin
   FIconViewer.Parent := self;
   FIconViewer.OnDblClick := @IconViewerDblClickHandler;
   FIconViewer.OnSelect := @IconViewerSelectHandler;
+
+  ReadIni;
+
   UpdateIconDetails;
   UpdateIconCount;
 end;
@@ -320,6 +351,54 @@ end;
 procedure TMainForm.IconViewerSelectHandler(Sender: TObject);
 begin
   UpdateIconDetails;
+end;
+
+procedure TMainForm.ReadIni;
+var
+  ini: TCustomIniFile;
+  L, T, W, H: Integer;
+  R: TRect;
+  list: TStrings;
+  i: Integer;
+begin
+  ini := CreateIniFile;
+  try
+    L := ini.ReadInteger('MainForm', 'Left', Left);
+    T := ini.ReadInteger('MainForm', 'Top', Top);
+    W := ini.ReadInteger('MainForm', 'Width', Width);
+    H := ini.ReadInteger('MainForm', 'Height', Height);
+    R := Monitor.WorkAreaRect;
+    if W > R.Width then W := R.Width;
+    if H > R.Height then H := R.Height;
+    if L + W > R.Right then L := R.Right - W;
+    if T + H > R.Bottom then T := R.Bottom - H;
+    if L < R.Left then L := R.Left;
+    if T < R.Top then T := R.Top;
+    SetBounds(L, T, W, H);
+
+    FIconViewer.LockFilter;
+    try
+      list := TStringList.Create;
+      try
+        ini.ReadSection('IconFolders', list);
+        for i := 0 to list.Count-1 do
+          list[i] := ini.ReadString('IconFolders', list[i], '');
+        FIconViewer.ReadIconFolders(list);
+      finally
+        list.Free;
+      end;
+
+      i := ini.ReadInteger('Filter', 'FilterBySize', 0);
+      UpdateIconSizes(i);
+
+      i := ini.ReadInteger('Filter', 'FilterByStyle', 0);
+      UpdateIconStyles(i);
+    finally
+      FIconViewer.UnlockFilter;
+    end;
+  finally
+    ini.Free;
+  end;
 end;
 
 procedure TMainForm.UpdateCmds;
@@ -361,6 +440,63 @@ begin
     infoStyle.Caption := '';
     infoSize.Caption := '';
     infoKeywords.Caption := '';
+  end;
+end;
+
+procedure TMainForm.UpdateIconSizes(ASizeIndex: Integer);
+begin
+  FIconViewer.GetIconSizesAsStrings(cmbFilterBySize.Items);
+  cmbFilterBySize.Items.Insert(0, '(any size)');
+  if ASizeIndex < 0 then ASizeIndex := 0;
+  cmbFilterBySize.ItemIndex := ASizeIndex;
+  if ASizeIndex = 0 then
+    FIconViewer.FilterByIconSize := ''
+  else
+    FIconViewer.FilterByIconSize := cmbFilterBySize.Items[ASizeIndex];
+end;
+
+procedure TMainForm.UpdateIconStyles(AStyleIndex: Integer);
+begin
+  IconStylesToStrings(cmbFilterByStyle.Items);
+  if AStyleIndex < 0 then AStyleIndex := 0;
+  cmbFilterByStyle.ItemIndex := AStyleIndex;
+  if AStyleIndex = 0 then
+    FIconViewer.FilterByIconStyle := isAnyStyle
+  else
+    FIconViewer.FilterByIconStyle := TIconStyle(AStyleIndex);
+end;
+
+procedure TMainForm.WriteIni;
+var
+  ini: TCustomIniFile;
+  L, T, W, H: Integer;
+  R: TRect;
+  i: Integer;
+  list: TStrings;
+begin
+  ini := CreateIniFile;
+  try
+    if WindowState = wsNormal then
+    begin
+      ini.WriteInteger('MainForm', 'Left', Left);
+      ini.WriteInteger('MainForm', 'Top', Top);
+      ini.WriteInteger('MainForm', 'Width', Width);
+      ini.WriteInteger('MainForm', 'Height', Height);
+    end;
+
+    list := TStringList.Create;
+    try
+      FIconViewer.WriteIconFolders(list);
+      for i := 0 to list.Count-1 do
+        ini.WriteString('IconFolders', 'Folder' + IntToStr(i), list[i]);
+    finally
+      list.Free;
+    end;
+
+    ini.WriteInteger('Filter', 'FilterBySize', cmbFilterBySize.ItemIndex);
+    ini.WriteInteger('Filter', 'FilterByStyle', cmbFilterByStyle.ItemIndex);
+  finally
+    ini.Free;
   end;
 end;
 

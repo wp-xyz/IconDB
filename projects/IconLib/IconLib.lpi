@@ -70,6 +70,16 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="ilSettings"/>
       </Unit>
+      <Unit>
+        <Filename Value="ilglobal.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ilGlobal"/>
+      </Unit>
+      <Unit>
+        <Filename Value="ilutils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ilUtils"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
