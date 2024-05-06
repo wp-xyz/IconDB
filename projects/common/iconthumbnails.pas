@@ -98,10 +98,12 @@ type
 
   protected
     FSelectedIcon: TIconItem;
+    FOverlayIcons: array of TGraphic;
     function AcceptIcon(AIcon: TIconItem): Boolean; virtual;
     function AcceptKeywords(AIcon: TIconItem): Boolean;
     function AddIcon(AFileName, AKeywords: String; AStyle: TIconStyle; AWidth, AHeight: Integer): TIconItem;
     procedure DeleteIconFolder(AFolder: String);
+    procedure DrawThumbnail(AThumbnail: TBasicThumbnail; ARect: TRect); override;
     procedure FilterIcons;
     function FolderIsHidden(AFolder: String): Boolean;
     procedure ReadIconFolder(AFolder: String);
@@ -147,6 +149,8 @@ function StrToIconStyle(AText: String): TIconStyle;
 
 
 implementation
+
+{$R overlay.res}
 
 const
   ICON_MARGIN = 8;  // or, more precisely: double of margin
@@ -386,6 +390,14 @@ begin
   FSizes := TStringList.Create;
   TStringList(FSizes).Sorted := true;
   FAutoThumbnailSize := true;
+
+  SetLength(FOverlayIcons, 3);
+  FOverlayIcons[0] := TPortableNetworkgraphic.Create;  // 100%
+  FOverlayIcons[1] := TPortableNetworkgraphic.Create;  // 150%
+  FOverlayIcons[2] := TPortableNetworkgraphic.Create;  // 200%
+  FOverlayIcons[0].LoadFromResourceName(HINSTANCE, 'ovl_E_8');
+  FOverlayIcons[1].LoadFromResourceName(HINSTANCE, 'ovl_E_12');
+  FOverlayIcons[2].LoadFromResourceName(HINSTANCE, 'ovl_E_16');
 end;
 
 destructor TIconViewer.Destroy;
@@ -398,6 +410,9 @@ begin
     if res = mrYes then
       WriteMetadataFiles;
   end;
+  FOverlayIcons[2].Free;
+  FOverlayIcons[1].Free;
+  FOverlayIcons[0].Free;
   FSizes.Free;
   FIconList.Free;
   FIconFolders.Free;
@@ -593,6 +608,28 @@ begin
     folder := ExtractFilePath(FIconList[i].FileName);
     if folder = AFolder then
       FIconList.Delete(i);
+  end;
+end;
+
+procedure TIconViewer.DrawThumbnail(AThumbnail: TBasicThumbnail; ARect: TRect);
+var
+  ovl: TGraphic;
+  ppi: Integer;
+  item: TIconItem;
+begin
+  inherited;
+
+  item := TIconThumbnail(AThumbnail).Item;
+  if (item.KeywordCount = 0) or (item.Style = isAnyStyle) then
+  begin
+    ppi := Font.PixelsPerInch;
+    if ppi < 120 then
+      ovl := FOverlayIcons[0]
+    else if ppi < 168 then
+      ovl := FOverlayIcons[1]
+    else
+      ovl := FOverlayIcons[2];
+    Canvas.Draw(ARect.Left+1, ARect.Top+1, ovl);
   end;
 end;
 
@@ -1037,7 +1074,7 @@ begin
   if AValue = SelectedIndex then
     exit;
 
-  if (AValue > -1) then
+  if (AValue > -1) and (AValue < ThumbnailCount) then
   begin
     thumb := Thumbnail[AValue] as TIconThumbnail;
     FSelectedIcon := thumb.Item;

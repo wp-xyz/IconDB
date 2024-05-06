@@ -62,6 +62,7 @@ type
     FThumbnailWidth: Integer;
     procedure Click; override;
     procedure DoOnResize; override;
+    procedure DrawThumbnail(AThumbnail: TBasicThumbnail; ARect: TRect); virtual;
     function GetThumbnailCount: Integer; virtual;
     procedure KeyDown(var Key: Word; Shift: TShiftState); override;
     procedure MouseDown(Button: TMouseButton; Shift:TShiftState; X, Y: Integer); override;
@@ -111,15 +112,8 @@ implementation
 
 // Background is already painted
 procedure TBasicThumbnail.DrawToCanvas(ACanvas: TCanvas; ARect: TRect);
-var
-  s: String;
-  ts: TTextStyle;
 begin
-  s := IntToStr(FViewer.IndexOf(self));
-  ts := ACanvas.TextStyle;
-  ts.Alignment := taCenter;
-  ts.Layout := tlCenter;
-  ACanvas.TextRect(ARect, 0, 0, s, ts);
+  // to be overridden.
 end;
 
 procedure TBasicThumbnail.SetSelected(AValue: Boolean);
@@ -202,6 +196,12 @@ procedure TBasicThumbnailviewer.DoOnResize;
 begin
   inherited;
   LayoutThumbnails;
+end;
+
+procedure TBasicThumbnailViewer.DrawThumbnail(AThumbnail: TBasicThumbnail;
+  ARect: TRect);
+begin
+  AThumbnail.DrawToCanvas(Canvas, ARect);
 end;
 
 class function TBasicThumbnailviewer.GetControlClassDefaultSize: TSize;
@@ -441,7 +441,7 @@ begin
       // Make the thumbnail draw itself
       Canvas.ClipRect := Rclip;
       Canvas.Clipping := true;
-      thumb.DrawToCanvas(Canvas, R);
+      DrawThumbnail(thumb, R);
       Canvas.Clipping := false;
     end;
   end;
@@ -507,12 +507,16 @@ procedure TBasicThumbnailViewer.SetSelectedIndex(AValue: Integer);
 begin
   if AValue = FSelectedIndex then
     exit;
-  FSelectedIndex := AValue;
-  if FSelectedIndex > -1 then
-    SingleSelect(FThumbnailList[AValue])
+  if AValue >= ThumbnailCount then
+    FSelectedIndex := -1
   else
+    FSelectedIndex := AValue;
+  if FSelectedIndex > -1 then
+  begin
+    SingleSelect(FThumbnailList[AValue]);
+    ScrollIntoView;
+  end else
     SingleSelect(nil);
-  ScrollIntoView;
 
   if Assigned(FOnSelect) then
     FOnSelect(self);
