@@ -205,13 +205,13 @@ object MainForm: TMainForm
   end
   object Panel2: TPanel
     Left = 0
-    Height = 31
+    Height = 29
     Top = 48
     Width = 814
     Align = alTop
     AutoSize = True
     BevelOuter = bvNone
-    ClientHeight = 31
+    ClientHeight = 29
     ClientWidth = 814
     Color = clWindow
     ParentBackground = False
@@ -228,7 +228,7 @@ object MainForm: TMainForm
       Width = 74
       BorderSpacing.Left = 6
       BorderSpacing.Top = 2
-      BorderSpacing.Bottom = 6
+      BorderSpacing.Bottom = 4
       DropDownCount = 24
       ItemHeight = 15
       Style = csDropDownList
@@ -268,7 +268,7 @@ object MainForm: TMainForm
       BorderSpacing.Left = 6
       BorderSpacing.Top = 2
       BorderSpacing.Right = 2
-      BorderSpacing.Bottom = 6
+      BorderSpacing.Bottom = 4
       Constraints.MinWidth = 300
       DropDownCount = 24
       ItemHeight = 15
@@ -294,7 +294,7 @@ object MainForm: TMainForm
   object Bevel2: TBevel
     Left = 0
     Height = 6
-    Top = 79
+    Top = 77
     Width = 814
     Align = alTop
     Shape = bsTopLine

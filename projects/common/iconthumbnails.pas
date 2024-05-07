@@ -98,11 +98,12 @@ type
 
   protected
     FSelectedIcon: TIconItem;
+    FOverlayIcons: array[0..2] of TGraphic;
     function AcceptIcon(AIcon: TIconItem): Boolean; virtual;
     function AcceptKeywords(AIcon: TIconItem): Boolean;
     function AddIcon(AFileName, AKeywords: String; AStyle: TIconStyle; AWidth, AHeight: Integer): TIconItem;
     procedure DeleteIconFolder(AFolder: String);
-//    procedure DrawThumbnail(AThumbnail: TBasicThumbnail; ARect: TRect); override;
+    procedure DrawThumbnail(AThumbnail: TBasicThumbnail; ARect: TRect); override;
     procedure FilterIcons;
     function FolderIsHidden(AFolder: String): Boolean;
     procedure ReadIconFolder(AFolder: String);
@@ -150,6 +151,8 @@ function StrToIconStyle(AText: String): TIconStyle;
 
 
 implementation
+
+{$R overlay.res}
 
 const
   ICON_MARGIN = 8;  // or, more precisely: double of margin
@@ -389,12 +392,21 @@ begin
   FSizes := TStringList.Create;
   TStringList(FSizes).Sorted := true;
   FAutoThumbnailSize := true;
+  FOverlayIcons[0] := TPortableNetworkGraphic.Create;
+  FOverlayIcons[1] := TPortableNetworkGraphic.Create;
+  FOverlayIcons[2] := TPortableNetworkGraphic.Create;
+  FOverlayIcons[0].LoadFromResourceName(HINSTANCE, 'ovl_F_16');
+  FOverlayIcons[1].LoadFromResourceName(HINSTANCE, 'ovl_F_24');
+  FOverlayIcons[2].LoadFromResourceName(HINSTANCE, 'ovl_F_32');
 end;
 
 destructor TIconViewer.Destroy;
 var
   res: Integer;
 begin
+  FOverlayIcons[2].Free;
+  FOverlayIcons[1].Free;
+  FOverlayIcons[0].Free;
   if FMetadataDirty then
   begin
     res := MessageDlg('Metadata have been changed. Save?', mtConfirmation, [mbYes, mbNo], 0);
@@ -599,7 +611,7 @@ begin
       FIconList.Delete(i);
   end;
 end;
-{
+
 procedure TIconViewer.DrawThumbnail(AThumbnail: TBasicThumbnail; ARect: TRect);
 var
   ovl: TGraphic;
@@ -621,7 +633,7 @@ begin
     Canvas.Draw(ARect.Left+1, ARect.Top+1, ovl);
   end;
 end;
- }
+
 procedure TIconViewer.FilterIcons;
 var
   i: Integer;
@@ -922,6 +934,7 @@ begin
     FIconFolders.Add(AList[i]);
     ReadIconFolder(AList[i]);
   end;
+  FilterIcons;
   SelectIconInFile(selectedIconFileName);
 end;
 
