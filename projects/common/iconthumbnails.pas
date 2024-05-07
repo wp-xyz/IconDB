@@ -98,18 +98,18 @@ type
 
   protected
     FSelectedIcon: TIconItem;
-    FOverlayIcons: array of TGraphic;
     function AcceptIcon(AIcon: TIconItem): Boolean; virtual;
     function AcceptKeywords(AIcon: TIconItem): Boolean;
     function AddIcon(AFileName, AKeywords: String; AStyle: TIconStyle; AWidth, AHeight: Integer): TIconItem;
     procedure DeleteIconFolder(AFolder: String);
-    procedure DrawThumbnail(AThumbnail: TBasicThumbnail; ARect: TRect); override;
+//    procedure DrawThumbnail(AThumbnail: TBasicThumbnail; ARect: TRect); override;
     procedure FilterIcons;
     function FolderIsHidden(AFolder: String): Boolean;
     procedure ReadIconFolder(AFolder: String);
     procedure ReadIcons(AFolder: String; AHidden: Boolean);
     procedure ReadMetadataFile(AFileName: String; AHidden: Boolean);
     procedure SetSelectedIndex(AValue: Integer); override;
+    function ThumbnailMarked(AThumbnail: TBasicThumbnail): Boolean; override;
 
   public
     constructor Create(AOwner: TComponent); override;
@@ -127,6 +127,7 @@ type
     procedure LockFilter;
     procedure PopulateIconFoldersMenu(AMenu: TMenu);
     procedure ReadIconFolders(AList: TStrings);
+    function SelectIconInFile(AFileName: String): Boolean;
     procedure UnlockFilter;
     procedure UpdateIconFolders;
     procedure WriteIconFolders(AList: TStrings);
@@ -149,8 +150,6 @@ function StrToIconStyle(AText: String): TIconStyle;
 
 
 implementation
-
-{$R overlay.res}
 
 const
   ICON_MARGIN = 8;  // or, more precisely: double of margin
@@ -390,14 +389,6 @@ begin
   FSizes := TStringList.Create;
   TStringList(FSizes).Sorted := true;
   FAutoThumbnailSize := true;
-
-  SetLength(FOverlayIcons, 3);
-  FOverlayIcons[0] := TPortableNetworkgraphic.Create;  // 100%
-  FOverlayIcons[1] := TPortableNetworkgraphic.Create;  // 150%
-  FOverlayIcons[2] := TPortableNetworkgraphic.Create;  // 200%
-  FOverlayIcons[0].LoadFromResourceName(HINSTANCE, 'ovl_E_8');
-  FOverlayIcons[1].LoadFromResourceName(HINSTANCE, 'ovl_E_12');
-  FOverlayIcons[2].LoadFromResourceName(HINSTANCE, 'ovl_E_16');
 end;
 
 destructor TIconViewer.Destroy;
@@ -410,9 +401,6 @@ begin
     if res = mrYes then
       WriteMetadataFiles;
   end;
-  FOverlayIcons[2].Free;
-  FOverlayIcons[1].Free;
-  FOverlayIcons[0].Free;
   FSizes.Free;
   FIconList.Free;
   FIconFolders.Free;
@@ -591,6 +579,7 @@ var
   i: Integer;
   folder: String;
 begin
+  // Remove the "hidden-folder" flag from the provided foldername
   if FolderIsHidden(AFolder) then
     System.Delete(AFolder, 1, 1);
 
@@ -610,7 +599,7 @@ begin
       FIconList.Delete(i);
   end;
 end;
-
+{
 procedure TIconViewer.DrawThumbnail(AThumbnail: TBasicThumbnail; ARect: TRect);
 var
   ovl: TGraphic;
@@ -632,7 +621,7 @@ begin
     Canvas.Draw(ARect.Left+1, ARect.Top+1, ovl);
   end;
 end;
-
+ }
 procedure TIconViewer.FilterIcons;
 var
   i: Integer;
@@ -915,14 +904,15 @@ begin
     ReadIcons(AFolder, isHidden);
 end;
 
-{ Read the icons found in the given folders list.
-  Folder names beginning with a HIDDEN_FOLDER_FLAG ('-') are marked as "hidden",
-  i.e. the corresponding icons are loaded but not shown.
-  FilterIcons must be executed by the caller to avoid duplicate calls. }
+{ Read the icons found in the folders of the given list. }
 procedure TIconViewer.ReadIconFolders(AList: TStrings);
 var
   i: Integer;
+  selectedIconFileName: String = '';
 begin
+  if SelectedIcon <> nil then
+    selectedIconFileName := SelectedIcon.FileName;;
+  SelectedIndex := -1;  // this sets FSelectedIcon to nil.
   FIconFolders.Clear;
   FIconList.Clear;
   for i := 0 to AList.Count-1 do
@@ -932,6 +922,7 @@ begin
     FIconFolders.Add(AList[i]);
     ReadIconFolder(AList[i]);
   end;
+  SelectIconInFile(selectedIconFileName);
 end;
 
 { Looks for image files (*.png, *.bmp) in the given folder and adds them to
@@ -1067,6 +1058,37 @@ begin
   end;
 end;
 
+{ Selected the icon among all visible thumbnails which is assigned to the
+  given filename. }
+function TIconViewer.SelectIconInFile(AFileName: String): Boolean;
+var
+  i, idx: Integer;
+  folder: String;
+begin
+  // Find the index of the icon with the given filename among all thumbnails.
+  idx := -1;
+  for i := 0 to ThumbnailCount-1 do
+  begin
+    if TIconThumbnail(Thumbnail[i]).Item.FileName = AFileName then
+    begin
+      idx := i;
+      break;
+    end;
+  end;
+
+  if idx > -1 then
+  begin
+    // Make sure that the folder is not hidden
+    folder := HIDDEN_FOLDER_FLAG + ExtractFilePath(AFileName);
+    if FIconFolders.IndexOf(folder) = -1 then
+    begin
+      SelectedIndex := idx;
+      exit;
+    end;
+  end;
+  SelectedIndex := -1;
+end;
+
 procedure TIconViewer.SetSelectedIndex(AValue: Integer);
 var
   thumb: TIconThumbnail;
@@ -1082,6 +1104,14 @@ begin
     FSelectedIcon := nil;
 
   inherited;
+end;
+
+function TIconViewer.ThumbnailMarked(AThumbnail: TBasicThumbnail): Boolean;
+var
+  item: TIconItem;
+begin
+  item := TIconThumbnail(AThumbnail).Item;
+  Result := (item.KeywordCount = 0) or (item.Style = isAnyStyle);
 end;
 
 procedure TIconViewer.UnlockFilter;

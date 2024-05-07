@@ -11,7 +11,7 @@ uses
   {$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, ilMain, ilMetadata, IconThumbNails, IconKeywordFilterEditor,
-  ilSettings, ilGlobal, ilUtils
+  BasicThumbnails, ilSettings, ilGlobal, ilUtils
   { you can add units after this };
 
 {$R *.res}

@@ -80,6 +80,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="ilUtils"/>
       </Unit>
+      <Unit>
+        <Filename Value="..\common\basicthumbnails.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="BasicThumbnails"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

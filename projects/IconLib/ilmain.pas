@@ -347,6 +347,7 @@ begin
       F.ControlsToMetaData(AIcon);
       // Copy these metadata to all icons having the same namebase.
       FIconViewer.CopyMetadataToNameBase(AIcon);
+      FIconViewer.Invalidate;
       UpdateIconDetails;
       UpdateIconCount;
     end;
