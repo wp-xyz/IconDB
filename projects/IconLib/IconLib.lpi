@@ -85,6 +85,14 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="BasicThumbnails"/>
       </Unit>
+      <Unit>
+        <Filename Value="..\common\iconviewer.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="IconViewerFrame"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Frame"/>
+        <UnitName Value="IconViewer"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

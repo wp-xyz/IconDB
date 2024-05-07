@@ -7,9 +7,9 @@ interface
 uses
   Classes, SysUtils, IniFiles,
   Forms, Controls, Graphics, Dialogs, ComCtrls, ActnList,
-  ExtCtrls, StdCtrls, FileUtil, LazFileUtils, FileCtrl, Buttons, Clipbrd, Menus,
-  IconThumbnails, IconKeywordFilterEditor,
-  ilGlobal, ilUtils, ilMetadata, ilSettings;
+  ExtCtrls, StdCtrls, FileUtil, LazFileUtils, Buttons, Clipbrd, Menus,
+  IconThumbnails, IconViewer,
+  ilUtils, ilMetadata, ilSettings;
 
 type
 
@@ -24,25 +24,9 @@ type
     acSettings: TAction;
     acWriteMetadata: TAction;
     ActionList: TActionList;
-    Bevel1: TBevel;
-    Bevel2: TBevel;
-    cmbFilterBySize: TComboBox;
-    cmbFilterByStyle: TComboBox;
-    cmbFilterByKeywords: TComboBox;
     Images: TImageList;
-    infoFileName: TLabel;
-    infoKeywords: TLabel;
-    infoSize: TLabel;
-    infoStyle: TLabel;
-    lblFileName: TLabel;
-    lblKeywords: TLabel;
-    lblSize: TLabel;
-    lblStyle: TLabel;
-    Panel1: TPanel;
-    Panel2: TPanel;
     IconFoldersDropdownMenu: TPopupMenu;
     SelectDirectoryDialog: TSelectDirectoryDialog;
-    btnKeywordEditor: TSpeedButton;
     ToolBar1: TToolBar;
     ToolButton1: TToolButton;
     ToolButton2: TToolButton;
@@ -64,26 +48,14 @@ type
     procedure acSettingsExecute(Sender: TObject);
     procedure acWriteMetadataExecute(Sender: TObject);
     procedure acWriteMetadataUpdate(Sender: TObject);
-    procedure btnKeywordEditorClick(Sender: TObject);
-    procedure cmbFilterByKeywordsEditingDone(Sender: TObject);
-    procedure cmbFilterBySizeChange(Sender: TObject);
-    procedure cmbFilterByStyleChange(Sender: TObject);
-    procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure IconFoldersDropdownMenuPopup(Sender: TObject);
   private
-    FActivated: Boolean;
-    FIconViewer: TIconViewer;
-    procedure AddKeywordFilterToHistory(AFilter: String);
+    FViewer: TIconViewerFrame;
     procedure EditMetadata(AIcon: TIconItem);
     procedure IconViewerDblClickHandler(Sender: TObject);
-    procedure IconViewerSelectHandler(Sender: TObject);
-    procedure UpdateCmds;
-    procedure UpdateIconCount;
-    procedure UpdateIconDetails;
-    procedure UpdateIconSizes(ASizeIndex: Integer);
-    procedure UpdateIconStyles(AStyleIndex: Integer);
+    procedure IconViewerFilterHandler(Sender: TObject);
 
     procedure ReadIni;
     procedure WriteIni;
@@ -106,33 +78,19 @@ const
   METADATA_FILENAME = 'metadata.txt';
   APP_CAPTION = 'Icon library';
   APP_CAPTION_MASK = 'Icon library (%d icons out of %d)';
-  MAX_KEYWORDS_HISTORY = 20;
 
 { TMainForm }
 
 procedure TMainForm.acAddFolderExecute(Sender: TObject);
 var
   folder: String;
-  filterByStyle: Integer;
-  filterBySize: Integer;
 begin
-  filterByStyle := cmbFilterByStyle.ItemIndex;
-  if filterByStyle = -1 then filterByStyle := 0;
-  filterBySize := cmbFilterBySize.ItemIndex;
-  if filterBySize = -1 then filterBySize := 0;
-
   if SelectDirectoryDialog.Execute then
   begin
     Screen.Cursor := crHourglass;
     try
       folder := AppendPathDelim(SelectDirectoryDialog.FileName);
-      FIconViewer.AddIconFolder(folder);
-      FIconViewer.Invalidate;
-      UpdateIconSizes(filterBySize);
-      UpdateIconStyles(filterByStyle);
-      UpdateIconCount;
-      UpdateIconDetails;
-      UpdateCmds;
+      FViewer.AddIconFolder(folder);
     finally
       Screen.Cursor := crDefault;
     end;
@@ -141,42 +99,33 @@ end;
 
 procedure TMainForm.acCopyToClipboardExecute(Sender: TObject);
 begin
-  if FIconViewer.SelectedIcon <> nil then
-    Clipboard.Assign(FIconViewer.SelectedIcon.Picture);
+  if FViewer.SelectedIcon <> nil then
+    Clipboard.Assign(FViewer.SelectedIcon.Picture);
 end;
 
 procedure TMainForm.acCopyToClipboardUpdate(Sender: TObject);
 begin
-  acCopyToClipboard.Enabled := (FIconViewer.SelectedIcon <> nil);
+  acCopyToClipboard.Enabled := (FViewer.SelectedIcon <> nil);
 end;
 
 procedure TMainForm.acDeleteIconExecute(Sender: TObject);
-var
-  res: TModalResult;
 begin
-  res := MessageDlg('Do you really want to delete the selected icon from the library?',
-    mtConfirmation, [mbYes, mbNo], 0);
-  if res = mrYes then
-  begin
-    FIconViewer.DeleteIcon(FIconViewer.SelectedIcon);
-    UpdateIconCount;
-    UpdateIconDetails;
-  end;
+  FViewer.DeleteSelectedIcon;
 end;
 
 procedure TMainForm.acDeleteIconUpdate(Sender: TObject);
 begin
-  acDeleteIcon.Enabled := (FIconViewer.SelectedIcon <> nil);
+  acDeleteIcon.Enabled := (FViewer.SelectedIcon <> nil);
 end;
 
 procedure TMainForm.acEditMetadataExecute(Sender: TObject);
 begin
-  EditMetaData(FIconViewer.SelectedIcon);
+  EditMetaData(FViewer.SelectedIcon);
 end;
 
 procedure TMainForm.acEditMetadataUpdate(Sender: TObject);
 begin
-  acEditMetadata.Enabled := (FIconViewer.SelectedIcon <> nil);
+  acEditMetadata.Enabled := (FViewer.SelectedIcon <> nil);
 end;
 
 procedure TMainForm.acExitExecute(Sender: TObject);
@@ -188,30 +137,20 @@ procedure TMainForm.acSettingsExecute(Sender: TObject);
 var
   F: TSettingsForm;
   list: TStrings;
-  sizeFilter, styleFilter: Integer;
 begin
-  styleFilter := cmbFilterByStyle.ItemIndex;
-  if styleFilter = -1 then styleFilter := 0;
-  sizeFilter := cmbFilterBySize.ItemIndex;
-  if sizeFilter = -1 then sizeFilter := 0;
-
   list := TStringList.Create;
   F := TSettingsForm.Create(self);
   try
     F.Position := poMainFormCenter;
-    FIconViewer.WriteIconFolders(list);
+    FViewer.IconViewer.WriteIconFolders(list);
     F.SetIconFolders(list);
     if F.ShowModal = mrOK then
     begin
       Screen.Cursor := crHourglass;
-      FIconViewer.LockFilter;
       try
         F.GetIconFolders(list);
-        FIconViewer.ReadIconFolders(list);
-        UpdateIconSizes(sizeFilter);
-        UpdateIconStyles(stylefilter);
+        FViewer.ReadIconFolders(list);
       finally
-        FIconViewer.UnlockFilter;
         Screen.Cursor := crDefault;
       end;
     end;
@@ -222,110 +161,17 @@ end;
 
 procedure TMainForm.acWriteMetadataExecute(Sender: TObject);
 begin
-  FIconViewer.WriteMetadataFiles;
+  FViewer.IconViewer.WriteMetadataFiles;
 end;
 
 procedure TMainForm.acWriteMetadataUpdate(Sender: TObject);
 begin
-  acWriteMetadata.Enabled := FIconViewer.IconCount > 0;
-end;
-
-procedure TMainForm.AddKeywordFilterToHistory(AFilter: String);
-var
-  idx: Integer;
-begin
-  if AFilter = '' then
-    exit;
-
-  idx := cmbFilterByKeywords.Items.IndexOf(AFilter);
-  if idx = -1 then
-    cmbFilterByKeywords.Items.Insert(0, AFilter)
-  else
-    cmbFilterByKeywords.Items.Move(idx, 0);
-
-  while cmbFilterByKeywords.Items.Count > MAX_KEYWORDS_HISTORY do
-    cmbFilterByKeywords.Items.Delete(cmbFilterByKeywords.Items.Count-1);
-end;
-
-procedure TMainForm.btnKeywordEditorClick(Sender: TObject);
-var
-  F: TKeywordFilterEditorForm;
-  L: TStringList;
-begin
-  F := TKeywordFilterEditorForm.Create(Self);
-  L := TStringList.Create;
-  try
-    F.Position := poOwnerFormCenter;
-    F.Filter := cmbFilterByKeywords.Text;
-    FIconViewer.GetKeywordsAsStrings(L);
-    F.Keywords := L;
-    if F.ShowModal = mrOK then
-    begin
-      cmbFilterByKeywords.Text := F.Filter;
-      FIconViewer.FilterByIconKeywords := F.Filter;
-      FIconViewer.Invalidate;
-    end;
-  finally
-    L.Free;
-    F.Free;
-  end;
-end;
-
-procedure TMainForm.cmbFilterByKeywordsEditingDone(Sender: TObject);
-var
-  filter: String;
-  idx: Integer;
-begin
-  filter := cmbFilterByKeywords.Text;
-  FIconViewer.FilterByIconKeywords := filter;
-  UpdateIconCount;
-
-  // Add to history list
-  AddKeywordFilterToHistory(filter);
-  cmbFilterByKeywords.Text := filter;
-end;
-
-procedure TMainForm.cmbFilterBySizeChange(Sender: TObject);
-begin
-  if cmbFilterBySize.ItemIndex = 0 then    // Filter by any size
-    FIconViewer.FilterByIconSize := ''
-  else
-    FIconViewer.FilterByIconSize := cmbFilterBySize.Items[cmbFilterBySize.ItemIndex];
-  FIconViewer.Invalidate;
-  UpdateIconCount;
-end;
-
-procedure TMainForm.cmbFilterByStyleChange(Sender: TObject);
-begin
-  FIconViewer.FilterByIconStyle := TIconStyle(cmbFilterByStyle.ItemIndex);
-  FIconViewer.Invalidate;
-  UpdateIconCount;
+  acWriteMetadata.Enabled := FViewer.TotalCount > 0;
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
   WriteIni;
-end;
-
-procedure TMainForm.IconFoldersDropdownMenuPopup(Sender: TObject);
-begin
-  FIconViewer.PopulateIconFoldersMenu(IconFoldersDropdownMenu);
-end;
-
-procedure TMainForm.FormActivate(Sender: TObject);
-var
-  w: Integer;
-begin
-  if not FActivated then
-  begin
-    FActivated := true;
-    w := lblFileName.Width;
-    if w < lblSize.Width then w := lblSize.Width;
-    if w < lblKeywords.Width then w := lblKeywords.Width;
-    infoFileName.BorderSpacing.Left := w + 8;
-    infoSize.BorderSpacing.Left := infoFileName.BorderSpacing.Left;
-    infoKeywords.BorderSpacing.Left := infoFileName.BorderSpacing.Left;
-  end;
 end;
 
 { Opens the metadata editor for specifying the keywords and the style of the
@@ -345,11 +191,7 @@ begin
     if F.ShowModal = mrOK then
     begin
       F.ControlsToMetaData(AIcon);
-      // Copy these metadata to all icons having the same namebase.
-      FIconViewer.CopyMetadataToNameBase(AIcon);
-      FIconViewer.Invalidate;
-      UpdateIconDetails;
-      UpdateIconCount;
+      FViewer.CopyMetadataToNameBase(AIcon);
     end;
   finally
     F.Free;
@@ -358,26 +200,31 @@ end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
-  FIconViewer := TIconViewer.Create(self);
-  FIconViewer.Align := alClient;
-  FIconViewer.Parent := self;
-  FIconViewer.OnDblClick := @IconViewerDblClickHandler;
-  FIconViewer.OnSelect := @IconViewerSelectHandler;
+  FViewer := TIconViewerFrame.Create(self);
+  FViewer.Align := alClient;
+  FViewer.Parent := self;
+  FViewer.OnIconDblClick := @IconViewerDblClickHandler;
+  FViewer.OnFilter := @IconViewerFilterHandler;
 
   ReadIni;
+end;
 
-  UpdateIconDetails;
-  UpdateIconCount;
+procedure TMainForm.IconFoldersDropdownMenuPopup(Sender: TObject);
+begin
+  FViewer.IconViewer.PopulateIconFoldersMenu(IconFoldersDropdownMenu);
 end;
 
 procedure TMainForm.IconViewerDblClickHandler(Sender: TObject);
 begin
-  EditMetadata(FIconViewer.SelectedIcon);
+  EditMetadata(FViewer.SelectedIcon);
 end;
 
-procedure TMainForm.IconViewerSelectHandler(Sender: TObject);
+procedure TMainForm.IconViewerFilterHandler(Sender: TObject);
 begin
-  UpdateIconDetails;
+  if FViewer.TotalCount = 0 then
+    Caption := APP_CAPTION
+  else
+    Caption := Format(APP_CAPTION_MASK, [FViewer.FilteredCount, FViewer.TotalCount]);
 end;
 
 procedure TMainForm.ReadIni;
@@ -404,14 +251,14 @@ begin
     if T < R.Top then T := R.Top;
     SetBounds(L, T, W, H);
 
-    FIconViewer.LockFilter;
+    FViewer.IconViewer.LockFilter;
     try
       list := TStringList.Create;
       try
         ini.ReadSection('IconFolders', list);
         for i := 0 to list.Count-1 do
           list[i] := ini.ReadString('IconFolders', list[i], '');
-        FIconViewer.ReadIconFolders(list);
+        FViewer.IconViewer.ReadIconFolders(list);
 
         list.Clear;
         ini.ReadSection('KeywordsHistory', list);
@@ -419,87 +266,22 @@ begin
           list[i] := ini.ReadString('KeywordsHistory', list[i], '');
         for i := list.Count-1 downto 0 do
           if list[i] = '' then list.Delete(i);
-        cmbFilterByKeywords.Items.Assign(list);
+        FViewer.cmbFilterByKeywords.Items.Assign(list);
       finally
         list.Free;
       end;
 
       i := ini.ReadInteger('Filter', 'FilterBySize', 0);
-      UpdateIconSizes(i);
+      FViewer.UpdateIconSizes(i);
 
       i := ini.ReadInteger('Filter', 'FilterByStyle', 0);
-      UpdateIconStyles(i);
+      FViewer.UpdateIconStyles(i);
     finally
-      FIconViewer.UnlockFilter;
+      FViewer.IconViewer.UnlockFilter;
     end;
   finally
     ini.Free;
   end;
-end;
-
-procedure TMainForm.UpdateCmds;
-begin
-  btnKeywordEditor.Enabled := FIconViewer.IconCount > 0;
-end;
-
-procedure TMainForm.UpdateIconCount;
-begin
-  if FIconViewer.ThumbnailCount = 0 then
-    Caption := APP_CAPTION
-  else
-    Caption := Format(APP_CAPTION_MASK, [FIconViewer.ThumbnailCount, FIconViewer.IconCount]);
-end;
-
-procedure TMainForm.UpdateIconDetails;
-var
-  keywordList: TStrings;
-begin
-  if FIconViewer.SelectedIcon <> nil then
-  begin
-    infoFileName.Hint := FIconViewer.SelectedIcon.FileName;
-    infoFileName.Caption := MinimizeName(infoFileName.Hint, Canvas, infoFileName.Width - infoFileName.BorderSpacing.Right);
-    infoSize.Caption := FIconViewer.SelectedIcon.SizeAsString;
-    infoStyle.Caption := FIconViewer.SelectedIcon.StyleAsString;
-    keywordList := TStringList.Create;
-    try
-      FIconViewer.SelectedIcon.ExportKeywordsToStrings(keywordList);
-      keywordList.Delimiter := ';';
-      keywordList.StrictDelimiter := true;
-      infoKeywords.Caption := StringReplace(keywordList.DelimitedText, ';', '; ', [rfReplaceAll]);
-    finally
-      keywordList.Free;
-    end;
-  end else
-  begin
-    infoFileName.Caption := '';
-    infoFileName.Hint := '';
-    infoStyle.Caption := '';
-    infoSize.Caption := '';
-    infoKeywords.Caption := '';
-  end;
-end;
-
-procedure TMainForm.UpdateIconSizes(ASizeIndex: Integer);
-begin
-  FIconViewer.GetIconSizesAsStrings(cmbFilterBySize.Items);
-  cmbFilterBySize.Items.Insert(0, '(any size)');
-  if ASizeIndex < 0 then ASizeIndex := 0;
-  cmbFilterBySize.ItemIndex := ASizeIndex;
-  if ASizeIndex = 0 then
-    FIconViewer.FilterByIconSize := ''
-  else
-    FIconViewer.FilterByIconSize := cmbFilterBySize.Items[ASizeIndex];
-end;
-
-procedure TMainForm.UpdateIconStyles(AStyleIndex: Integer);
-begin
-  IconStylesToStrings(cmbFilterByStyle.Items);
-  if AStyleIndex < 0 then AStyleIndex := 0;
-  cmbFilterByStyle.ItemIndex := AStyleIndex;
-  if AStyleIndex = 0 then
-    FIconViewer.FilterByIconStyle := isAnyStyle
-  else
-    FIconViewer.FilterByIconStyle := TIconStyle(AStyleIndex);
 end;
 
 procedure TMainForm.WriteIni;
@@ -522,20 +304,20 @@ begin
 
     list := TStringList.Create;
     try
-      FIconViewer.WriteIconFolders(list);
+      FViewer.IconViewer.WriteIconFolders(list);
       for i := 0 to list.Count-1 do
         ini.WriteString('IconFolders', 'Folder' + IntToStr(i), list[i]);
 
       list.Clear;
-      list.Assign(cmbFilterByKeywords.Items);
+      list.Assign(FViewer.cmbFilterByKeywords.Items);
       for i := 0 to list.Count-1 do
         ini.WriteString('KeywordsHistory', 'Item' + IntToStr(i), list[i]);
     finally
       list.Free;
     end;
 
-    ini.WriteInteger('Filter', 'FilterBySize', cmbFilterBySize.ItemIndex);
-    ini.WriteInteger('Filter', 'FilterByStyle', cmbFilterByStyle.ItemIndex);
+    ini.WriteInteger('Filter', 'FilterBySize', FViewer.cmbFilterBySize.ItemIndex);
+    ini.WriteInteger('Filter', 'FilterByStyle', FViewer.cmbFilterByStyle.ItemIndex);
   finally
     ini.Free;
   end;

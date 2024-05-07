@@ -1,0 +1,232 @@
+object IconViewerFrame: TIconViewerFrame
+  Left = 0
+  Height = 357
+  Top = 0
+  Width = 574
+  ClientHeight = 357
+  ClientWidth = 574
+  TabOrder = 0
+  DesignLeft = 314
+  DesignTop = 130
+  object FilterPanel: TPanel
+    Left = 0
+    Height = 29
+    Top = 0
+    Width = 574
+    Align = alTop
+    AutoSize = True
+    BevelOuter = bvNone
+    ClientHeight = 29
+    ClientWidth = 574
+    Color = clWindow
+    ParentBackground = False
+    ParentColor = False
+    TabOrder = 0
+    object cmbFilterBySize: TComboBox
+      AnchorSideLeft.Control = FilterPanel
+      AnchorSideTop.Control = FilterPanel
+      AnchorSideBottom.Side = asrBottom
+      Left = 6
+      Height = 23
+      Hint = 'Filter by icon size'
+      Top = 3
+      Width = 74
+      BorderSpacing.Left = 6
+      BorderSpacing.Top = 3
+      BorderSpacing.Bottom = 3
+      DropDownCount = 24
+      ItemHeight = 15
+      Style = csDropDownList
+      TabOrder = 0
+      OnChange = cmbFilterBySizeChange
+    end
+    object cmbFilterByStyle: TComboBox
+      AnchorSideLeft.Control = cmbFilterBySize
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = FilterPanel
+      AnchorSideBottom.Side = asrBottom
+      Left = 86
+      Height = 23
+      Hint = 'Filter by icon style'
+      Top = 3
+      Width = 108
+      BorderSpacing.Left = 6
+      BorderSpacing.Top = 3
+      BorderSpacing.Bottom = 3
+      DropDownCount = 24
+      ItemHeight = 15
+      Style = csDropDownList
+      TabOrder = 1
+      OnChange = cmbFilterByStyleChange
+    end
+    object cmbFilterByKeywords: TComboBox
+      AnchorSideLeft.Control = cmbFilterByStyle
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = FilterPanel
+      AnchorSideRight.Control = btnKeywordEditor
+      AnchorSideBottom.Side = asrBottom
+      Left = 200
+      Height = 23
+      Hint = 'Filter by keywords'
+      Top = 3
+      Width = 343
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Left = 6
+      BorderSpacing.Top = 3
+      BorderSpacing.Right = 2
+      BorderSpacing.Bottom = 3
+      Constraints.MinWidth = 300
+      DropDownCount = 24
+      ItemHeight = 15
+      TabOrder = 2
+      TextHint = 'Enter keywords here'
+      OnEditingDone = cmbFilterByKeywordsEditingDone
+    end
+    object btnKeywordEditor: TSpeedButton
+      AnchorSideTop.Control = cmbFilterByKeywords
+      AnchorSideTop.Side = asrCenter
+      AnchorSideRight.Control = FilterPanel
+      AnchorSideRight.Side = asrBottom
+      Left = 545
+      Height = 22
+      Top = 3
+      Width = 23
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 6
+      Caption = '...'
+      OnClick = btnKeywordEditorClick
+    end
+  end
+  object IconDetailsPanel: TPanel
+    Left = 12
+    Height = 51
+    Top = 300
+    Width = 556
+    Align = alBottom
+    AutoSize = True
+    BorderSpacing.Left = 6
+    BorderSpacing.Around = 6
+    BevelOuter = bvNone
+    ClientHeight = 51
+    ClientWidth = 556
+    TabOrder = 1
+    object lblFileName: TLabel
+      AnchorSideLeft.Control = IconDetailsPanel
+      AnchorSideTop.Control = IconDetailsPanel
+      Left = 0
+      Height = 15
+      Top = 0
+      Width = 54
+      Caption = 'File name:'
+      Font.Style = [fsItalic]
+      ParentFont = False
+    end
+    object infoFileName: TLabel
+      AnchorSideLeft.Control = IconDetailsPanel
+      AnchorSideTop.Control = lblFileName
+      AnchorSideRight.Control = IconDetailsPanel
+      AnchorSideRight.Side = asrBottom
+      Left = 80
+      Height = 15
+      Top = 0
+      Width = 468
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Left = 80
+      BorderSpacing.Right = 8
+      Caption = 'infoFileName'
+    end
+    object lblSize: TLabel
+      AnchorSideLeft.Control = lblFileName
+      AnchorSideTop.Control = lblFileName
+      AnchorSideTop.Side = asrBottom
+      Left = 0
+      Height = 15
+      Top = 17
+      Width = 23
+      BorderSpacing.Top = 2
+      Caption = 'Size:'
+      Font.Style = [fsItalic]
+      ParentFont = False
+    end
+    object infoSize: TLabel
+      AnchorSideLeft.Control = IconDetailsPanel
+      AnchorSideTop.Control = lblSize
+      Left = 80
+      Height = 15
+      Top = 17
+      Width = 100
+      BorderSpacing.Left = 80
+      Caption = 'infoSize'
+      Constraints.MinWidth = 100
+    end
+    object lblKeywords: TLabel
+      AnchorSideLeft.Control = lblFileName
+      AnchorSideTop.Control = lblStyle
+      AnchorSideTop.Side = asrBottom
+      Left = 0
+      Height = 15
+      Top = 34
+      Width = 58
+      BorderSpacing.Top = 2
+      BorderSpacing.Bottom = 2
+      Caption = 'Keywords: '
+      Font.Style = [fsItalic]
+      ParentFont = False
+    end
+    object infoKeywords: TLabel
+      AnchorSideLeft.Control = IconDetailsPanel
+      AnchorSideTop.Control = lblKeywords
+      AnchorSideRight.Control = IconDetailsPanel
+      AnchorSideRight.Side = asrBottom
+      Left = 80
+      Height = 15
+      Top = 34
+      Width = 468
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Left = 80
+      BorderSpacing.Right = 8
+      Caption = 'infoKeywords'
+      WordWrap = True
+    end
+    object lblStyle: TLabel
+      AnchorSideLeft.Control = IconDetailsPanel
+      AnchorSideLeft.Side = asrCenter
+      AnchorSideTop.Control = lblSize
+      Left = 264
+      Height = 15
+      Top = 17
+      Width = 28
+      BorderSpacing.Left = 12
+      Caption = 'Style:'
+      Font.Style = [fsItalic]
+      ParentFont = False
+    end
+    object infoStyle: TLabel
+      AnchorSideLeft.Control = lblStyle
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = lblStyle
+      Left = 300
+      Height = 15
+      Top = 17
+      Width = 46
+      BorderSpacing.Left = 8
+      Caption = 'infoStyle'
+    end
+  end
+  object Bevel1: TBevel
+    Left = 0
+    Height = 4
+    Top = 290
+    Width = 574
+    Align = alBottom
+    Shape = bsBottomLine
+  end
+  object Bevel2: TBevel
+    Left = 0
+    Height = 6
+    Top = 29
+    Width = 574
+    Align = alTop
+    Shape = bsTopLine
+  end
+end

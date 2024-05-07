@@ -1,6 +1,7 @@
 unit IconThumbNails;
 
 {$mode ObjFPC}{$H+}
+{.$define OVERLAY_ICONS}
 
 interface
 
@@ -90,6 +91,7 @@ type
     FAutoThumbnailSize: Boolean;
     FMetadataDirty: Boolean;
     FFilterLock: Integer;
+    FOnFilter: TNotifyEvent;
     function GetIconCount: Integer;
     procedure IconFolderClicked(Sender: TObject);
     procedure SetFilterByIconKeywords(AValue: String);
@@ -98,12 +100,14 @@ type
 
   protected
     FSelectedIcon: TIconItem;
+    {$ifdef OVERLAY_ICONS}
     FOverlayIcons: array[0..2] of TGraphic;
+    procedure DrawThumbnail(AThumbnail: TBasicThumbnail; ARect: TRect); override;
+    {$endif}
     function AcceptIcon(AIcon: TIconItem): Boolean; virtual;
     function AcceptKeywords(AIcon: TIconItem): Boolean;
     function AddIcon(AFileName, AKeywords: String; AStyle: TIconStyle; AWidth, AHeight: Integer): TIconItem;
     procedure DeleteIconFolder(AFolder: String);
-    procedure DrawThumbnail(AThumbnail: TBasicThumbnail; ARect: TRect); override;
     procedure FilterIcons;
     function FolderIsHidden(AFolder: String): Boolean;
     procedure ReadIconFolder(AFolder: String);
@@ -143,6 +147,7 @@ type
     property LargestIconWidth: Integer read FLargestIconWidth;
     property LargestIconHeight: Integer read FLargestIconHeight;
     property SelectedIcon: TIconItem read FSelectedIcon;
+    property OnFilter: TNotifyEvent read FOnFilter write FOnFilter;
 
   end;
 
@@ -152,7 +157,9 @@ function StrToIconStyle(AText: String): TIconStyle;
 
 implementation
 
-{$R overlay.res}
+{$ifdef OVERLAY_ICONS}
+ {$R overlay.res}
+{$endif}
 
 const
   ICON_MARGIN = 8;  // or, more precisely: double of margin
@@ -392,21 +399,25 @@ begin
   FSizes := TStringList.Create;
   TStringList(FSizes).Sorted := true;
   FAutoThumbnailSize := true;
+  {$ifdef OVERLAY_ICONS}
   FOverlayIcons[0] := TPortableNetworkGraphic.Create;
   FOverlayIcons[1] := TPortableNetworkGraphic.Create;
   FOverlayIcons[2] := TPortableNetworkGraphic.Create;
   FOverlayIcons[0].LoadFromResourceName(HINSTANCE, 'ovl_F_16');
   FOverlayIcons[1].LoadFromResourceName(HINSTANCE, 'ovl_F_24');
   FOverlayIcons[2].LoadFromResourceName(HINSTANCE, 'ovl_F_32');
+  {$endif}
 end;
 
 destructor TIconViewer.Destroy;
 var
   res: Integer;
 begin
+  {$ifdef OVERLAY_ICONS}
   FOverlayIcons[2].Free;
   FOverlayIcons[1].Free;
   FOverlayIcons[0].Free;
+  {$endif}
   if FMetadataDirty then
   begin
     res := MessageDlg('Metadata have been changed. Save?', mtConfirmation, [mbYes, mbNo], 0);
@@ -612,6 +623,7 @@ begin
   end;
 end;
 
+{$ifdef OVERLAY_ICONS}
 procedure TIconViewer.DrawThumbnail(AThumbnail: TBasicThumbnail; ARect: TRect);
 var
   ovl: TGraphic;
@@ -633,6 +645,7 @@ begin
     Canvas.Draw(ARect.Left+1, ARect.Top+1, ovl);
   end;
 end;
+{$endif}
 
 procedure TIconViewer.FilterIcons;
 var
@@ -676,6 +689,9 @@ begin
       end;
 
   SelectedIndex := -1;
+
+  if Assigned(FOnFilter) then
+    FOnFilter(self);
 end;
 
 function TIconViewer.FilterLocked: Boolean;
@@ -1167,10 +1183,12 @@ begin
       item.Hidden := hiddenfolders.Find(folder, j);
     end;
 
-    if not FilterLocked then
-    begin
+    LockFilter;
+    try
       FilterIcons;
       Invalidate;
+    finally
+      UnlockFilter;
     end;
   finally
     hiddenFolders.Free;
