@@ -35,7 +35,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="3">
+    <Units Count="6">
       <Unit0>
         <Filename Value="imagelisteditor_demo.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -57,6 +57,23 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="ImageListEditor"/>
       </Unit2>
+      <Unit3>
+        <Filename Value="..\common\basicthumbnails.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="BasicThumbnails"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="..\common\iconthumbnails.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="IconThumbNails"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="..\common\iconviewer.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="IconViewerFrame"/>
+        <ResourceBaseClass Value="Frame"/>
+        <UnitName Value="IconViewer"/>
+      </Unit5>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

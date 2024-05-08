@@ -18,7 +18,6 @@ object IconViewerFrame: TIconViewerFrame
     BevelOuter = bvNone
     ClientHeight = 29
     ClientWidth = 574
-    Color = clWindow
     ParentBackground = False
     ParentColor = False
     TabOrder = 0
@@ -29,11 +28,9 @@ object IconViewerFrame: TIconViewerFrame
       Left = 6
       Height = 23
       Hint = 'Filter by icon size'
-      Top = 3
+      Top = 0
       Width = 74
       BorderSpacing.Left = 6
-      BorderSpacing.Top = 3
-      BorderSpacing.Bottom = 3
       DropDownCount = 24
       ItemHeight = 15
       Style = csDropDownList
@@ -43,16 +40,15 @@ object IconViewerFrame: TIconViewerFrame
     object cmbFilterByStyle: TComboBox
       AnchorSideLeft.Control = cmbFilterBySize
       AnchorSideLeft.Side = asrBottom
-      AnchorSideTop.Control = FilterPanel
+      AnchorSideTop.Control = cmbFilterBySize
+      AnchorSideTop.Side = asrCenter
       AnchorSideBottom.Side = asrBottom
       Left = 86
       Height = 23
       Hint = 'Filter by icon style'
-      Top = 3
+      Top = 0
       Width = 108
       BorderSpacing.Left = 6
-      BorderSpacing.Top = 3
-      BorderSpacing.Bottom = 3
       DropDownCount = 24
       ItemHeight = 15
       Style = csDropDownList
@@ -62,19 +58,19 @@ object IconViewerFrame: TIconViewerFrame
     object cmbFilterByKeywords: TComboBox
       AnchorSideLeft.Control = cmbFilterByStyle
       AnchorSideLeft.Side = asrBottom
-      AnchorSideTop.Control = FilterPanel
+      AnchorSideTop.Control = cmbFilterBySize
+      AnchorSideTop.Side = asrCenter
       AnchorSideRight.Control = btnKeywordEditor
       AnchorSideBottom.Side = asrBottom
       Left = 200
       Height = 23
       Hint = 'Filter by keywords'
-      Top = 3
+      Top = 0
       Width = 343
       Anchors = [akTop, akLeft, akRight]
       BorderSpacing.Left = 6
-      BorderSpacing.Top = 3
       BorderSpacing.Right = 2
-      BorderSpacing.Bottom = 3
+      BorderSpacing.Bottom = 6
       Constraints.MinWidth = 300
       DropDownCount = 24
       ItemHeight = 15
@@ -89,7 +85,7 @@ object IconViewerFrame: TIconViewerFrame
       AnchorSideRight.Side = asrBottom
       Left = 545
       Height = 22
-      Top = 3
+      Top = 0
       Width = 23
       Anchors = [akTop, akRight]
       BorderSpacing.Right = 6
@@ -223,10 +219,10 @@ object IconViewerFrame: TIconViewerFrame
   end
   object Bevel2: TBevel
     Left = 0
-    Height = 6
+    Height = 2
     Top = 29
     Width = 574
     Align = alTop
-    Shape = bsTopLine
+    Shape = bsBottomLine
   end
 end

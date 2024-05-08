@@ -205,6 +205,8 @@ begin
   FViewer.Parent := self;
   FViewer.OnIconDblClick := @IconViewerDblClickHandler;
   FViewer.OnFilter := @IconViewerFilterHandler;
+  FViewer.FilterPanel.Color := clWindow;
+  FViewer.cmbFilterBySize.BorderSpacing.Top := 4;
 
   ReadIni;
 end;

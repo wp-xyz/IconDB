@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, ile_Main, ImageListEditor,
-  BasicThumbnails, IconThumbNails;
+  BasicThumbnails, IconThumbNails, IconViewer;
 
 {$R *.res}
 
