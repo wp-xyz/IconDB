@@ -3,10 +3,17 @@ unit IconThumbNails;
 {$mode ObjFPC}{$H+}
 {$define OVERLAY_ICONS}
 
+// Select one of these:
+{.$define METADATA_TXT}
+{$define METADATA_XML}
+
 interface
 
 uses
-  Classes, SysUtils, fgl, FPImage, StrUtils, laz2_dom,
+  Classes, SysUtils, fgl, FPImage, StrUtils,
+  {$ifdef METADATA_XML}
+  laz2_dom, laz2_xmlread, laz2_xmlwrite,
+  {$endif}
   FileUtil, LazFileUtils, Graphics, Controls, Dialogs, Menus, Forms,
   BasicThumbnails;
 
@@ -175,7 +182,12 @@ implementation
 
 const
   ICON_MARGIN = 8;  // or, more precisely: double of margin
+  {$ifdef METADATA_TXT}
   METADATA_FILENAME = 'metadata.txt';
+  {$endif}
+  {$ifdef METADATA_XML}
+  METADATA_FILENAME = 'metadata.xml';
+  {$endif}
   ICONSTYLE_NAMES: Array[TIconStyle] of String = (
     '(any style)', 'classic', 'flat', 'outline', 'outline 2-color'
   );
@@ -1059,6 +1071,8 @@ begin
   end;
 end;
 
+procedure TIconViewer.ReadMetadataFile(AFileName: String; AHidden: Boolean);
+{$ifdef METADATA_TXT}
 { Reads the given metadata file which contains a list of all icons and their
   metadata to be included by the viewer.
   When AHidden is true the icons, however, are marked as being hidden and are
@@ -1067,7 +1081,6 @@ end;
   metadata.txt is a text file in which the lines have the following structure:
     filename|width|height|style|keyword1;keyword2;...
     Allowed styles: classic, flat, outline, outline 2-color }
-procedure TIconViewer.ReadMetadataFile(AFileName: String; AHidden: Boolean);
 var
   lines: TStrings;
   i: Integer;
@@ -1103,6 +1116,58 @@ begin
     lines.Free;
   end;
 end;
+{$endif}
+
+{$ifdef METADATA_XML}
+var
+  doc: TXMLDocument;
+  root: TDOMNode;
+  iconsNode, iconNode: TDOMNode;
+  keywordsNode, keywordNode: TDOMNode;
+  folder, fn: String;
+  i: Integer;
+  w, h: Integer;
+  style: TIconStyle;
+  s: String;
+  keywords: String;
+begin
+  folder := ExtractFilePath(AFileName);
+  ReadXMLFile(doc, AFileName);
+  iconsNode := doc.DocumentElement.FindNode('icons');
+  iconNode := iconsNode.FindNode('icon');
+  while iconNode <> nil do begin
+    fn := '';
+    style := isAnystyle;
+    keywords := '';
+    if iconNode.HasAttributes then
+      for i := 0 to iconNode.Attributes.Length-1 do
+      begin
+        s := iconNode.Attributes[i].NodeValue;
+        case iconNode.Attributes[i].NodeName of
+          'filename': fn := s;
+          'width': w := StrToIntDef(s, 0);
+          'height': h := StrToIntDef(s, 0);
+          'style': style := StrToIconStyle(s);
+        end;
+      end;
+    keywordsNode := iconNode.FindNode('keywords');
+    if keywordsNode <> nil then
+    begin
+      keywordNode := keywordsNode.FindNode('keyword');
+      while keywordNode <> nil do
+      begin
+        s := keywordNode.TextContent;
+        keywords := keywords + ';' + s;
+        keywordNode := keywordNode.NextSibling;
+      end;
+    end;
+    if keywords <> '' then System.Delete(keywords, 1, 1);
+    if fn <> '' then
+      AddIcon(folder + fn, keywords, style, w, h).Hidden := AHidden;
+    iconNode := iconNode.NextSibling;
+  end;
+end;
+{$endif}
 
 procedure TIconViewer.SetFilterByIconKeywords(AValue: String);
 begin
@@ -1286,6 +1351,7 @@ begin
 end;
 
 procedure TIconViewer.WriteMetadataFiles;
+{$ifdef METADATA_TXT}
 var
   folder: String;
   metadata: TStringList;
@@ -1328,6 +1394,67 @@ begin
     Screen.Cursor := crDefault;
   end;
 end;
+{$endif}
+{$ifdef METADATA_XML}
+var
+  folder, filename: String;
+  doc: TXMLDocument;
+  root, iconsNode, iconNode, keywordsNode, keywordNode: TDOMNode;
+  i, j, k: Integer;
+  item: TIconItem;
+  style: TIconStyle;
+begin
+  Screen.Cursor := crHourglass;
+  try
+    for i := 0 to FIconFolders.Count-1 do
+    begin
+      folder := AppendPathDelim(FIconFolders[i]);
+
+      doc := TXMLDocument.Create;
+      try
+        root := doc.CreateElement('metadata');
+        doc.AppendChild(root);
+        iconsNode := doc.CreateElement('icons');
+        root.AppendChild(iconsNode);
+        for j := 0 to FIconList.Count-1 do
+        begin
+          item := FIconList[j];
+          filename := ExtractFileName(item.FileName);
+          if ExtractFilePath(item.FileName) = folder then
+          begin
+            iconNode := doc.CreateElement('icon');
+            iconsNode.AppendChild(iconNode);
+            TDOMElement(iconNode).SetAttribute('filename', filename);
+            TDOMElement(iconNode).SetAttribute('width', IntToStr(item.Width));
+            TDOMElement(iconNode).SetAttribute('height', IntToStr(item.Height));
+            if item.Style <> isAnyStyle then
+              TDOMElement(iconNode).SetAttribute('style', item.StyleAsString);
+            if item.KeywordCount > 0 then
+            begin
+              keywordsNode := doc.CreateElement('keywords');
+              iconNode.AppendChild(keywordsNode);
+              for k := 0 to item.KeywordCount-1 do
+              begin
+                keywordNode := doc.CreateElement('keyword');
+                keywordsNode.AppendChild(keywordNode);
+                keywordNode.AppendChild(doc.CreateTextNode(item.Keywords[k]));
+              end;
+            end;
+          end;
+        end;
+        if FileExists(folder + METADATA_FILENAME) then
+          RenameFile(folder + METADATA_FILENAME, folder + METADATA_FILENAME + '.bak');
+
+        WriteXMLFile(doc, folder + METADATA_FILENAME);
+      finally
+        doc.Free;
+      end;
+    end;
+  finally
+    Screen.Cursor := crDefault;
+  end;
+end;
+{$endif}
 
 end.
 
