@@ -1,7 +1,7 @@
 unit IconThumbNails;
 
 {$mode ObjFPC}{$H+}
-{.$define OVERLAY_ICONS}
+{$define OVERLAY_ICONS}
 
 interface
 
@@ -403,9 +403,9 @@ begin
   FOverlayIcons[0] := TPortableNetworkGraphic.Create;
   FOverlayIcons[1] := TPortableNetworkGraphic.Create;
   FOverlayIcons[2] := TPortableNetworkGraphic.Create;
-  FOverlayIcons[0].LoadFromResourceName(HINSTANCE, 'ovl_F_16');
-  FOverlayIcons[1].LoadFromResourceName(HINSTANCE, 'ovl_F_24');
-  FOverlayIcons[2].LoadFromResourceName(HINSTANCE, 'ovl_F_32');
+  FOverlayIcons[0].LoadFromResourceName(HINSTANCE, 'ovl_H_8');
+  FOverlayIcons[1].LoadFromResourceName(HINSTANCE, 'ovl_H_12');
+  FOverlayIcons[2].LoadFromResourceName(HINSTANCE, 'ovl_H_16');
   {$endif}
 end;
 

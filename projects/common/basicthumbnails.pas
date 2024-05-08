@@ -69,7 +69,7 @@ type
     procedure Paint; override;
     procedure SetSelectedIndex(AValue: Integer); virtual;
     procedure SingleSelect(AThumbnail: TBasicThumbnail);
-    function ThumbnailMarked(AThumbnail: TBasicThumbnail): Boolean; virtual;
+    function ThumbnailMarked({%H-}AThumbnail: TBasicThumbnail): Boolean; virtual;
     function ThumbnailVisible(AThumbnail: TBasicThumbnail): Boolean;
 
     property ThumbnailList: TThumbnailList read FThumbnailList;
@@ -410,17 +410,24 @@ begin
       Canvas.Brush.Color := FThumbnailColor;
       if i = FSelectedIndex then
         Canvas.Brush.Color := FFocusedColor;
+      {
       if ThumbnailMarked(thumb) then
       begin
         Canvas.Brush.Color := clSilver;
         Canvas.Brush.Style := bsDiagCross;
       end else
+      }
       if FThumbnailColor = clNone then
         Canvas.Brush.Style := bsClear
       else
         Canvas.Brush.Style := bsSolid;
 
       // Define the pen
+      if ThumbnailMarked(thumb) then
+      begin
+        Canvas.Pen.Color := clRed;
+        Canvas.Pen.Width := 1;
+      end else
       if i = FSelectedIndex then
       begin
         Canvas.Pen.Width := 2;
