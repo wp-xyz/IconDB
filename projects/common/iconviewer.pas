@@ -38,11 +38,12 @@ type
 
   private
     FIconViewer: TIconViewer;
-    FFilteredCount, FTotalCount: Integer;
     FLayoutFixed: Boolean;
     FOnFilter: TNotifyEvent;
     FOnIconDblClick: TNotifyEvent;
+    function GetFilteredCount: Integer;
     function GetSelectedIcon: TIconItem;
+    function GetTotalCount: Integer;
 
   protected
     procedure AddKeywordFilterToHistory(AFilter: String);
@@ -51,7 +52,6 @@ type
     procedure DoIconViewerFilter(Sender: TObject);
     procedure DoIconViewerSelect(Sender: TObject);
     procedure UpdateCmds;
-    procedure UpdateIconCount;
     procedure UpdateIconDetails;
 
   public
@@ -63,10 +63,10 @@ type
     procedure UpdateIconSizes(ASizeIndex: Integer);
     procedure UpdateIconStyles(AStyleIndex: Integer);
 
-    property FilteredCount: Integer read FFilteredCount;
+    property FilteredCount: Integer read GetFilteredCount;
     property IconViewer: TIconViewer read FIconViewer;
     property SelectedIcon: TIconItem read GetSelectedIcon;
-    property TotalCount: Integer read FTotalCount;
+    property TotalCount: Integer read GetTotalCount;
     property OnFilter: TNotifyEvent read FOnFilter write FOnFilter;
     property OnIconDblClick: TNotifyEvent read FOnIconDblClick write FOnIconDblClick;
 
@@ -110,7 +110,6 @@ begin
 
   UpdateIconSizes(filterBySize);
   UpdateIconStyles(filterByStyle);
-  UpdateIconCount;
   UpdateIconDetails;
   UpdateCmds;
 end;
@@ -189,7 +188,6 @@ begin
   IconViewer.CopyMetadataToNameBase(AIcon);
   IconViewer.Invalidate;
   UpdateIconDetails;
-  UpdateIconCount;
 end;
 
 procedure TIconViewerFrame.CreateHandle;
@@ -219,7 +217,6 @@ begin
   if res = mrYes then
   begin
     IconViewer.DeleteIcon(IconViewer.SelectedIcon);
-    UpdateIconCount;
     UpdateIconDetails;
   end;
 end;
@@ -232,7 +229,6 @@ end;
 
 procedure TIconViewerFrame.DoIconViewerFilter(Sender: TObject);
 begin
-  UpdateIconCount;
   if Assigned(FOnFilter) then
     FOnFilter(Self);
 end;
@@ -242,9 +238,19 @@ begin
   UpdateIconDetails;
 end;
 
+function TIconViewerFrame.GetFilteredCount: Integer;
+begin
+  Result := FIconViewer.ThumbnailCount;
+end;
+
 function TIconViewerFrame.GetSelectedIcon: TIconItem;
 begin
   Result := FIconViewer.SelectedIcon;
+end;
+
+function TIconViewerFrame.GetTotalCount: Integer;
+begin
+  Result := FIconViewer.IconCount;
 end;
 
 procedure TIconViewerFrame.ReadIconFolders(AList: TStrings);
@@ -261,7 +267,6 @@ begin
     IconViewer.ReadIconFolders(AList);
     UpdateIconSizes(sizeFilter);
     UpdateIconStyles(stylefilter);
-    UpdateIconCount;
   finally
     IconViewer.UnlockFilter;
   end;
@@ -270,12 +275,6 @@ end;
 procedure TIconViewerFrame.UpdateCmds;
 begin
   btnKeywordEditor.Enabled := TotalCount > 0;
-end;
-
-procedure TIconViewerFrame.UpdateIconCount;
-begin
-  FTotalCount := FIconViewer.IconCount;
-  FFilteredCount := FIconViewer.ThumbnailCount;
 end;
 
 procedure TIconViewerFrame.UpdateIconDetails;

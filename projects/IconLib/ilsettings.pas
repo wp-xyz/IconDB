@@ -88,8 +88,11 @@ begin
 end;
 
 { Copies the listbox entries to the given list which will be passed on to the
-  IconViewer's IconList by the caller. }
+  IconViewer's IconList by the caller.
+  Hidden folders have non-nil Objects property in the outpist list. }
 procedure TSettingsForm.GetIconFolders(AList: TStrings);
+const
+  HIDDEN: Array[boolean] of PtrUInt = (0, 1);
 var
   i: Integer;
   folder: String;
@@ -100,15 +103,15 @@ begin
     for i := 0 to clbFolders.Items.Count-1 do
     begin
       folder := clbFolders.Items[i];
-      if not clbFolders.Checked[i] then
-        folder := HIDDEN_FOLDER_FLAG + folder;
-      AList.Add(folder);
+      AList.AddObject(folder, TObject(HIDDEN[not clbFolders.Checked[i]]));
     end;
   finally
     AList.EndUpdate;
   end;
 end;
 
+{ Copies the provided list entries to the checklistbox items. Entries which
+  have a non-zero Objects property are unchecked in the checklistbox. }
 procedure TSettingsForm.SetIconFolders(AList: TStrings);
 var
   i: Integer;
@@ -120,9 +123,8 @@ begin
     clbFolders.Items.Clear;
     for i := 0 to AList.Count-1 do
     begin
-      folder := AList[i];
-      isHidden := folder[1] = HIDDEN_FOLDER_FLAG;
-      if isHidden then System.Delete(folder, 1, 1);
+      folder := AList.Strings[i];
+      isHidden := AList.Objects[i] <> nil;
       clbFolders.Items.Add(folder);
       clbFolders.Checked[i] := not isHidden;
     end;

@@ -76,6 +76,19 @@ type
     function IndexOfFileName(AFileName: String): Integer;
   end;
 
+  TIconFolderList = class(TStringList)
+  public
+    function AddFolder(AFolderName: String; IsHidden: Boolean): Integer;
+    procedure Hide(AFolder: String);
+    procedure Hide(AIndex: Integer);
+    function IsHidden(AFolder: string): Boolean;
+    function IsHidden(AIndex: Integer): Boolean;
+    procedure Show(AFolder: string);
+    procedure Show(AIndex: Integer);
+    procedure Toggle(AFolder: String);
+    procedure Toggle(AIndex: Integer);
+  end;
+
   TIconViewer = class(TBasicThumbnailViewer)
   private
     FIconFolders: TStrings;
@@ -109,7 +122,6 @@ type
     function AddIcon(AFileName, AKeywords: String; AStyle: TIconStyle; AWidth, AHeight: Integer): TIconItem;
     procedure DeleteIconFolder(AFolder: String);
     procedure FilterIcons;
-    function FolderIsHidden(AFolder: String): Boolean;
     procedure ReadIconFolder(AFolder: String);
     procedure ReadIcons(AFolder: String; AHidden: Boolean);
     procedure ReadMetadataFile(AFileName: String; AHidden: Boolean);
@@ -167,7 +179,6 @@ const
   ICONSTYLE_NAMES: Array[TIconStyle] of String = (
     '(any style)', 'classic', 'flat', 'outline', 'outline 2-color'
   );
-  HIDDEN_FOLDER_FLAG = '-';
 
 procedure IconStylesToStrings(AList: TStrings);
 var
@@ -389,12 +400,87 @@ begin
 end;
 
 
+{ TIconFolderList
+
+  A StringList with folder names. It uses its Objects property to store
+  information whether a folder should be hidden in the icon viewer.
+  Objects = nil means: visible, Objects <> nil means: hidden.
+}
+function TIconFolderList.AddFolder(AFolderName: String; IsHidden: Boolean): Integer;
+begin
+  if isHidden then
+    Result := AddObject(AFolderName, TObject(PtrUInt(1)))
+  else
+    Result := Add(AFolderName);
+end;
+
+procedure TIconFolderList.Hide(AFolder: String);
+var
+  idx: Integer;
+begin
+  idx := IndexOf(AFolder);
+  if idx > -1 then
+    Hide(idx);
+end;
+
+procedure TIconFolderList.Hide(AIndex: Integer);
+begin
+  Objects[AIndex] := TObject(PtrUInt(1));
+end;
+
+function TIconFolderList.IsHidden(AFolder: string): Boolean;
+var
+  idx: Integer;
+begin
+  idx := IndexOf(AFolder);
+  if idx > -1 then
+    Result := Objects[idx] <> nil
+  else
+    Result := true;
+end;
+
+function TIconFolderList.IsHidden(AIndex: Integer): Boolean;
+begin
+  Result := Objects[AIndex] <> nil;
+end;
+
+procedure TIconFolderList.Show(AFolder: string);
+var
+  idx: Integer;
+begin
+  idx := IndexOf(AFolder);
+  if idx > -1 then
+    Show(idx);
+end;
+
+procedure TIconFolderList.Show(AIndex: Integer);
+begin
+  Objects[AIndex] := nil;
+end;
+
+procedure TIconFolderList.Toggle(AFolder: String);
+var
+  idx: Integer;
+begin
+  idx := IndexOf(AFolder);
+  if idx > -1 then
+  begin
+    Toggle(idx);
+  end;
+end;
+
+procedure TIconFolderList.Toggle(AIndex: Integer);
+begin
+  if IsHidden(AIndex) then Show(AIndex) else Hide(AIndex);
+end;
+
+
 { TIconViewer }
 
 constructor TIconViewer.Create(AOwner: TComponent);
 begin
   inherited;
-  FIconFolders := TStringList.Create;
+  FIconFolders := TIconFolderList.Create;
   FIconList := TIconList.Create;
   FSizes := TStringList.Create;
   TStringList(FSizes).Sorted := true;
@@ -602,18 +688,9 @@ var
   i: Integer;
   folder: String;
 begin
-  // Remove the "hidden-folder" flag from the provided foldername
-  if FolderIsHidden(AFolder) then
-    System.Delete(AFolder, 1, 1);
-
   for i := FIconFolders.Count-1 downto 0 do
-  begin
-    folder := FIconFolders[i];
-    if FolderIsHidden(folder) then
-      System.Delete(folder, 1, 1);
-    if AFolder = folder then
+    if FIconFolders[i] = AFolder then
       FIconFolders.Delete(i);
-  end;
 
   for i := FIconList.Count-1 downto 0 do
   begin
@@ -653,6 +730,9 @@ var
   item: TIconItem;
   oldNameBase: String = '';
 begin
+  if FilterLocked then
+    exit;
+
   if SelectedIcon <> nil then
     oldNameBase := SelectedIcon.NameBase;
 
@@ -761,14 +841,6 @@ begin
   end;
 end;
 
-{ Returns whether the given folder is hidden, i.e. its icons are not displayed
-  by the viewer. A folder is hidden when its name begins with the
-  HIDDEN_FOLDER_FLAG ('-'). }
-function TIconViewer.FolderIsHidden(AFolder: String): Boolean;
-begin
-  Result := AFolder[1] = HIDDEN_FOLDER_FLAG;
-end;
-
 { Returns the number of unfiltered icons loaded. }
 function TIconViewer.GetIconCount: Integer;
 begin
@@ -808,44 +880,39 @@ begin
   end;
 end;
 
-{ OnClick handler for the menu items created by PopulateIconFoldersMenu. }
+{ OnClick handler for the menu items created by PopulateIconFoldersMenu to
+  show/hide the icons of the clicked folder.
+  The FIconFolders index of the folder is stored in the Tag of the menu item.
+  Special tags: -1 --> show all folders, -2 --> hide all folders. }
 procedure TIconViewer.IconFolderClicked(Sender: TObject);
 var
   i, idx: Integer;
-  folder: String;
 begin
   if TMenuItem(Sender).Tag < 0 then
   begin
     for i := 0 to FIconFolders.Count -1 do
     begin
-      folder := FIconFolders[i];
       case TMenuItem(Sender).Tag of
         -1: // "Show all"
-            if FolderIsHidden(folder) then System.Delete(folder, 1, 1);
+            TIconFolderList(FIconFolders).Show(i);
         -2: // "Hide all"
-            if not FolderIsHidden(folder) then folder := HIDDEN_FOLDER_FLAG + folder;
+            TIconFolderList(FIconFolders).Hide(i);
         else
             exit;
       end;
-      FIconFolders[i] := folder;
     end;
   end else
   begin
     idx := TMenuItem(Sender).Tag;
-    folder := FIconFolders[idx];
-    case TMenuItem(Sender).Checked of
-      true : if FolderIsHidden(folder) then System.Delete(folder, 1, 1);  // Un-hide a hidden folder
-      false: if not FolderIsHidden(folder) then folder := HIDDEN_FOLDER_FLAG + folder;  // Hide an un-hidden folder
-    end;
-    FIconFolders[idx] := folder;
+    TIconFolderList(FIconFolders).Toggle(idx);
   end;
 
-  LockFilter;
-  try
+//  LockFilter;
+//  try
     UpdateIconFolders;
-  finally
-    UnlockFilter;
-  end;
+//  finally
+//    UnlockFilter;
+//  end;
 end;
 
 function TIconViewer.IndexOfThumbnail(AIcon: TIconItem): Integer;
@@ -870,8 +937,8 @@ begin
 end;
 
 { Populates the given menu with the names of all folders from which icons have
-  been loaded. Folder names beginning with a '-' are not checked in the menu
-  since they marked as hidden to hide those icons. }
+  been loaded. Hidden folders (having a non-nil Objects property in the
+  IconFolder list) are not checked in the menu. }
 procedure TIconViewer.PopulateIconFoldersMenu(AMenu: TMenu);
 var
   i: Integer;
@@ -900,10 +967,8 @@ begin
   for i := 0 to FIconFolders.Count-1 do
   begin
     menuItem := TMenuItem.Create(AMenu);
-    folder := FIconFolders[i];
-    menuItem.Checked := not FolderIsHidden(folder);
-    if FolderIsHidden(folder) then System.Delete(folder, 1, 1);
-    menuItem.Caption := folder;
+    menuItem.Checked := not TIconFolderList(FIconFolders).IsHidden(i);
+    menuItem.Caption := FIconFolders[i];
     menuItem.AutoCheck := true;
     menuItem.Tag := i;
     menuItem.OnClick := @IconFolderClicked;
@@ -911,17 +976,14 @@ begin
   end;
 end;
 
-{ Reads the icons found in the specified folder.
-  When the folder name begins with a '-' the icons are not displayed. }
+{ Reads the icons found in the specified folder. }
 procedure TIconViewer.ReadIconFolder(AFolder: String);
 var
   isHidden: Boolean;
 begin
   if AFolder = '' then
     exit;
-  isHidden := FolderIsHidden(AFolder);
-  if isHidden then
-    System.Delete(AFolder, 1, 1);
+  isHidden := TIconFolderList(FIconFolders).IsHidden(AFolder);
   if not DirectoryExists(AFolder) then
     exit;
 
@@ -932,11 +994,15 @@ begin
     ReadIcons(AFolder, isHidden);
 end;
 
-{ Read the icons found in the folders of the given list. }
+{ Read the icons found in the folders of the given list.
+  List items with a non-nil Objects property are marked as being hidden.
+  Their names are stored but their icons are not displayed. }
 procedure TIconViewer.ReadIconFolders(AList: TStrings);
 var
   i: Integer;
   selectedIconFileName: String = '';
+  folder: String;
+  isHidden: Boolean;
 begin
   if SelectedIcon <> nil then
     selectedIconFileName := SelectedIcon.FileName;;
@@ -945,9 +1011,11 @@ begin
   FIconList.Clear;
   for i := 0 to AList.Count-1 do
   begin
-    if FIconFolders.IndexOf(AList[i]) > -1 then    // Avoid duplicates
-      DeleteIconFolder(AList[i]);
-    FIconFolders.Add(AList[i]);
+    folder := AList[i];
+    isHidden := AList.Objects[i] <> nil;
+    if FIconFolders.IndexOf(folder) > -1 then    // Avoid duplicates
+      DeleteIconFolder(folder);
+    TIconFolderList(FIconFolders).AddFolder(folder, isHidden);
     ReadIconFolder(AList[i]);
   end;
   FilterIcons;
@@ -1108,13 +1176,14 @@ begin
   if idx > -1 then
   begin
     // Make sure that the folder is not hidden
-    folder := HIDDEN_FOLDER_FLAG + ExtractFilePath(AFileName);
-    if FIconFolders.IndexOf(folder) = -1 then
+    folder := ExtractFilePath(AFileName);
+    if not TIconFolderList(FIconFolders).IsHidden(folder) then
     begin
       SelectedIndex := idx;
       exit;
     end;
   end;
+
   SelectedIndex := -1;
 end;
 
@@ -1135,6 +1204,8 @@ begin
   inherited;
 end;
 
+{ This is for emphasizing icons in the viewer which do not yet have keywords
+  or have an unspecified style. }
 function TIconViewer.ThumbnailMarked(AThumbnail: TBasicThumbnail): Boolean;
 var
   item: TIconItem;
@@ -1153,9 +1224,10 @@ begin
   end;
 end;
 
-{ Folders and all their icons can be hidden when the folder name in the
-  IconFolder list is made to begin with a '-'. This procedure iterates over
-  all icons and sets their Hidden flag when their folder is hidden. }
+{ Folders and all their icons can be hidden when the folder names are stored
+  with a non-nil Object in the IconFolders list.
+  This procedure iterates over all icons and sets their Hidden flag when
+  their folder is hidden. }
 procedure TIconViewer.UpdateIconFolders;
 var
   i, j: Integer;
@@ -1165,17 +1237,16 @@ var
 begin
   hiddenFolders := TStringList.Create;
   try
+    // Collect all hidden folders...
     hiddenFolders.Sorted := true;
     for i := 0 to FIconFolders.count-1 do
     begin
       folder := FIconFolders[i];
-      if FolderIsHidden(folder) then
-      begin
-        System.Delete(folder, 1,1);
+      if TIconFolderList(FIconFolders).IsHidden(i) then
         hiddenFolders.Add(AppendPathDelim(folder));
-      end;
     end;
 
+    // ... find the icons in the hidden folders and set their Hidden flag.
     for i := 0 to FIconList.Count-1 do
     begin
       item := FIconList[i];
@@ -1195,9 +1266,23 @@ begin
   end;
 end;
 
+{ Copies the names of the stored icon folders to the given list. Hidden folders
+  are marked by putting a non-nil value in the Objects of the output list. }
 procedure TIconViewer.WriteIconFolders(AList: TStrings);
+var
+  i: Integer;
+  folder: String;
+  isHidden: Boolean;
 begin
-  AList.Assign(FIconFolders);
+  for i := 0 to FIconFolders.Count-1 do
+  begin
+    folder := FIconFolders.Strings[i];
+    isHidden := TIconFolderList(FIconFolders).IsHidden(i);
+    if isHidden then
+      AList.AddObject(folder, TObject(PtrUInt(1)))
+    else
+      AList.Add(folder);
+  end;
 end;
 
 procedure TIconViewer.WriteMetadataFiles;
@@ -1214,7 +1299,6 @@ begin
     for i := 0 to FIconFolders.Count-1 do
     begin
       folder := AppendPathDelim(FIconFolders[i]);
-      if FolderIsHidden(folder) then System.Delete(folder, 1, 1);
       metadata := TStringList.Create;
       try
         if FileExists(folder + METADATA_FILENAME) then

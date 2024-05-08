@@ -259,7 +259,18 @@ begin
       try
         ini.ReadSection('IconFolders', list);
         for i := 0 to list.Count-1 do
-          list[i] := ini.ReadString('IconFolders', list[i], '');
+        begin
+          s := ini.ReadString('IconFolders', list[i], '');
+          if s <> '' then
+          begin
+            if (s[1] = '-') then
+            begin
+              System.Delete(s, 1, 1);
+              list.Objects[i] := TObject(PtrUInt(1));
+            end;
+            list[i] := s;
+          end;
+        end;
         FViewer.IconViewer.ReadIconFolders(list);
 
         list.Clear;
@@ -293,6 +304,7 @@ var
   R: TRect;
   i: Integer;
   list: TStrings;
+  s: String;
 begin
   ini := CreateIniFile;
   try
@@ -308,7 +320,11 @@ begin
     try
       FViewer.IconViewer.WriteIconFolders(list);
       for i := 0 to list.Count-1 do
-        ini.WriteString('IconFolders', 'Folder' + IntToStr(i), list[i]);
+      begin
+        s := list[i];
+        if list.Objects[i] <> nil then s := '-' + s;  // hidden folder
+        ini.WriteString('IconFolders', 'Folder' + IntToStr(i), s);
+      end;
 
       list.Clear;
       list.Assign(FViewer.cmbFilterByKeywords.Items);
