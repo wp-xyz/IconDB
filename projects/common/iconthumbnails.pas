@@ -56,7 +56,7 @@ type
   public
     constructor Create(AFileName, AKeywords: String; AStyle: TIconStyle; AWidth, AHeight: Integer);
     destructor Destroy; override;
-    procedure CopyKeywordsAndStyleFrom(AIcon: TIconItem);
+    procedure CopyMetadataFrom(AIcon: TIconItem);
     procedure ExportKeywordsToStrings(AList: TStrings);
     function HasKeyword(AKeyword: String): Boolean;
     function HasKeywordPart(AKeywordPart: String): Boolean;
@@ -83,11 +83,18 @@ type
     function IndexOfFileName(AFileName: String): Integer;
   end;
 
-  TIconFolderList = class(TStringList)
+  TIconFolderItem = class
+    FolderName: String;
+    Hidden: Boolean;
+    Dirty: Boolean;
+  end;
+
+  TIconFolderList = class(specialize TFPGObjectlist<TIconFolderItem>)
   public
     function AddFolder(AFolderName: String; IsHidden: Boolean): Integer;
     procedure Hide(AFolder: String);
     procedure Hide(AIndex: Integer);
+    function IndexOf(AFolder: String): Integer;
     function IsHidden(AFolder: string): Boolean;
     function IsHidden(AIndex: Integer): Boolean;
     procedure Show(AFolder: string);
@@ -98,7 +105,7 @@ type
 
   TIconViewer = class(TBasicThumbnailViewer)
   private
-    FIconFolders: TStrings;
+    FIconFolders: TIconFolderList;
     FIconList: TIconList;
     FSizes: TStrings;
     FFilterByIconSize: String;
@@ -109,7 +116,6 @@ type
     FLargestIconWidth: Integer;
     FLargestIconHeight: Integer;
     FAutoThumbnailSize: Boolean;
-    FMetadataDirty: Boolean;
     FFilterLock: Integer;
     FOnFilter: TNotifyEvent;
     function GetIconCount: Integer;
@@ -129,6 +135,7 @@ type
     function AddIcon(AFileName, AKeywords: String; AStyle: TIconStyle; AWidth, AHeight: Integer): TIconItem;
     procedure DeleteIconFolder(AFolder: String);
     procedure FilterIcons;
+    function MetadataDirty: Boolean;
     procedure ReadIconFolder(AFolder: String);
     procedure ReadIcons(AFolder: String; AHidden: Boolean);
     procedure ReadMetadataFile(AFileName: String; AHidden: Boolean);
@@ -162,7 +169,7 @@ type
     property FilterByIconSize: string read FFilterByIconSize write SetFilterByIconSize;
     property FilterByIconStyle: TIconStyle read FFilterByIconStyle write SetFilterByIconStyle;
     property IconCount: Integer read GetIconCount;
-    property IconFolders: TStrings read FIconFolders;
+    property IconFolders: TIconFolderList read FIconFolders;
     property LargestIconWidth: Integer read FLargestIconWidth;
     property LargestIconHeight: Integer read FLargestIconHeight;
     property SelectedIcon: TIconItem read FSelectedIcon;
@@ -269,11 +276,19 @@ begin
   inherited;
 end;
 
-procedure TIconItem.CopyKeywordsAndStyleFrom(AIcon: TIconItem);
+procedure TIconItem.CopyMetadataFrom(AIcon: TIconItem);
+var
+  folder: String;
+  idx: Integer;
 begin
   FKeywords.Assign(AIcon.FKeywords);
   FStyle := AIcon.FStyle;
-  FViewer.FMetadataDirty := true;
+
+  // Mark the folder of the icon as "dirty" so that it can be re-written.
+  folder := AIcon.GetDirectory;
+  idx := FViewer.IconFolders.IndexOf(folder);
+  if idx > -1 then
+    FViewer.IconFolders[idx].Dirty := true;
 end;
 
 function TIconItem.GetDirectory: String;
@@ -357,7 +372,7 @@ begin
   Result := true;
   AKeywordPart := Lowercase(AKeywordPart);
   for i := 0 to FKeywords.Count-1 do
-    if pos(AKeywordPart, Lowercase(FKeywords[i])) <> 0 then
+    if pos(AKeywordPart, Lowercase(FKeywords[i])) = 1 then
       exit;
   Result := false;
 end;
@@ -414,16 +429,20 @@ end;
 
 { TIconFolderList
 
-  A StringList with folder names. It uses its Objects property to store
-  information whether a folder should be hidden in the icon viewer.
-  Objects = nil means: visible, Objects <> nil means: hidden.
+  A list with folder names stored in TIconFolderItem instances.
+  Besides the folder names, each item contains a flag to hide the icons of
+  that folder, as well as a Dirty flag to indicate that icon(s) in that folder
+  have modified metadata.
 }
 function TIconFolderList.AddFolder(AFolderName: String; IsHidden: Boolean): Integer;
+var
+  item: TIconFolderItem;
 begin
-  if isHidden then
-    Result := AddObject(AFolderName, TObject(PtrUInt(1)))
-  else
-    Result := Add(AFolderName);
+  item := TIconFolderItem.Create;
+  item.FolderName := AFolderName;
+  item.Hidden := IsHidden;
+  item.Dirty := false;
+  Result := Add(item);
 end;
 
 procedure TIconFolderList.Hide(AFolder: String);
@@ -437,7 +456,22 @@ end;
 
 procedure TIconFolderList.Hide(AIndex: Integer);
 begin
-  Objects[AIndex] := TObject(PtrUInt(1));
+  Items[AIndex].Hidden := true;
+end;
+
+function TIconFolderList.IndexOf(AFolder: String): Integer;
+var
+  i: Integer;
+begin
+  for i := 0 to Count-1 do
+  begin
+    if Items[i].FolderName = AFolder then
+    begin
+      Result := i;
+      exit;
+    end;
+  end;
+  Result := -1;
 end;
 
 function TIconFolderList.IsHidden(AFolder: string): Boolean;
@@ -446,14 +480,14 @@ var
 begin
   idx := IndexOf(AFolder);
   if idx > -1 then
-    Result := Objects[idx] <> nil
+    Result := Items[idx].Hidden
   else
     Result := true;
 end;
 
 function TIconFolderList.IsHidden(AIndex: Integer): Boolean;
 begin
-  Result := Objects[AIndex] <> nil;
+  Result := Items[AIndex].Hidden;
 end;
 
 procedure TIconFolderList.Show(AFolder: string);
@@ -467,7 +501,7 @@ end;
 
 procedure TIconFolderList.Show(AIndex: Integer);
 begin
-  Objects[AIndex] := nil;
+  Items[AIndex].Hidden := false;
 end;
 
 procedure TIconFolderList.Toggle(AFolder: String);
@@ -483,7 +517,7 @@ end;
 
 procedure TIconFolderList.Toggle(AIndex: Integer);
 begin
-  if IsHidden(AIndex) then Show(AIndex) else Hide(AIndex);
+  Items[AIndex].Hidden := not Items[AIndex].Hidden;
 end;
 
 
@@ -516,7 +550,7 @@ begin
   FOverlayIcons[1].Free;
   FOverlayIcons[0].Free;
   {$endif}
-  if FMetadataDirty then
+  if MetadataDirty then
   begin
     res := MessageDlg('Metadata have been changed. Save?', mtConfirmation, [mbYes, mbNo], 0);
     if res = mrYes then
@@ -636,7 +670,7 @@ begin
     DeleteIconFolder(AFolder);
   ReadIconFolder(AFolder);
   if FIconFolders.IndexOf(AFolder) = -1 then
-    FIconFolders.Add(AFolder);
+    FIconFolders.AddFolder(AFolder, false);
 
   if not FilterLocked then
     FilterIcons;
@@ -659,14 +693,17 @@ procedure TIconViewer.CopyMetadataToNameBase(AIcon: TIconItem);
 var
   i: Integer;
   item: TIconItem;
+  itemDir, iconDir: String;
   iconNameBase: String;
 begin
   iconNameBase := AIcon.NameBase;
+  iconDir := AIcon.Directory;
   for i := 0 to FIconList.Count-1 do
   begin
     item := FIconList[i];
-    if SameText(iconNameBase, item.NameBase) and (item <> AIcon) then
-      item.CopyKeywordsAndStyleFrom(AIcon);
+    itemDir := FIconList[i].Directory;
+    if SameText(iconNameBase, item.NameBase) and SameText(iconDir, itemDir) and (item <> AIcon) then
+      item.CopyMetadataFrom(AIcon);
   end;
 end;
 
@@ -701,7 +738,7 @@ var
   folder: String;
 begin
   for i := FIconFolders.Count-1 downto 0 do
-    if FIconFolders[i] = AFolder then
+    if FIconFolders[i].FolderName = AFolder then
       FIconFolders.Delete(i);
 
   for i := FIconList.Count-1 downto 0 do
@@ -948,6 +985,22 @@ begin
   inc(FFilterLock);
 end;
 
+{ Returns true if at least one of the icon folders has been marked as "dirty"
+  after changing its metadata.
+  Called when the IconViewer is destroyed and is used to re-write the metadata. }
+function TIconViewer.MetadataDirty: Boolean;
+var
+  i: Integer;
+begin
+  for i := 0 to FIconFolders.Count-1 do
+    if FIconFolders[i].Dirty then
+    begin
+      Result := true;
+      exit;
+    end;
+  Result := false;
+end;
+
 { Populates the given menu with the names of all folders from which icons have
   been loaded. Hidden folders (having a non-nil Objects property in the
   IconFolder list) are not checked in the menu. }
@@ -979,8 +1032,8 @@ begin
   for i := 0 to FIconFolders.Count-1 do
   begin
     menuItem := TMenuItem.Create(AMenu);
-    menuItem.Checked := not TIconFolderList(FIconFolders).IsHidden(i);
-    menuItem.Caption := FIconFolders[i];
+    menuItem.Checked := not FIconFolders[i].Hidden;
+    menuItem.Caption := FIconFolders[i].FolderName;
     menuItem.AutoCheck := true;
     menuItem.Tag := i;
     menuItem.OnClick := @IconFolderClicked;
@@ -1306,7 +1359,7 @@ begin
     hiddenFolders.Sorted := true;
     for i := 0 to FIconFolders.count-1 do
     begin
-      folder := FIconFolders[i];
+      folder := FIconFolders[i].FolderName;
       if TIconFolderList(FIconFolders).IsHidden(i) then
         hiddenFolders.Add(AppendPathDelim(folder));
     end;
@@ -1341,7 +1394,7 @@ var
 begin
   for i := 0 to FIconFolders.Count-1 do
   begin
-    folder := FIconFolders.Strings[i];
+    folder := FIconFolders[i].FolderName;
     isHidden := TIconFolderList(FIconFolders).IsHidden(i);
     if isHidden then
       AList.AddObject(folder, TObject(PtrUInt(1)))
@@ -1364,7 +1417,9 @@ begin
   try
     for i := 0 to FIconFolders.Count-1 do
     begin
-      folder := AppendPathDelim(FIconFolders[i]);
+      if not FIconFolders[i].Dirty then
+        Continue;
+      folder := AppendPathDelim(FIconFolders[i].FileName);
       metadata := TStringList.Create;
       try
         if FileExists(folder + METADATA_FILENAME) then
@@ -1385,7 +1440,7 @@ begin
           end;
         end;
         metadata.SaveToFile(folder + METADATA_FILENAME);
-        FMetadataDirty := false;
+        FIconFolders[i].Dirty := false;
       finally
         metadata.Free;
       end;
@@ -1406,9 +1461,12 @@ var
 begin
   Screen.Cursor := crHourglass;
   try
+    Application.ProcessMessages;
     for i := 0 to FIconFolders.Count-1 do
     begin
-      folder := AppendPathDelim(FIconFolders[i]);
+      folder := AppendPathDelim(FIconFolders[i].FolderName);
+      if not FIconFolders[i].Dirty then
+        Continue;
 
       doc := TXMLDocument.Create;
       try
@@ -1446,6 +1504,7 @@ begin
           RenameFile(folder + METADATA_FILENAME, folder + METADATA_FILENAME + '.bak');
 
         WriteXMLFile(doc, folder + METADATA_FILENAME);
+        FIconFolders[i].Dirty := false;
       finally
         doc.Free;
       end;
