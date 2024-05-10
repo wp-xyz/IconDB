@@ -197,6 +197,7 @@ procedure TBasicThumbnailviewer.DoOnResize;
 begin
   inherited;
   LayoutThumbnails;
+  ScrollIntoView;
 end;
 
 procedure TBasicThumbnailViewer.DrawThumbnail(AThumbnail: TBasicThumbnail;

@@ -59,6 +59,7 @@
         <Filename Value="..\common\iconkeywordfiltereditor.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="KeywordFilterEditorForm"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="IconKeywordFilterEditor"/>
       </Unit>
