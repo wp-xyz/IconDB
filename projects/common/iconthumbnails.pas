@@ -198,6 +198,7 @@ const
   ICONSTYLE_NAMES: Array[TIconStyle] of String = (
     '(any style)', 'classic', 'flat', 'outline', 'outline 2-color'
   );
+  IMAGES_MASK = '*.png;*.bmp';
 
 procedure IconStylesToStrings(AList: TStrings);
 var
@@ -254,10 +255,14 @@ end;
 
 constructor TIconItem.Create(AFileName, AKeywords: String; AStyle: TIconStyle;
   AWidth, AHeight: Integer);
+var
+  i: Integer;
 begin
   inherited Create;
   FFileName := AFileName;
   FStyle := AStyle;
+  FWidth := AWidth;
+  FHeight := AHeight;
   FKeywords := TStringList.Create;
   TStringList(FKeywords).Sorted := true;
   TStringList(FKeywords).CaseSensitive := false;
@@ -265,8 +270,8 @@ begin
   FKeywords.Delimiter := ';';
   FKeywords.StrictDelimiter := true;
   FKeywords.DelimitedText := AKeywords;
-  FWidth := AWidth;
-  FHeight := AHeight;
+  for i := FKeywords.Count-1 downto 0 do  // No empty keywords
+    if FKeywords[i] = '' then FKeywords.Delete(i);
 end;
 
 destructor TIconItem.Destroy;
@@ -429,10 +434,11 @@ end;
 
 { TIconFolderList
 
-  A list with folder names stored in TIconFolderItem instances.
+  A list with the folder names stored in TIconFolderItem instances.
   Besides the folder names, each item contains a flag to hide the icons of
-  that folder, as well as a Dirty flag to indicate that icon(s) in that folder
-  have modified metadata.
+  that folder, as well as a Dirty flag to indicate that there are icons in
+  that folder with modified metadata and that the folder's metadata need
+  re-saving.
 }
 function TIconFolderList.AddFolder(AFolderName: String; IsHidden: Boolean): Integer;
 var
@@ -662,8 +668,6 @@ begin
 end;
 
 procedure TIconViewer.AddIconFolder(AFolder: String);
-var
-  metadataFile: String;
 begin
   AFolder := AppendPathDelim(AFolder);
   if FIconFolders.IndexOf(AFolder) > -1 then   // Avoid duplicates
@@ -672,8 +676,7 @@ begin
   if FIconFolders.IndexOf(AFolder) = -1 then
     FIconFolders.AddFolder(AFolder, false);
 
-  if not FilterLocked then
-    FilterIcons;
+  FilterIcons;
   SelectedIndex := -1;
 end;
 
@@ -687,8 +690,8 @@ begin
   FIconFolders.Clear;
 end;
 
-{ Copies the metadata from the given icon the all other icons sharing the
-  same name base (= part in name before the last '_'). }
+{ Copies the metadata from the given icon to all other icons sharing the
+  same name base (= part in name before the last '_') and directory. }
 procedure TIconViewer.CopyMetadataToNameBase(AIcon: TIconItem);
 var
   i: Integer;
@@ -987,7 +990,7 @@ end;
 
 { Returns true if at least one of the icon folders has been marked as "dirty"
   after changing its metadata.
-  Called when the IconViewer is destroyed and is used to re-write the metadata. }
+  Called when the IconViewer is destroyed. Is evaluated for re-writing the metadata. }
 function TIconViewer.MetadataDirty: Boolean;
 var
   i: Integer;
@@ -1099,7 +1102,7 @@ var
 begin
   files := TStringList.Create;
   try
-    FindAllFiles(files, AFolder, '*.png;*.bmp', false);
+    FindAllFiles(files, AFolder, IMAGES_MASK, false);
     for i := 0 to files.Count-1 do
     begin
       stream := TFileStream.Create(files[i], fmOpenRead or fmShareDenyNone);
@@ -1173,7 +1176,7 @@ end;
 
 {$ifdef METADATA_XML}
 var
-  doc: TXMLDocument;
+  doc: TXMLDocument = nil;
   root: TDOMNode;
   iconsNode, iconNode: TDOMNode;
   keywordsNode, keywordNode: TDOMNode;
@@ -1183,41 +1186,89 @@ var
   style: TIconStyle;
   s: String;
   keywords: String;
+  files: TStringList;
+  stream: TStream;
+  reader: TFPCustomImageReaderClass;
 begin
   folder := ExtractFilePath(AFileName);
-  ReadXMLFile(doc, AFileName);
-  iconsNode := doc.DocumentElement.FindNode('icons');
-  iconNode := iconsNode.FindNode('icon');
-  while iconNode <> nil do begin
-    fn := '';
-    style := isAnystyle;
-    keywords := '';
-    if iconNode.HasAttributes then
-      for i := 0 to iconNode.Attributes.Length-1 do
+  files := TStringList.Create;
+  try
+    files.Sorted := true;
+    FindAllFiles(files, folder, IMAGES_MASK, false);
+
+    ReadXMLFile(doc, AFileName);
+    iconsNode := doc.DocumentElement.FindNode('icons');
+    iconNode := iconsNode.FindNode('icon');
+    while iconNode <> nil do begin
+      fn := '';
+      style := isAnystyle;
+      if iconNode.HasAttributes then
+        for i := 0 to iconNode.Attributes.Length-1 do
+        begin
+          s := iconNode.Attributes[i].NodeValue;
+          case iconNode.Attributes[i].NodeName of
+            'filename': fn := s;
+            'width': w := StrToIntDef(s, 0);
+            'height': h := StrToIntDef(s, 0);
+            'style': style := StrToIconStyle(s);
+          end;
+        end;
+      keywords := '';
+      keywordsNode := iconNode.FindNode('keywords');
+      if keywordsNode <> nil then
       begin
-        s := iconNode.Attributes[i].NodeValue;
-        case iconNode.Attributes[i].NodeName of
-          'filename': fn := s;
-          'width': w := StrToIntDef(s, 0);
-          'height': h := StrToIntDef(s, 0);
-          'style': style := StrToIconStyle(s);
+        keywordNode := keywordsNode.FindNode('keyword');
+        while keywordNode <> nil do
+        begin
+          s := keywordNode.TextContent;
+          keywords := keywords + ';' + s;
+          keywordNode := keywordNode.NextSibling;
         end;
       end;
-    keywordsNode := iconNode.FindNode('keywords');
-    if keywordsNode <> nil then
-    begin
-      keywordNode := keywordsNode.FindNode('keyword');
-      while keywordNode <> nil do
+      if keywords <> '' then
+        System.Delete(keywords, 1, 1);
+
+      if (fn <> '') then
       begin
-        s := keywordNode.TextContent;
-        keywords := keywords + ';' + s;
-        keywordNode := keywordNode.NextSibling;
+        fn := folder + fn;
+        if FileExists(fn) then   // ignore metadata entries for which the files do not exist any more.
+          AddIcon(fn, keywords, style, w, h).Hidden := AHidden;
+
+        // Delete the processed filename from the files list
+        i := files.IndexOf(fn);
+        if i > -1 then files.Delete(i);
+      end;
+
+      iconNode := iconNode.NextSibling;
+    end;
+
+    // Every image which exists in the metadata file has been deleted from
+    // the files list. The entries which are left identify new files. Add them
+    // to the metafile
+    for i := 0 to files.Count-1 do
+    begin
+      fn := files[i];
+      stream := TFileStream.Create(files[i], fmOpenRead or fmShareDenyNone);
+      try
+        reader := TFPCustomImage.FindReaderFromStream(stream);
+        if reader <> nil then
+        begin
+          stream.Position := 0;
+          with reader.ImageSize(stream) do
+          begin
+            w := X;
+            h := Y;
+          end;
+          AddIcon(files[i], '', isAnyStyle, w, h).Hidden := AHidden;
+        end;
+      finally
+        stream.Free;
       end;
     end;
-    if keywords <> '' then System.Delete(keywords, 1, 1);
-    if fn <> '' then
-      AddIcon(folder + fn, keywords, style, w, h).Hidden := AHidden;
-    iconNode := iconNode.NextSibling;
+
+  finally
+    doc.Free;
+    files.Free;
   end;
 end;
 {$endif}
@@ -1342,8 +1393,8 @@ begin
   end;
 end;
 
-{ Folders and all their icons can be hidden when the folder names are stored
-  with a non-nil Object in the IconFolders list.
+{ Folders and all their icons can be hidden by setting the Hidden flag of the
+  folder record to true.
   This procedure iterates over all icons and sets their Hidden flag when
   their folder is hidden. }
 procedure TIconViewer.UpdateIconFolders;
@@ -1360,7 +1411,7 @@ begin
     for i := 0 to FIconFolders.count-1 do
     begin
       folder := FIconFolders[i].FolderName;
-      if TIconFolderList(FIconFolders).IsHidden(i) then
+      if FIconFolders[i].Hidden then
         hiddenFolders.Add(AppendPathDelim(folder));
     end;
 
@@ -1372,13 +1423,8 @@ begin
       item.Hidden := hiddenfolders.Find(folder, j);
     end;
 
-    LockFilter;
-    try
-      FilterIcons;
-      Invalidate;
-    finally
-      UnlockFilter;
-    end;
+    FilterIcons;
+    Invalidate;
   finally
     hiddenFolders.Free;
   end;
@@ -1457,7 +1503,6 @@ var
   root, iconsNode, iconNode, keywordsNode, keywordNode: TDOMNode;
   i, j, k: Integer;
   item: TIconItem;
-  style: TIconStyle;
 begin
   Screen.Cursor := crHourglass;
   try
@@ -1465,6 +1510,8 @@ begin
     for i := 0 to FIconFolders.Count-1 do
     begin
       folder := AppendPathDelim(FIconFolders[i].FolderName);
+
+      // Write only unmodified metadata
       if not FIconFolders[i].Dirty then
         Continue;
 

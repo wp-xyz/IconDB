@@ -149,7 +149,7 @@ object KeywordFilterEditorForm: TKeywordFilterEditorForm
         Left = 0
         Height = 215
         Top = 17
-        Width = 278
+        Width = 310
         Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Right = 8
         ItemHeight = 0
@@ -157,15 +157,15 @@ object KeywordFilterEditorForm: TKeywordFilterEditorForm
         OnDblClick = lbKeywordsDblClick
       end
       object RightPanel: TPanel
-        Left = 286
+        Left = 318
         Height = 232
         Top = 0
-        Width = 82
+        Width = 50
         Align = alRight
         AutoSize = True
         BevelOuter = bvNone
         ClientHeight = 232
-        ClientWidth = 82
+        ClientWidth = 50
         TabOrder = 1
         object btnNew: TBitBtn
           AnchorSideLeft.Control = RightPanel
@@ -190,10 +190,10 @@ object KeywordFilterEditorForm: TKeywordFilterEditorForm
           Left = 0
           Height = 25
           Top = 46
-          Width = 82
+          Width = 46
           AutoSize = True
           BorderSpacing.Top = 4
-          Caption = 'Bearbeiten'
+          Caption = 'Edit'
           ImageIndex = 3
           TabOrder = 1
         end
@@ -218,7 +218,7 @@ object KeywordFilterEditorForm: TKeywordFilterEditorForm
           Left = 0
           Height = 23
           Top = 112
-          Width = 82
+          Width = 50
           Alignment = taRightJustify
           Anchors = [akTop, akLeft, akRight]
           BorderSpacing.Top = 2
