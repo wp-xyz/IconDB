@@ -100,6 +100,7 @@ type
     procedure btnApplyClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormShow(Sender: TObject);
+    procedure GroupBoxIconLibResize(Sender: TObject);
     procedure ImageListBoxDrawItem(Control: TWinControl; Index: Integer;
       ARect: TRect; {%H-}State: TOwnerDrawState);
     procedure btnAddNewResolutionClick(Sender: TObject);
@@ -838,6 +839,11 @@ begin
   if Height < Constraints.MinHeight then Height := Constraints.MinHeight;
 
 //  UpdateIconCount;
+end;
+
+procedure TImageListEditorDlg.GroupBoxIconLibResize(Sender: TObject);
+begin
+  //
 end;
 
 procedure TImageListEditorDlg.UpdatePreviewImage;

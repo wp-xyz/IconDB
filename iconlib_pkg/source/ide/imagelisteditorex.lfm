@@ -1,0 +1,15 @@
+object ImageListEditorDlgEx: TImageListEditorDlgEx
+  Left = 472
+  Height = 526
+  Top = 150
+  Width = 1102
+  Caption = 'ImageListEditorDlgEx'
+  ShowHint = True
+  LCLVersion = '3.99.0.0'
+  OnCreate = FormCreate
+  OnShow = FormShow
+  object ImageList1: TImageList
+    Left = 144
+    Top = 65
+  end
+end

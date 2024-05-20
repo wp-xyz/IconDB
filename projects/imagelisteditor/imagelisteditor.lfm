@@ -471,6 +471,7 @@ object ImageListEditorDlg: TImageListEditorDlg
     BorderSpacing.Right = 6
     Caption = 'Icon library'
     TabOrder = 3
+    OnResize = GroupBoxIconLibResize
   end
   object ImageList: TImageList
     Left = 84
