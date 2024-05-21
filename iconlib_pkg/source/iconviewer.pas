@@ -86,7 +86,6 @@ const
 constructor TIconViewerFrame.Create(AOwner: TComponent);
 begin
   inherited;
-
   FIconViewer := TIconViewer.Create(self);
   FIconViewer.Align := alClient;
   FIconViewer.FocusedColor := clWindowText;
@@ -107,7 +106,7 @@ begin
   filterBySize := cmbFilterBySize.ItemIndex;
   if filterBySize = -1 then filterBySize := 0;
 
-  AFolder := AppendPathDelim(AFolder);
+  AFolder := AppendPathDelim(SwitchPathDelims(AFolder, true));
   IconViewer.AddIconFolder(AFolder);
 
   UpdateIconSizes(filterBySize);

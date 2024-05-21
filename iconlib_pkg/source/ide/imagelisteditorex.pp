@@ -22,8 +22,11 @@ unit ImageListEditorEx;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ImgList, StdCtrls,
+  Classes, SysUtils, LazFileUtils,
+  Forms, Controls, Graphics, Dialogs, ImgList, StdCtrls,
   ObjInspStrConsts,
+  // BuildIntf
+  IDEOptionsIntf,
   // IDEIntf
   PropEdits, ComponentEditors, ImageListEditor,
   // Thumbnails
@@ -48,6 +51,7 @@ type
     procedure IconViewerDblClick(Sender: TObject);
     procedure IconViewerFilter(Sender: TObject);
   protected
+    procedure AddDefaultIconFolders;
     procedure LoadFromIconLib(Replace: Boolean);
     function ImageList: TImageList;
 
@@ -170,13 +174,9 @@ begin
   FViewer.IconViewer.ThumbnailColor := clWindow;
   FViewer.OnIconDblClick := @IconViewerDblClick;
   FViewer.OnFilter := @IconViewerFilter;
-  FViewer.AddIconFolder('C:\Lazarus\lazarus-main_fpc3.2.2\images\general_purpose\');
-  FViewer.AddIconFolder('C:\Lazarus\lazarus-main_fpc3.2.2\images\components\');
-  FViewer.AddIconFolder('C:\Lazarus\lazarus-main_fpc3.2.2\components\chmhelp\lhelp\images\');
-  FViewer.AddIconFolder('C:\Lazarus\lazarus-main_fpc3.2.2\components\lazcontrols\');
+  AddDefaultIconFolders;
 
   Caption := sccsILEdtCaption;
-
 end;
 
 procedure TImageListEditorDlgEx.FormShow(Sender: TObject);
@@ -193,6 +193,19 @@ end;
 procedure TImageListEditorDlgEx.BtnReplaceFromLibClick(Sender: TObject);
 begin
   LoadFromIconLib(true);
+end;
+
+procedure TImageListEditorDlgEx.AddDefaultIconFolders;
+var
+  LazDir: String;
+begin
+  LazDir := AppendPathDelim(IDEEnvironmentOptions.GetParsedLazarusDirectory);
+  FViewer.AddIconFolder(LazDir + 'images/general_purpose/');
+  {
+  FViewer.AddIconFolder(LazDir + 'images/components/');
+  FViewer.AddIconFolder(LazDir + 'components/chmhelp/lhelp/images/');
+  FViewer.AddIconFolder(LazDir + 'components/lazcontrols/images/');
+  }
 end;
 
 function TImageListEditorDlgEx.GetModified: Boolean;
