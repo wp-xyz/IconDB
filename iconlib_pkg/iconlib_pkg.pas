@@ -8,7 +8,8 @@ unit iconlib_pkg;
 interface
 
 uses
-  BasicThumbnails, IconKeywordFilterEditor, IconThumbNails, IconViewer;
+  BasicThumbnails, IconKeywordFilterEditor, IconThumbNails, IconViewer, 
+  IconLibFolders, IconLibMetaData;
 
 implementation
 

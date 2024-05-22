@@ -9,7 +9,7 @@ unit IconThumbNails;
 
 interface
 
-uses
+uses                 LazLoggerBase,
   Classes, SysUtils, fgl, FPImage, StrUtils,
   {$ifdef METADATA_XML}
   laz2_dom, laz2_xmlread, laz2_xmlwrite,
@@ -439,13 +439,15 @@ end;
   that folder, as well as a Dirty flag to indicate that there are icons in
   that folder with modified metadata and that the folder's metadata need
   re-saving.
+
+  Each folder name is stored with correct and trailing path delimiters.
 }
 function TIconFolderList.AddFolder(AFolderName: String; IsHidden: Boolean): Integer;
 var
   item: TIconFolderItem;
 begin
   item := TIconFolderItem.Create;
-  item.FolderName := AFolderName;
+  item.FolderName := AppendPathDelim(SwitchPathDelims(AFolderName, true));
   item.Hidden := IsHidden;
   item.Dirty := false;
   Result := Add(item);
@@ -469,6 +471,7 @@ function TIconFolderList.IndexOf(AFolder: String): Integer;
 var
   i: Integer;
 begin
+  AFolder := SwitchPathDelims(AppendPathDelim(AFolder), true);
   for i := 0 to Count-1 do
   begin
     if Items[i].FolderName = AFolder then
@@ -669,7 +672,7 @@ end;
 
 procedure TIconViewer.AddIconFolder(AFolder: String);
 begin
-  AFolder := AppendPathDelim(AFolder);
+  AFolder := AppendPathDelim(SwitchPathDelims(AFolder, true));
   if FIconFolders.IndexOf(AFolder) > -1 then   // Avoid duplicates
     DeleteIconFolder(AFolder);
   ReadIconFolder(AFolder);
@@ -740,6 +743,8 @@ var
   i: Integer;
   folder: String;
 begin
+  AFolder := AppendPathDelim(SwitchPathDelims(AFolder, true));
+
   for i := FIconFolders.Count-1 downto 0 do
     if FIconFolders[i].FolderName = AFolder then
       FIconFolders.Delete(i);
@@ -1051,18 +1056,18 @@ var
 begin
   if AFolder = '' then
     exit;
+  AFolder := AppendPathDelim(SwitchPathDelims(AFolder, true));
   isHidden := TIconFolderList(FIconFolders).IsHidden(AFolder);
   if not DirectoryExists(AFolder) then
     exit;
 
-  AFolder := AppendPathDelim(AFolder);
   if FileExists(AFolder + METADATA_FILENAME) then
     ReadMetadataFile(AFolder + METADATA_FILENAME, isHidden)
   else
     ReadIcons(AFolder, isHidden);
 end;
 
-{ Read the icons found in the folders of the given list.
+{ Reads the icons found in the folders of the given list.
   List items with a non-nil Objects property are marked as being hidden.
   Their names are stored but their icons are not displayed. }
 procedure TIconViewer.ReadIconFolders(AList: TStrings);
@@ -1195,7 +1200,6 @@ begin
   try
     files.Sorted := true;
     FindAllFiles(files, folder, IMAGES_MASK, false);
-
     ReadXMLFile(doc, AFileName);
     iconsNode := doc.DocumentElement.FindNode('icons');
     iconNode := iconsNode.FindNode('icon');
@@ -1231,7 +1235,7 @@ begin
       if (fn <> '') then
       begin
         fn := folder + fn;
-        if FileExists(fn) then   // ignore metadata entries for which the files do not exist any more.
+        if FileExists(fn) then   // ignore metadata entries for which the icon files do not exist.
           AddIcon(fn, keywords, style, w, h).Hidden := AHidden;
 
         // Delete the processed filename from the files list
@@ -1331,6 +1335,12 @@ var
   i, idx: Integer;
   folder: String;
 begin
+  if AFileName = '' then
+  begin
+    SelectedIndex := -1;
+    exit;
+  end;
+
   // Find the index of the icon with the given filename among all thumbnails.
   idx := -1;
   for i := 0 to ThumbnailCount-1 do

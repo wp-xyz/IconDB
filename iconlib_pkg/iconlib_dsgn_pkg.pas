@@ -8,13 +8,13 @@ unit iconlib_dsgn_pkg;
 interface
 
 uses
-  imagelisteditorex, LazarusPackageIntf;
+  ImageListEditorEx, IconLibSettings, IconLibReg, LazarusPackageIntf;
 
 implementation
 
 procedure Register;
 begin
-  RegisterUnit('imagelisteditorex', @imagelisteditorex.Register);
+  RegisterUnit('IconLibReg', @IconLibReg.Register);
 end;
 
 initialization

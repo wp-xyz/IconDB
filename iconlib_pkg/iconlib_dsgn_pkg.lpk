@@ -12,14 +12,25 @@
         <OtherUnitFiles Value="source\ide"/>
         <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
+      <Other>
+        <CustomOptions Value="$(IDEBuildOptions)"/>
+      </Other>
     </CompilerOptions>
     <Description Value="Tool for finding toolbar icons in the Lazarus images folder (design-time package)"/>
     <License Value="LGPL with linking exception"/>
     <Files>
       <Item>
         <Filename Value="source\ide\imagelisteditorex.pp"/>
-        <HasRegisterProc Value="True"/>
         <UnitName Value="imagelisteditorex"/>
+      </Item>
+      <Item>
+        <Filename Value="source\ide\iconlibsettings.pas"/>
+        <UnitName Value="IconLibSettings"/>
+      </Item>
+      <Item>
+        <Filename Value="source\ide\iconlibreg.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="iconlibreg"/>
       </Item>
     </Files>
     <RequiredPkgs>

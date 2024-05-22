@@ -12,6 +12,9 @@
         <OtherUnitFiles Value="source"/>
         <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
+      <Other>
+        <CustomOptions Value="$(IDEBuildOptions)"/>
+      </Other>
     </CompilerOptions>
     <Description Value="Tool for finding toolbar icons in the Lazarus images folder (run-time package)"/>
     <License Value="LGPL with linking exception"/>
@@ -39,6 +42,14 @@
       <Item>
         <Filename Value="source\iconviewer.pas"/>
         <UnitName Value="IconViewer"/>
+      </Item>
+      <Item>
+        <Filename Value="source\iconlibfolders.pas"/>
+        <UnitName Value="IconLibFolders"/>
+      </Item>
+      <Item>
+        <Filename Value="source\iconlibmetadata.pas"/>
+        <UnitName Value="IconLibMetaData"/>
       </Item>
     </Files>
     <RequiredPkgs>

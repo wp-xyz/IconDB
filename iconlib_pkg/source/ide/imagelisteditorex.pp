@@ -74,18 +74,10 @@ type
     function GetVerbCount: Integer; override;
   end;
 
-procedure Register;
-
 
 implementation
 
 {$R *.lfm}
-
-procedure Register;
-begin
-  //Register new component editor for TImageList
-  RegisterComponentEditor(TImageList, TImageListComponentEditorEx);
-end;
 
 function EditImageList(AImageList: TImageList): Boolean;
 var
@@ -317,10 +309,6 @@ begin
   Result := 1;
 end;
 
-
-//initialization
-  //Register new component editor for TImageList
-//  RegisterComponentEditor(TImageList, TImageListComponentEditorEx);
 
 end.
 

@@ -1,0 +1,42 @@
+object IconLibSettingsFrame: TIconLibSettingsFrame
+  Left = 0
+  Height = 451
+  Top = 0
+  Width = 708
+  ClientHeight = 451
+  ClientWidth = 708
+  ParentFont = False
+  ParentShowHint = False
+  ShowHint = True
+  TabOrder = 0
+  DesignLeft = 567
+  DesignTop = 426
+  object ToolBar: TToolBar
+    Left = 0
+    Height = 26
+    Top = 0
+    Width = 708
+    Caption = 'ToolBar'
+    EdgeBorders = []
+    TabOrder = 0
+    object tbFolders: TToolButton
+      Left = 1
+      Top = 0
+      Caption = 'tbFolders'
+      OnClick = tbFoldersClick
+    end
+    object tbMetadata: TToolButton
+      Left = 24
+      Hint = 'Edit icon metadata'
+      Top = 0
+      Caption = 'tbMetadata'
+      OnClick = tbMetadataClick
+    end
+    object tbSaveMetadata: TToolButton
+      Left = 47
+      Top = 0
+      Caption = 'tbSaveMetadata'
+      OnClick = tbSaveMetadataClick
+    end
+  end
+end

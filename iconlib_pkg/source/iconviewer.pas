@@ -4,7 +4,7 @@ unit IconViewer;
 
 interface
 
-uses
+uses                LazLoggerBase,
   Classes, SysUtils,
   LazFileUtils,
   Forms, Controls, Graphics, StdCtrls, ExtCtrls, FileCtrl, Buttons, Dialogs,
@@ -206,9 +206,11 @@ begin
     w := lblFileName.Width;
     if w < lblSize.Width then w := lblSize.Width;
     if w < lblKeywords.Width then w := lblKeywords.Width;
-    infoFileName.BorderSpacing.Left := w + 8;
-    infoSize.BorderSpacing.Left := infoFileName.BorderSpacing.Left;
-    infoKeywords.BorderSpacing.Left := infoFileName.BorderSpacing.Left;
+    inc(w, 8);
+    infoFileName.BorderSpacing.Left := w;
+    infoSize.BorderSpacing.Left := w;
+    infoStyle.BorderSpacing.Left := w;
+    infoKeywords.BorderSpacing.Left := w;
   end;
 end;
 
@@ -266,6 +268,8 @@ begin
   end;
 end;
 
+{ Reads the icons from the directories contained in AList and adds them to the
+  library. }
 procedure TIconViewerFrame.ReadIconFolders(AList: TStrings);
 var
   sizeFilter, styleFilter: Integer;
@@ -296,6 +300,12 @@ var
 begin
   if FIconViewer.SelectedIcon <> nil then
   begin
+
+    DebugLn('IconViewer.SelectedIndex = ' + IntToStr(FIconViewer.SelectedIndex));
+    DebugLn('SelectedIcon.FileName = ' + FIconViewer.SelectedIcon.FileName);
+    DebugLn('SelectedIcon.Style = ' + IntToStr(ord(FIconViewer.SelectedIcon.Style)));
+    DebugLn('SelectedIcon.Keywords = ' + FIconViewer.SelectedIcon.KeywordsAsString);
+
     infoFileName.Hint := FIconViewer.SelectedIcon.FileName;
     infoFileName.Caption := MinimizeName(infoFileName.Hint, Canvas, infoFileName.Width - infoFileName.BorderSpacing.Right);
     infoSize.Caption := FIconViewer.SelectedIcon.SizeAsString;
