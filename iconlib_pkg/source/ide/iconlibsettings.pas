@@ -56,10 +56,10 @@ type
   TIconLibSettingsFrame = class(TAbstractIDEOptionsEditor)
     ToolBar: TToolBar;
     tbFolders: TToolButton;
-    tbMetadata: TToolButton;
+    tbEditMetadata: TToolButton;
     tbSaveMetadata: TToolButton;
     procedure tbFoldersClick(Sender: TObject);
-    procedure tbMetadataClick(Sender: TObject);
+    procedure tbEditMetadataClick(Sender: TObject);
     procedure tbSaveMetadataClick(Sender: TObject);
   private
     FViewer: TIconViewerFrame;
@@ -136,10 +136,13 @@ begin
 
   Toolbar.Images := IDEImages.Images_16;
 
+  tbFolders.Caption := 'Folders...';
   tbFolders.Hint := 'Icon folder management';
   tbFolders.ImageIndex := IDEImages.GetImageIndex('laz_open');
-  tbMetadata.Hint := 'Edit icon metadata';
-  tbMetadata.ImageIndex := IDEImages.GetImageIndex('laz_edit');
+  tbEditMetadata.Caption := 'Metadata...';
+  tbEditMetadata.Hint := 'Edit icon metadata';
+  tbEditMetadata.ImageIndex := IDEImages.GetImageIndex('laz_edit');
+  tbSaveMetadata.Caption := 'Save metadata';
   tbSaveMetadata.Hint := 'Save icon metadata files';
   tbSaveMetadata.ImageIndex := IDEImages.GetImageIndex('laz_save');
 end;
@@ -281,7 +284,7 @@ begin
   EditFolders;
 end;
 
-procedure TIconLibSettingsFrame.tbMetadataClick(Sender: TObject);
+procedure TIconLibSettingsFrame.tbEditMetadataClick(Sender: TObject);
 begin
   EditIconMetaData(FViewer.IconViewer.SelectedIcon);
 end;

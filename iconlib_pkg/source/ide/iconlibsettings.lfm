@@ -18,6 +18,8 @@ object IconLibSettingsFrame: TIconLibSettingsFrame
     Width = 708
     Caption = 'ToolBar'
     EdgeBorders = []
+    List = True
+    ShowCaptions = True
     TabOrder = 0
     object tbFolders: TToolButton
       Left = 1
@@ -25,15 +27,15 @@ object IconLibSettingsFrame: TIconLibSettingsFrame
       Caption = 'tbFolders'
       OnClick = tbFoldersClick
     end
-    object tbMetadata: TToolButton
-      Left = 24
+    object tbEditMetadata: TToolButton
+      Left = 58
       Hint = 'Edit icon metadata'
       Top = 0
-      Caption = 'tbMetadata'
-      OnClick = tbMetadataClick
+      Caption = 'tbEditMetadata'
+      OnClick = tbEditMetadataClick
     end
     object tbSaveMetadata: TToolButton
-      Left = 47
+      Left = 147
       Top = 0
       Caption = 'tbSaveMetadata'
       OnClick = tbSaveMetadataClick
