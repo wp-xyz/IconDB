@@ -29,16 +29,15 @@ uses
   // Icon Lib
   IconThumbnails, IconViewer, IconLibFolders, IconLibMetadata;
 
+
 const
   ICONLIB_CONFIG_FILENAME = 'iconlibcfg.xml';
 
-
-{ TIconLibSettings }
-
-// -------- The Options Group ID, and, perhaps, a place in the Tree View -------
+{ TIconLibSettings
+  The Options Group ID, and, perhaps, a place in the Tree View }
 
 type
-  TIconLibSettings = class(TAbstractIDEEnvironmentOptions)          // needed by options group.
+  TIconLibSettings = class(TAbstractIDEEnvironmentOptions) // needed by options group.
   private
 
   public
@@ -50,9 +49,10 @@ type
   end;
 
 
-// ------ This is the Frame displayed when user clicks the Tree View node ------
+{ TIconLibSettingsFrame
+  This is the frame displayed when the user clicks the Tree View node }
+
 type
-  { TIconLibSettingsFrame }
   TIconLibSettingsFrame = class(TAbstractIDEOptionsEditor)
     ToolBar: TToolBar;
     tbFolders: TToolButton;

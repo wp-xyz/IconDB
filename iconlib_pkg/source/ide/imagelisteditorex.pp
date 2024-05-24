@@ -22,15 +22,20 @@ unit ImageListEditorEx;
 interface
 
 uses
-  Classes, SysUtils, LazFileUtils,
+  Classes, SysUtils,
+  // LazUtils
+  LazFileUtils, LazLoggerBase, LazConfigStorage,
+  // LCL
   Forms, Controls, Graphics, Dialogs, ImgList, StdCtrls,
-  ObjInspStrConsts,
   // BuildIntf
   IDEOptionsIntf,
   // IDEIntf
-  PropEdits, ComponentEditors, ImageListEditor,
+  PropEdits, ComponentEditors, ImageListEditor, BaseIDEIntf, ObjInspStrConsts,
   // Thumbnails
   IconThumbnails, IconViewer;
+
+const
+  ICONLIB_CONFIG_FILENAME = 'iconlibcfg.xml';
 
 type
 
@@ -51,7 +56,8 @@ type
     procedure IconViewerDblClick(Sender: TObject);
     procedure IconViewerFilter(Sender: TObject);
   protected
-    procedure AddDefaultIconFolders;
+    procedure AddDefaultIconFolder;
+    procedure AddIconFolders;
     procedure LoadFromIconLib(Replace: Boolean);
     function ImageList: TImageList;
 
@@ -166,7 +172,7 @@ begin
   FViewer.IconViewer.ThumbnailColor := clWindow;
   FViewer.OnIconDblClick := @IconViewerDblClick;
   FViewer.OnFilter := @IconViewerFilter;
-  AddDefaultIconFolders;
+  AddIconFolders;
 
   Caption := sccsILEdtCaption;
 end;
@@ -187,17 +193,41 @@ begin
   LoadFromIconLib(true);
 end;
 
-procedure TImageListEditorDlgEx.AddDefaultIconFolders;
+procedure TImageListEditorDlgEx.AddDefaultIconFolder;
 var
   LazDir: String;
 begin
   LazDir := AppendPathDelim(IDEEnvironmentOptions.GetParsedLazarusDirectory);
   FViewer.AddIconFolder(LazDir + 'images/general_purpose/');
-  {
-  FViewer.AddIconFolder(LazDir + 'images/components/');
-  FViewer.AddIconFolder(LazDir + 'components/chmhelp/lhelp/images/');
-  FViewer.AddIconFolder(LazDir + 'components/lazcontrols/images/');
-  }
+end;
+
+procedure TImageListEditorDlgEx.AddIconFolders;
+var
+  Config: TConfigStorage;
+  folder: String;
+  n, i: Integer;
+begin
+  try
+    Config := GetIDEConfigStorage(ICONLIB_CONFIG_FILENAME, true);
+    try
+      n := Config.GetValue('IconLib/Folders/Count', 0);
+      if n = 0 then
+        AddDefaultIconFolder
+      else
+        for i := 0 to n-1 do
+        begin
+          folder := Config.GetValue('IconLib/Folders/Item' + IntToStr(i) + '/Value', '');
+          if (folder <> '') and DirectoryExists(folder) then
+            FViewer.AddIconFolder(folder);
+        end;
+    finally
+      Config.Free;
+    end;
+  except
+    on E: Exception do begin
+      DebugLn('TIconLibSettingsFrame.ReadSettings Loading ' +  ICONLIB_CONFIG_FILENAME + ' failed: ' + E.Message);
+    end;
+  end;
 end;
 
 function TImageListEditorDlgEx.GetModified: Boolean;
