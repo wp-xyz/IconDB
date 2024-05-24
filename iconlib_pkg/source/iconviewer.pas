@@ -4,7 +4,7 @@ unit IconViewer;
 
 interface
 
-uses                LazLoggerBase,
+uses
   Classes, SysUtils,
   LazFileUtils,
   Forms, Controls, Graphics, StdCtrls, ExtCtrls, FileCtrl, Buttons, Dialogs,
@@ -300,12 +300,6 @@ var
 begin
   if FIconViewer.SelectedIcon <> nil then
   begin
-
-    DebugLn('IconViewer.SelectedIndex = ' + IntToStr(FIconViewer.SelectedIndex));
-    DebugLn('SelectedIcon.FileName = ' + FIconViewer.SelectedIcon.FileName);
-    DebugLn('SelectedIcon.Style = ' + IntToStr(ord(FIconViewer.SelectedIcon.Style)));
-    DebugLn('SelectedIcon.Keywords = ' + FIconViewer.SelectedIcon.KeywordsAsString);
-
     infoFileName.Hint := FIconViewer.SelectedIcon.FileName;
     infoFileName.Caption := MinimizeName(infoFileName.Hint, Canvas, infoFileName.Width - infoFileName.BorderSpacing.Right);
     infoSize.Caption := FIconViewer.SelectedIcon.SizeAsString;

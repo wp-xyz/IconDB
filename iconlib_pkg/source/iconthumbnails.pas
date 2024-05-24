@@ -9,7 +9,7 @@ unit IconThumbNails;
 
 interface
 
-uses                 LazLoggerBase,
+uses
   Classes, SysUtils, fgl, FPImage, StrUtils,
   {$ifdef METADATA_XML}
   laz2_dom, laz2_xmlread, laz2_xmlwrite,
@@ -1058,7 +1058,7 @@ begin
     exit;
   AFolder := AppendPathDelim(SwitchPathDelims(AFolder, true));
   isHidden := TIconFolderList(FIconFolders).IsHidden(AFolder);
-  if not DirectoryExists(AFolder) then
+  if (not DirectoryExists(AFolder)) or isHidden then
     exit;
 
   if FileExists(AFolder + METADATA_FILENAME) then
@@ -1328,8 +1328,7 @@ begin
   end;
 end;
 
-{ Selected the icon among all visible thumbnails which is assigned to the
-  given filename. }
+{ Selects, among all visible thumbnails, the icon which has the given filename.}
 function TIconViewer.SelectIconInFile(AFileName: String): Boolean;
 var
   i, idx: Integer;
@@ -1345,6 +1344,8 @@ begin
   idx := -1;
   for i := 0 to ThumbnailCount-1 do
   begin
+    if (Thumbnail[i] = nil) or (TIconThumbnail(Thumbnail[i]).Item = nil) then
+      Continue;
     if TIconThumbnail(Thumbnail[i]).Item.FileName = AFileName then
     begin
       idx := i;

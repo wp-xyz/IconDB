@@ -251,9 +251,6 @@ begin
         for i := 0 to n-1 do
         begin
           folder := Config.GetValue('IconLib/Folders/Item' + IntToStr(i) + '/Value', '');
-
-          DebugLn(['[ReadSettings] i = ', i, ', folder = ', folder]);
-
           if (folder <> '') and DirectoryExists(folder) then
             FViewer.AddIconFolder(folder);
         end;
@@ -314,12 +311,7 @@ begin
          FViewer.IconViewer.WriteIconFolders(list);
          Config.SetValue('IconLib/Folders/Count', list.Count);
          for i := 0 to list.Count-1 do
-         begin
-
-           DebugLn(['[WriteSettings] i = ', i, ', list[i] = ', list[i]]);
-
            Config.SetValue('IconLib/Folders/Item' + IntToStr(i) + '/Value', list[i]);
-         end;
        finally
          list.Free;
        end;
