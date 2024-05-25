@@ -145,7 +145,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure AddIconFolder(AFolder: String);
+    procedure AddIconFolder(AFolder: String; Hidden: Boolean = false);
     procedure Clear; override;
     procedure CopyMetadataToNameBase(AIcon: TIconItem);
     procedure DeleteIcon(AIcon: TIconItem);
@@ -670,14 +670,15 @@ begin
     FSizes.Add(sizestr);
 end;
 
-procedure TIconViewer.AddIconFolder(AFolder: String);
+procedure TIconViewer.AddIconFolder(AFolder: String; Hidden: Boolean = false);
 begin
   AFolder := AppendPathDelim(SwitchPathDelims(AFolder, true));
+
   if FIconFolders.IndexOf(AFolder) > -1 then   // Avoid duplicates
     DeleteIconFolder(AFolder);
+
+  FIconFolders.AddFolder(AFolder, Hidden);
   ReadIconFolder(AFolder);
-  if FIconFolders.IndexOf(AFolder) = -1 then
-    FIconFolders.AddFolder(AFolder, false);
 
   FilterIcons;
   SelectedIndex := -1;

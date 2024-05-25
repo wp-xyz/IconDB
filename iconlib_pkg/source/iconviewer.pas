@@ -57,7 +57,7 @@ type
 
   public
     constructor Create(AOwner: TComponent); override;
-    procedure AddIconFolder(AFolder: String);
+    procedure AddIconFolder(AFolder: String; Hidden: Boolean = false);
     procedure CopyMetadataToNameBase(AIcon: TIconItem);
     procedure DeleteSelectedIcon;
     procedure ReadIconFolders(AList: TStrings);
@@ -96,7 +96,7 @@ begin
   UpdateIconDetails;
 end;
 
-procedure TIconViewerFrame.AddIconFolder(AFolder: String);
+procedure TIconViewerFrame.AddIconFolder(AFolder: String; Hidden: Boolean = false);
 var
   filterByStyle: Integer;
   filterBySize: Integer;
@@ -107,7 +107,7 @@ begin
   if filterBySize = -1 then filterBySize := 0;
 
   AFolder := AppendPathDelim(SwitchPathDelims(AFolder, true));
-  IconViewer.AddIconFolder(AFolder);
+  IconViewer.AddIconFolder(AFolder, Hidden);
 
   UpdateIconSizes(filterBySize);
   UpdateIconStyles(filterByStyle);

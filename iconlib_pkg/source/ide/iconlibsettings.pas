@@ -239,6 +239,7 @@ procedure TIconLibSettingsFrame.ReadSettings(AOptions: TAbstractIDEOptions);
 var
   Config: TConfigStorage;
   folder: String;
+  isHidden: Boolean;
   n, i: Integer;
 begin
   try
@@ -251,8 +252,9 @@ begin
         for i := 0 to n-1 do
         begin
           folder := Config.GetValue('IconLib/Folders/Item' + IntToStr(i) + '/Value', '');
+          isHidden := Config.GetValue('IconLib/Folders/Item' + IntToStr(i) + '/Hidden', false);
           if (folder <> '') and DirectoryExists(folder) then
-            FViewer.AddIconFolder(folder);
+            FViewer.AddIconFolder(folder, isHidden);
         end;
     finally
       Config.Free;
@@ -311,7 +313,11 @@ begin
          FViewer.IconViewer.WriteIconFolders(list);
          Config.SetValue('IconLib/Folders/Count', list.Count);
          for i := 0 to list.Count-1 do
+         begin
            Config.SetValue('IconLib/Folders/Item' + IntToStr(i) + '/Value', list[i]);
+           if list.Objects[i] <> nil then
+             Config.SetValue('IconLib/Folders/Item' + IntToStr(i) + '/Hidden', true);
+         end;
        finally
          list.Free;
        end;
