@@ -75,6 +75,7 @@ object IconViewerFrame: TIconViewerFrame
       ItemHeight = 15
       TabOrder = 2
       TextHint = 'Enter keywords here'
+      OnChange = cmbFilterByKeywordsChange
       OnEditingDone = cmbFilterByKeywordsEditingDone
     end
     object btnKeywordEditor: TSpeedButton

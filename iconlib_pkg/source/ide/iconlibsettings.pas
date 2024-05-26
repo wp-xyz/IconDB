@@ -241,10 +241,13 @@ var
   folder: String;
   isHidden: Boolean;
   n, i: Integer;
+  s: String;
+  list: TStrings;
 begin
   try
     Config := GetIDEConfigStorage(ICONLIB_CONFIG_FILENAME, true);
     try
+      // Icon folder list
       n := Config.GetValue('IconLib/Folders/Count', 0);
       if n = 0 then
         AddDefaultFolder
@@ -256,6 +259,21 @@ begin
           if (folder <> '') and DirectoryExists(folder) then
             FViewer.AddIconFolder(folder, isHidden);
         end;
+
+      // Keyword filter history list
+      list := TStringList.Create;
+      try
+        n := Config.GetValue('IconLib/FilterHistory/Count', 0);
+        for i := 0 to n-1 do
+        begin
+          s := Config.GetValue('IconLib/FilterHistory/Item' + IntToStr(i) + '/Value', '');
+          if s <> '' then list.Add(s);
+        end;
+        FViewer.SetKeywordsHistory(list);
+      finally
+        list.Free;
+      end;
+
     finally
       Config.Free;
     end;
@@ -310,6 +328,7 @@ begin
      try
        list := TStringList.Create;
        try
+         // Icon folder list
          FViewer.IconViewer.WriteIconFolders(list);
          Config.SetValue('IconLib/Folders/Count', list.Count);
          for i := 0 to list.Count-1 do
@@ -318,6 +337,13 @@ begin
            if list.Objects[i] <> nil then
              Config.SetValue('IconLib/Folders/Item' + IntToStr(i) + '/Hidden', true);
          end;
+
+         // Keyword filter history list
+         list.Clear;
+         FViewer.GetKeywordsHistory(list);
+         Config.SetValue('IconLib/FilterHistory/Count', list.Count);
+         for i := 0 to list.Count-1 do
+           Config.SetValue('IconLib/FilterHistory/Item' + IntToStr(i) + '/Value', list[i]);
        finally
          list.Free;
        end;

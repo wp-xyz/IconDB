@@ -32,6 +32,7 @@ type
     lblStyle: TLabel;
     IconDetailsPanel: TPanel;
     procedure btnKeywordEditorClick(Sender: TObject);
+    procedure cmbFilterByKeywordsChange(Sender: TObject);
     procedure cmbFilterByKeywordsEditingDone(Sender: TObject);
     procedure cmbFilterBySizeChange(Sender: TObject);
     procedure cmbFilterByStyleChange(Sender: TObject);
@@ -60,7 +61,9 @@ type
     procedure AddIconFolder(AFolder: String; Hidden: Boolean = false);
     procedure CopyMetadataToNameBase(AIcon: TIconItem);
     procedure DeleteSelectedIcon;
+    procedure GetKeywordsHistory(AList: TStrings);
     procedure ReadIconFolders(AList: TStrings);
+    procedure SetKeywordsHistory(AList: TStrings);
     procedure UpdateIconSizes(ASizeIndex: Integer);
     procedure UpdateIconStyles(AStyleIndex: Integer);
 
@@ -151,12 +154,32 @@ begin
     begin
       cmbFilterByKeywords.Text := F.Filter;
       FIconViewer.FilterByIconKeywords := F.Filter;
-      FIconViewer.Invalidate;
+      AddKeywordFilterToHistory(F.Filter);
+      //FIconViewer.Invalidate;
     end;
   finally
     L.Free;
     F.Free;
   end;
+end;
+
+procedure TIconViewerFrame.cmbFilterByKeywordsChange(Sender: TObject);
+var
+  filter: String;
+  idx: Integer;
+begin
+  filter := cmbFilterByKeywords.Text;
+  FIconViewer.FilterByIconKeywords := filter;
+end;
+
+// Editing of keyword filter done --> Add filter to history list
+procedure TIconViewerFrame.cmbFilterByKeywordsEditingDone(Sender: TObject);
+var
+  filter: String;
+begin
+  filter := cmbFilterByKeywords.Text;
+  AddKeywordFilterToHistory(filter);
+  cmbFilterByKeywords.Text := filter;   // Must be after AddKeywordFilterToHistory!
 end;
 
 procedure TIconViewerFrame.cmbFilterBySizeChange(Sender: TObject);
@@ -166,19 +189,6 @@ begin
   else
     FIconViewer.FilterByIconSize := cmbFilterBySize.Items[cmbFilterBySize.ItemIndex];
   FIconViewer.Invalidate;
-end;
-
-procedure TIconViewerFrame.cmbFilterByKeywordsEditingDone(Sender: TObject);
-var
-  filter: String;
-  idx: Integer;
-begin
-  filter := cmbFilterByKeywords.Text;
-  FIconViewer.FilterByIconKeywords := filter;
-
-  // Add to history list
-  AddKeywordFilterToHistory(filter);
-  cmbFilterByKeywords.Text := filter;
 end;
 
 procedure TIconViewerFrame.cmbFilterByStyleChange(Sender: TObject);
@@ -249,6 +259,11 @@ begin
   Result := FIconViewer.ThumbnailCount;
 end;
 
+procedure TIconViewerFrame.GetKeywordsHistory(AList: TStrings);
+begin
+  AList.Assign(cmbFilterByKeywords.Items);
+end;
+
 function TIconViewerFrame.GetSelectedIcon: TIconItem;
 begin
   Result := FIconViewer.SelectedIcon;
@@ -286,6 +301,18 @@ begin
     UpdateIconStyles(stylefilter);
   finally
     IconViewer.UnlockFilter;
+  end;
+end;
+
+procedure TIconViewerFrame.SetKeywordsHistory(AList: TStrings);
+begin
+  cmbFilterByKeywords.Items.BeginUpdate;
+  try
+    cmbFilterByKeywords.Items.Assign(AList);
+    while cmbFilterByKeywords.Items.Count > MAX_KEYWORDS_HISTORY do
+      cmbFilterByKeywords.Items.Delete(cmbFilterByKeywords.Items.Count-1);
+  finally
+    cmbFilterByKeywords.Items.EndUpdate;
   end;
 end;
 
