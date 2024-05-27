@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils,
   LazFileUtils,
-  Forms, Controls, Graphics, StdCtrls, ExtCtrls, FileCtrl, Buttons, Dialogs,
+  Forms, Controls, Graphics, StdCtrls, ExtCtrls, FileCtrl, Buttons, Dialogs, ImgList,
   IconThumbnails, IconKeywordFilterEditor;
 
 type
@@ -31,8 +31,11 @@ type
     lblSize: TLabel;
     lblStyle: TLabel;
     IconDetailsPanel: TPanel;
+    btnExecuteFilter: TSpeedButton;
+    btnClearFilter: TSpeedButton;
+    procedure btnClearFilterClick(Sender: TObject);
+    procedure btnExecuteFilterClick(Sender: TObject);
     procedure btnKeywordEditorClick(Sender: TObject);
-    procedure cmbFilterByKeywordsChange(Sender: TObject);
     procedure cmbFilterByKeywordsEditingDone(Sender: TObject);
     procedure cmbFilterBySizeChange(Sender: TObject);
     procedure cmbFilterByStyleChange(Sender: TObject);
@@ -44,8 +47,12 @@ type
     FOnFilter: TNotifyEvent;
     FOnIconDblClick: TNotifyEvent;
     function GetFilteredCount: Integer;
+    function GetImageIndex(AIndex: Integer): TImageIndex;
+    function GetImageList: TCustomImageList;
     function GetSelectedIcon: TIconItem;
     function GetTotalCount: Integer;
+    procedure SetImageIndex(AIndex: Integer; AValue: TImageIndex);
+    procedure SetImageList(AValue: TCustomImageList);
 
   protected
     procedure AddKeywordFilterToHistory(AFilter: String);
@@ -69,6 +76,9 @@ type
 
     property FilteredCount: Integer read GetFilteredCount;
     property IconViewer: TIconViewer read FIconViewer;
+    property ImageIndex_ExecuteFilter: TImageIndex index 0 read GetImageIndex write SetImageIndex;
+    property ImageIndex_ClearFilter: TImageIndex index 1 read GetImageIndex write SetImageIndex;
+    property ImageList: TCustomImageList read GetImageList write SetImageList;
     property SelectedIcon: TIconItem read GetSelectedIcon;
     property TotalCount: Integer read GetTotalCount;
     property OnFilter: TNotifyEvent read FOnFilter write FOnFilter;
@@ -96,6 +106,14 @@ begin
   FIconViewer.OnDblClick := @DoIconViewerDblClick;
   FIconViewer.OnFilter := @DoIconViewerFilter;
   FIconViewer.OnSelect := @DoIconViewerSelect;
+
+  cmbFilterBySize.Hint := 'Filter by icon size';
+  cmbFilterByStyle.Hint := 'Filter by icon style';
+  cmbFilterByKeywords.Hint := 'Expression to filter by keywords';
+  btnKeywordEditor.Hint := 'Enter/edit a keyword filter';
+  btnClearFilter.Hint := 'Clears the keyword filter';
+  btnExecuteFilter.Hint := 'Filters by keywords';
+
   UpdateIconDetails;
 end;
 
@@ -163,23 +181,25 @@ begin
   end;
 end;
 
-procedure TIconViewerFrame.cmbFilterByKeywordsChange(Sender: TObject);
+procedure TIconViewerFrame.btnClearFilterClick(Sender: TObject);
+begin
+  cmbFilterByKeywords.Text := '';
+  FIconViewer.FilterByIconKeywords := '';
+end;
+
+procedure TIconViewerFrame.btnExecuteFilterClick(Sender: TObject);
 var
   filter: String;
-  idx: Integer;
 begin
   filter := cmbFilterByKeywords.Text;
   FIconViewer.FilterByIconKeywords := filter;
-end;
-
-// Editing of keyword filter done --> Add filter to history list
-procedure TIconViewerFrame.cmbFilterByKeywordsEditingDone(Sender: TObject);
-var
-  filter: String;
-begin
-  filter := cmbFilterByKeywords.Text;
   AddKeywordFilterToHistory(filter);
   cmbFilterByKeywords.Text := filter;   // Must be after AddKeywordFilterToHistory!
+end;
+
+procedure TIconViewerFrame.cmbFilterByKeywordsEditingDone(Sender: TObject);
+begin
+  btnExecuteFilterClick(nil);
 end;
 
 procedure TIconViewerFrame.cmbFilterBySizeChange(Sender: TObject);
@@ -259,6 +279,19 @@ begin
   Result := FIconViewer.ThumbnailCount;
 end;
 
+function TIconViewerFrame.GetImageIndex(AIndex: Integer): TImageIndex;
+begin
+  case AIndex of
+    0: Result := btnExecuteFilter.ImageIndex;
+    1: Result := btnClearFilter.ImageIndex;
+  end;
+end;
+
+function TIconViewerFrame.GetImageList: TCustomImageList;
+begin
+  Result := btnExecuteFilter.Images;
+end;
+
 procedure TIconViewerFrame.GetKeywordsHistory(AList: TStrings);
 begin
   AList.Assign(cmbFilterByKeywords.Items);
@@ -302,6 +335,20 @@ begin
   finally
     IconViewer.UnlockFilter;
   end;
+end;
+
+procedure TIconViewerFrame.SetImageIndex(AIndex: Integer; AValue: TImageIndex);
+begin
+  case AIndex of
+    0: btnExecuteFilter.ImageIndex := AValue;
+    1: btnClearFilter.ImageIndex := AValue;
+  end;
+end;
+
+procedure TIconViewerFrame.SetImageList(AValue: TCustomImageList);
+begin
+  btnExecuteFilter.Images := AValue;
+  btnClearFilter.Images := AValue;
 end;
 
 procedure TIconViewerFrame.SetKeywordsHistory(AList: TStrings);

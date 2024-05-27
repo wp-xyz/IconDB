@@ -6,8 +6,8 @@ object IconViewerFrame: TIconViewerFrame
   ClientHeight = 357
   ClientWidth = 574
   TabOrder = 0
-  DesignLeft = 314
-  DesignTop = 130
+  DesignLeft = 319
+  DesignTop = 171
   object FilterPanel: TPanel
     Left = 0
     Height = 29
@@ -27,7 +27,6 @@ object IconViewerFrame: TIconViewerFrame
       AnchorSideBottom.Side = asrBottom
       Left = 6
       Height = 23
-      Hint = 'Filter by icon size'
       Top = 0
       Width = 74
       BorderSpacing.Left = 6
@@ -45,7 +44,6 @@ object IconViewerFrame: TIconViewerFrame
       AnchorSideBottom.Side = asrBottom
       Left = 86
       Height = 23
-      Hint = 'Filter by icon style'
       Top = 0
       Width = 108
       BorderSpacing.Left = 6
@@ -64,9 +62,8 @@ object IconViewerFrame: TIconViewerFrame
       AnchorSideBottom.Side = asrBottom
       Left = 200
       Height = 23
-      Hint = 'Filter by keywords'
       Top = 0
-      Width = 343
+      Width = 290
       Anchors = [akTop, akLeft, akRight]
       BorderSpacing.Left = 6
       BorderSpacing.Right = 2
@@ -75,22 +72,45 @@ object IconViewerFrame: TIconViewerFrame
       ItemHeight = 15
       TabOrder = 2
       TextHint = 'Enter keywords here'
-      OnChange = cmbFilterByKeywordsChange
       OnEditingDone = cmbFilterByKeywordsEditingDone
     end
     object btnKeywordEditor: TSpeedButton
       AnchorSideTop.Control = cmbFilterByKeywords
       AnchorSideTop.Side = asrCenter
-      AnchorSideRight.Control = FilterPanel
-      AnchorSideRight.Side = asrBottom
-      Left = 545
-      Height = 22
-      Top = 0
-      Width = 23
+      AnchorSideRight.Control = btnClearFilter
+      Left = 492
+      Height = 24
+      Top = -1
+      Width = 24
       Anchors = [akTop, akRight]
-      BorderSpacing.Right = 6
+      BorderSpacing.Right = 2
       Caption = '...'
       OnClick = btnKeywordEditorClick
+    end
+    object btnExecuteFilter: TSpeedButton
+      AnchorSideTop.Control = cmbFilterByKeywords
+      AnchorSideTop.Side = asrCenter
+      AnchorSideRight.Control = FilterPanel
+      AnchorSideRight.Side = asrBottom
+      Left = 544
+      Height = 24
+      Top = -1
+      Width = 24
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 6
+      OnClick = btnExecuteFilterClick
+    end
+    object btnClearFilter: TSpeedButton
+      AnchorSideTop.Control = cmbFilterByKeywords
+      AnchorSideTop.Side = asrCenter
+      AnchorSideRight.Control = btnExecuteFilter
+      Left = 518
+      Height = 24
+      Top = -1
+      Width = 24
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 2
+      OnClick = btnClearFilterClick
     end
   end
   object IconDetailsPanel: TPanel

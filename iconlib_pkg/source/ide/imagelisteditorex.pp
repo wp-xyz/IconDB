@@ -30,7 +30,7 @@ uses
   // BuildIntf
   IDEOptionsIntf,
   // IDEIntf
-  PropEdits, ComponentEditors, ImageListEditor, BaseIDEIntf, ObjInspStrConsts,
+  PropEdits, ComponentEditors, ImageListEditor, BaseIDEIntf, ObjInspStrConsts, IDEImagesIntf,
   // Thumbnails
   IconThumbnails, IconViewer;
 
@@ -170,6 +170,9 @@ begin
   FViewer.Parent := FIconLibGroupBox;
   FViewer.IconViewer.FocusedColor := clWindowText;
   FViewer.IconViewer.ThumbnailColor := clWindow;
+  FViewer.ImageList := IDEImages.Images_16;
+  FViewer.ImageIndex_ExecuteFilter := IDEImages.GetImageIndex('item_filter', 16);
+  FViewer.ImageIndex_ClearFilter := IDEImages.GetImageIndex('menu_clean', 16);
   FViewer.OnIconDblClick := @IconViewerDblClick;
   FViewer.OnFilter := @IconViewerFilter;
   AddIconFolders;
