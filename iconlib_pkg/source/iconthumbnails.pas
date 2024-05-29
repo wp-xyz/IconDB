@@ -177,6 +177,7 @@ type
 
   end;
 
+function IconStyleToStr(AStyle: TIconStyle): String;
 procedure IconStylesToStrings(AList: TStrings);
 function StrToIconStyle(AText: String): TIconStyle;
 
@@ -199,6 +200,14 @@ const
     '(any style)', 'classic', 'flat', 'outline', 'outline 2-color'
   );
   IMAGES_MASK = '*.png;*.bmp';
+
+function IconStyleToStr(AStyle: TIconStyle): String;
+begin
+  if AStyle = isAnyStyle then
+    Result := ''
+  else
+    Result := ICONSTYLE_NAMES[AStyle];
+end;
 
 procedure IconStylesToStrings(AList: TStrings);
 var

@@ -6,8 +6,14 @@
   for details about the license.
  **********************************************************************
 
-... decription ....
+ Settings for the Icon Lib addon to the IDE:
+ - add/remove folders with icons to be included
+ - rearrange folders
+ - define keywords
+ - save keywords to "metadata.xml" file in the icon folder.
 
+ The settings are stored in the file "iconlib.xml" in the Lazarus user profile
+ (primary config directory).
 }
 
 unit IconLibSettings;
@@ -28,7 +34,6 @@ uses
   LazIDEIntf, IDEOptEditorIntf, IDEImagesIntf,
   // Icon Lib
   IconThumbnails, IconViewer, IconLibFolders, IconLibMetadata;
-
 
 const
   ICONLIB_CONFIG_FILENAME = 'iconlibcfg.xml';
@@ -277,6 +282,10 @@ begin
         list.Free;
       end;
 
+      // Read the icon size and style filter settings
+      FViewer.SizeFilter := Config.GetValue('IconLib/Settings/SizeFilter/Value', '');
+      FViewer.StyleFilter := Config.GetValue('IconLib/Settings/StyleFilter/Value', '');
+
     finally
       Config.Free;
     end;
@@ -325,6 +334,7 @@ var
   Config: TConfigStorage;
   i: Integer;
   list: TStrings;
+  s: String;
 begin
   try
      Config := GetIDEConfigStorage(ICONLIB_CONFIG_FILENAME, false);
@@ -350,6 +360,15 @@ begin
        finally
          list.Free;
        end;
+
+       // Write the icon size and style filter settings
+       s := FViewer.SizeFilter;
+       if s <> '' then
+         Config.SetValue('IconLib/Settings/SizeFilter/Value', s);
+       s := FViewer.StyleFilter;
+       if s <> '' then
+         Config.SetValue('IconLib/Settings/StyleFilter/Value', s);
+
      finally
        Config.Free;
      end;

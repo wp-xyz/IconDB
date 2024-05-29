@@ -50,9 +50,13 @@ type
     function GetImageIndex(AIndex: Integer): TImageIndex;
     function GetImageList: TCustomImageList;
     function GetSelectedIcon: TIconItem;
+    function GetSizeFilter: String;
+    function GetStyleFilter: String;
     function GetTotalCount: Integer;
     procedure SetImageIndex(AIndex: Integer; AValue: TImageIndex);
     procedure SetImageList(AValue: TCustomImageList);
+    procedure SetSizeFilter(AValue: String);
+    procedure SetStyleFilter(AValue: String);
 
   protected
     procedure AddKeywordFilterToHistory(AFilter: String);
@@ -80,6 +84,8 @@ type
     property ImageIndex_ClearFilter: TImageIndex index 1 read GetImageIndex write SetImageIndex;
     property ImageList: TCustomImageList read GetImageList write SetImageList;
     property SelectedIcon: TIconItem read GetSelectedIcon;
+    property SizeFilter: String read GetSizeFilter write SetSizeFilter;
+    property StyleFilter: String read GetStyleFilter write SetStyleFilter;
     property TotalCount: Integer read GetTotalCount;
     property OnFilter: TNotifyEvent read FOnFilter write FOnFilter;
     property OnIconDblClick: TNotifyEvent read FOnIconDblClick write FOnIconDblClick;
@@ -302,6 +308,19 @@ begin
   Result := FIconViewer.SelectedIcon;
 end;
 
+function TIconViewerFrame.GetSizeFilter: String;
+begin
+  if cmbFilterBySize.ItemIndex <= 0 then
+    Result := ''
+  else
+    Result := cmbFilterBySize.Items[cmbFilterBySize.ItemIndex];
+end;
+
+function TIconViewerFrame.GetStyleFilter: String;
+begin
+  Result := IconStyleToStr(TIconStyle(cmbFilterByStyle.ItemIndex));
+end;
+
 function TIconViewerFrame.GetTotalCount: Integer;
 begin
   Result := FIconViewer.IconCount;
@@ -320,18 +339,18 @@ end;
   library. }
 procedure TIconViewerFrame.ReadIconFolders(AList: TStrings);
 var
-  sizeFilter, styleFilter: Integer;
+  sizeFilt, styleFilt: Integer;
 begin
-  styleFilter := cmbFilterByStyle.ItemIndex;
-  if styleFilter = -1 then styleFilter := 0;
-  sizeFilter := cmbFilterBySize.ItemIndex;
-  if sizeFilter = -1 then sizeFilter := 0;
+  styleFilt := cmbFilterByStyle.ItemIndex;
+  if styleFilt = -1 then styleFilt := 0;
+  sizeFilt := cmbFilterBySize.ItemIndex;
+  if sizeFilt = -1 then sizeFilt := 0;
 
   IconViewer.LockFilter;
   try
     IconViewer.ReadIconFolders(AList);
-    UpdateIconSizes(sizeFilter);
-    UpdateIconStyles(stylefilter);
+    UpdateIconSizes(sizefilt);
+    UpdateIconStyles(stylefilt);
   finally
     IconViewer.UnlockFilter;
   end;
@@ -361,6 +380,30 @@ begin
   finally
     cmbFilterByKeywords.Items.EndUpdate;
   end;
+end;
+
+procedure TIconViewerFrame.SetSizeFilter(AValue: String);
+var
+  idx: Integer;
+begin
+  idx := cmbFilterBySize.Items.IndexOf(AValue);
+  if idx = -1 then
+    cmbFilterBySize.ItemIndex := 0
+  else
+    cmbFilterBySize.ItemIndex := idx;
+  cmbFilterBySizeChange(nil);
+end;
+
+procedure TIconViewerFrame.SetStyleFilter(AValue: String);
+var
+  idx: Integer;
+begin
+  idx := cmbFilterByStyle.Items.IndexOf(AValue);
+  if idx = -1 then
+    cmbFilterByStyle.ItemIndex := 0
+  else
+    cmbFilterByStyle.ItemIndex := idx;
+  cmbFilterByStyleChange(nil);
 end;
 
 procedure TIconViewerFrame.UpdateCmds;
