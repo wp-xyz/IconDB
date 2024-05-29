@@ -7,11 +7,11 @@ interface
 uses
   Classes, SysUtils,
   // LCL
-  Controls,
+  Controls, Graphics, Buttons,
   // IDEIntf
-  ComponentEditors, IDEOptEditorIntf,
+  PropEdits, ComponentEditors, IDEOptEditorIntf,
   // IconLib
-  ImageListEditorEx;
+  ImageListEditorEx, GraphPropEditsEx;
 
 procedure Register;
 
@@ -22,7 +22,13 @@ uses
 
 procedure Register;
 begin
-  //Register new component editor for TImageList
+  // Register new property editors for TGraphic, TImage, button glyphs
+  RegisterPropertyEditor(ClassTypeInfo(TGraphic), nil, '', TGraphicPropertyEditorEx);
+  RegisterPropertyEditor(ClassTypeInfo(TPicture), nil, '', TPicturePropertyEditorEx);
+  RegisterPropertyEditor(ClassTypeInfo(TBitmap), TSpeedButton, 'Glyph', TButtonGlyphPropEditorEx);
+  RegisterPropertyEditor(ClassTypeInfo(TBitmap), TBitBtn, 'Glyph', TButtonGlyphPropEditorEx);
+
+  // Register new component editor for TImageList
   RegisterComponentEditor(TImageList, TImageListComponentEditorEx);
 
   // Register options page in IDE

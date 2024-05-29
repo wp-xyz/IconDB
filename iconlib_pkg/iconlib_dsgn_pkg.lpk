@@ -21,7 +21,7 @@
     <Files>
       <Item>
         <Filename Value="source\ide\imagelisteditorex.pp"/>
-        <UnitName Value="imagelisteditorex"/>
+        <UnitName Value="ImageListEditorEx"/>
       </Item>
       <Item>
         <Filename Value="source\ide\iconlibsettings.pas"/>
@@ -30,7 +30,19 @@
       <Item>
         <Filename Value="source\ide\iconlibreg.pas"/>
         <HasRegisterProc Value="True"/>
-        <UnitName Value="iconlibreg"/>
+        <UnitName Value="IconLibReg"/>
+      </Item>
+      <Item>
+        <Filename Value="source\ide\iconlibfrm.pas"/>
+        <UnitName Value="IconLibFrm"/>
+      </Item>
+      <Item>
+        <Filename Value="source\ide\graphpropeditsex.pas"/>
+        <UnitName Value="graphpropeditsex"/>
+      </Item>
+      <Item>
+        <Filename Value="source\ide\graphicpropeditex.pas"/>
+        <UnitName Value="graphicpropeditex"/>
       </Item>
     </Files>
     <RequiredPkgs>

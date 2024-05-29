@@ -6,8 +6,11 @@ interface
 
 uses
   Classes, SysUtils,
+  // LazUtils
   LazFileUtils,
+  // LCL
   Forms, Controls, Graphics, StdCtrls, ExtCtrls, FileCtrl, Buttons, Dialogs, ImgList,
+  // Icon lib
   IconThumbnails, IconKeywordFilterEditor;
 
 type

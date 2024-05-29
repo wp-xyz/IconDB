@@ -8,7 +8,8 @@ unit iconlib_dsgn_pkg;
 interface
 
 uses
-  ImageListEditorEx, IconLibSettings, IconLibReg, LazarusPackageIntf;
+  ImageListEditorEx, IconLibSettings, IconLibReg, IconLibFrm, 
+  GraphPropEditsEx, GraphicPropEditEx, LazarusPackageIntf;
 
 implementation
 

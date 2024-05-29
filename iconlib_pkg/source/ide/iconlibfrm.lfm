@@ -1,0 +1,9 @@
+object IconLibForm: TIconLibForm
+  Left = 383
+  Height = 600
+  Top = 186
+  Width = 800
+  Caption = 'Icon Library'
+  LCLVersion = '3.99.0.0'
+  OnCreate = FormCreate
+end
