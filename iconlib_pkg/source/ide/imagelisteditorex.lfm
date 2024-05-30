@@ -1,15 +1,118 @@
-object ImageListEditorDlgEx: TImageListEditorDlgEx
+inherited ImageListEditorDlgEx: TImageListEditorDlgEx
   Left = 472
-  Height = 526
+  Height = 538
   Top = 150
-  Width = 1102
+  Width = 591
   Caption = 'ImageListEditorDlgEx'
+  ClientHeight = 538
+  ClientWidth = 591
   ShowHint = True
-  LCLVersion = '3.99.0.0'
-  OnCreate = FormCreate
-  OnShow = FormShow
-  object ImageList1: TImageList
-    Left = 144
-    Top = 65
+  inherited GroupBoxR: TGroupBox
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = Owner
+    Height = 494
+    Width = 213
+    ClientHeight = 474
+    ClientWidth = 209
+    inherited LabelTransparent: TLabel
+      Top = 358
+    end
+    inherited Preview: TScrollBox
+      Height = 346
+      Width = 197
+    end
+    inherited RadioGroup: TRadioGroup
+      Top = 358
+    end
+    inherited ColorBoxTransparent: TColorBox
+      Top = 377
+    end
+  end
+  inherited GroupBoxL: TGroupBox
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    Height = 494
+    ClientHeight = 474
+    inherited BtnClear: TButton
+      Top = 267
+    end
+    inherited BtnDelete: TButton
+      Top = 238
+    end
+    inherited BtnMoveUp: TButton
+      Top = 296
+    end
+    inherited BtnMoveDown: TButton
+      Top = 325
+    end
+    inherited BtnSave: TButton
+      Top = 354
+    end
+    inherited btnSaveAll: TButton
+      Top = 383
+    end
+    inherited BtnReplace: TButton
+      Top = 122
+    end
+    inherited ImageListBox: TListBox
+      Height = 462
+    end
+    inherited btnAddNewResolution: TButton
+      Top = 412
+    end
+    inherited BtnReplaceAll: TButton
+      Top = 151
+    end
+    inherited btnDeleteResolution: TButton
+      Top = 441
+    end
+    inherited BtnAddSliced: TButton
+      AnchorSideTop.Control = BtnAddFromIconLib
+      Top = 93
+    end
+    inherited BtnPasteFromClipboard: TButton
+      AnchorSideTop.Control = BtnReplaceFromIconLib
+      Top = 209
+    end
+    object BtnReplaceFromIconLib: TButton[15]
+      AnchorSideLeft.Control = ImageListBox
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = BtnReplaceAll
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = BtnReplaceAll
+      AnchorSideRight.Side = asrBottom
+      Left = 198
+      Height = 25
+      Top = 180
+      Width = 152
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Left = 6
+      BorderSpacing.Top = 4
+      Caption = 'Replace from Icon Lib >'
+      TabOrder = 15
+      OnClick = BtnReplaceFromIconLibClick
+    end
+    object BtnAddFromIconLib: TButton[16]
+      AnchorSideLeft.Control = ImageListBox
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = BtnAddMoreResolutions
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = BtnAddMoreResolutions
+      AnchorSideRight.Side = asrBottom
+      Left = 198
+      Height = 25
+      Top = 64
+      Width = 149
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Left = 6
+      BorderSpacing.Top = 4
+      Caption = 'Add from Icon Lib >'
+      TabOrder = 16
+      OnClick = BtnAddFromIconLibClick
+    end
+  end
+  inherited BtnPanel: TButtonPanel
+    Top = 506
+    Width = 579
   end
 end

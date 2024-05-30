@@ -18,6 +18,8 @@ type
   private
     FIconLibForm: TIconLibForm;
     procedure IconLibDblClick(Sender: TObject);
+  public
+    function ShowIconLib: Boolean;
   end;
 
 implementation
@@ -27,6 +29,17 @@ implementation
 { TGraphicPropertyEditorFormEx }
 
 procedure TGraphicPropertyEditorFormEx.IconLibButtonClick(Sender: TObject);
+begin
+  if ShowIconLib then
+    FIconLibForm.LoadPictureFromIconLib(ImagePreview.Picture);
+end;
+
+procedure TGraphicPropertyEditorFormEx.IconLibDblClick(Sender: TObject);
+begin
+  FIconLibForm.ModalResult := mrOK;
+end;
+
+function TGraphicPropertyEditorFormEx.ShowIconLib: Boolean;
 var
   L, T: Integer;
   R: TRect;
@@ -49,13 +62,7 @@ begin
   FIconLibForm.Left := L;
   FIconLibForm.Top := T;
 
-  FIconLibForm.Show;
-end;
-
-procedure TGraphicPropertyEditorFormEx.IconLibDblClick(Sender: TObject);
-begin
-  FIconLibForm.LoadPictureFromIconLib(ImagePreview.Picture);
-  FIconLibForm.Close;
+  Result := FIconLibForm.ShowModal = mrOK;
 end;
 
 end.

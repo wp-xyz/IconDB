@@ -32,7 +32,7 @@ uses
   // IDEIntf
   PropEdits, ComponentEditors, ImageListEditor, BaseIDEIntf, ObjInspStrConsts, IDEImagesIntf,
   // Thumbnails
-  IconThumbnails, IconViewer;
+  IconThumbnails, IconViewer, IconLibFrm;
 
 const
   ICONLIB_CONFIG_FILENAME = 'iconlibcfg.xml';
@@ -41,31 +41,18 @@ type
 
   { TImageListEditorDlgEx }
 
-  TImageListEditorDlgEx = class(TForm)
-    ImageList1: TImageList;
-    procedure FormCreate(Sender: TObject);
-    procedure FormShow(Sender: TObject);
+  TImageListEditorDlgEx = class(TImageListEditorDlg)
+    BtnReplaceFromIconLib: TButton;
+    BtnAddFromIconLib: TButton;
+    procedure BtnAddFromIconLibClick(Sender: TObject);
+    procedure BtnReplaceFromIconLibClick(Sender: TObject);
   private
-    FImageListEditor: TImageListEditorDlg;
-    FImageList: TImageList;
-    FViewer: TIconViewerFrame;
-    FIconLibGroupBox: TGroupBox;
-    function GetModified: Boolean;
-    procedure BtnLoadFromLibClick(Sender: TObject);
-    procedure BtnReplaceFromLibClick(Sender: TObject);
-    procedure IconViewerDblClick(Sender: TObject);
-    procedure IconViewerFilter(Sender: TObject);
-  protected
-    procedure AddDefaultIconFolder;
-    procedure AddIconFolders;
-    procedure LoadFromIconLib(Replace: Boolean);
-    function ImageList: TImageList;
-
+    FIconLibForm: TIconLibForm;
+    FReplace: Boolean;
+    procedure AddReplaceFromIconLib(AReplace: Boolean);
+    procedure IconLibDblClick(Sender: TObject);
   public
-    procedure LoadFromImageList(AImageList: TImageList);
-    procedure SaveToImageList;
-    property Modified: Boolean read GetModified;
-
+    function ShowIconLib: Boolean;
   end;
 
 
@@ -102,27 +89,104 @@ begin
   end;
 end;
 
-type
-  // Helper class for accessing protected methods
-  TImageListEditorDlgHelper = class helper for TImageListEditorDlg
-  public
-    procedure InternalAddImageToList(const Picture: TPicture; AddType: TAddType);
-    procedure UpdatePreviewImage;
+
+{ TImageListEditorDlgEx }
+
+procedure TImageListEditorDlgEx.AddReplaceFromIconLib(AReplace: Boolean);
+var
+  res: TCustomImageListResolution;
+  sizes: array of TPoint = nil;
+  pictures: array of TPicture = nil;
+  pic: TPicture;
+  i: Integer;
+begin
+  if ImageList.ResolutionCount = 0 then
+  begin
+    SetLength(sizes, 1);
+    sizes[0] := Point(ImageList.Width, ImageList.Height);
+  end else
+  begin
+    SetLength(sizes, ImageList.ResolutionCount);
+    for i := 0 to High(sizes) do
+    begin
+      res := ImageList.ResolutionByIndex[i];  // they are ordered by size
+      sizes[i] := Point(res.Width, res.Height);
+    end;
   end;
 
-procedure TImageListEditorDlgHelper.InternalAddImageToList(const Picture: TPicture; AddType: TAddType);
-begin
-  inherited InternalAddImageToList(Picture, AddType);
+  try
+    SetLength(pictures, Length(sizes));
+    for i := 0 to High(pictures) do
+      pictures[i] := TPicture.Create;
+
+    // Get pictures form icon lib
+    FIconLibForm.LoadPictureSizesFromIconLib(sizes, pictures);
+
+    // First, add the largest image to the imagelist
+    if AReplace then
+      InternalAddImageToList(pictures[High(pictures)], atReplaceAllResolutions)
+    else
+      InternalAddImageToList(pictures[High(pictures)], atAdd);
+
+    // Then iterate over all other sizes requested and add them to the imagelist
+    for i := Length(pictures)-2 downto 0 do
+      InternalAddImageToList(pictures[i], atReplace);
+  finally
+    for i := 0 to High(pictures) do
+      pictures[i].Free;
+  end;
+
+  ImageListbox.Invalidate;
+  UpdatePreviewImage;
 end;
 
-procedure TImageListEditorDlgHelper.UpdatePreviewImage;
+procedure TImageListEditorDlgEx.BtnAddFromIconLibClick(Sender: TObject);
 begin
-  inherited UpdatePreviewImage;
+  if ShowIconLib then
+    AddReplaceFromIconLib(false);
+end;
+
+procedure TImageListEditorDlgEx.BtnReplaceFromIconLibClick(Sender: TObject);
+begin
+  if ShowIconLib then
+    AddReplaceFromIconLib(true);
+end;
+
+procedure TImageListEditorDlgEx.IconLibDblClick(Sender: TObject);
+begin
+  FIconLibForm.ModalResult := mrOK;
+end;
+
+function TImageListEditorDlgEx.ShowIconLib: Boolean;
+var
+  L, T: Integer;
+  R: TRect;
+begin
+  if FIconLibForm = nil then
+  begin
+    FIconLibForm := TIconLibForm.Create(self);
+//    FIconLibForm.OnIconSelectClick := @IconLibSelectClick;
+    FIconLibForm.OnIconDblClick := @IconLibDblClick;
+  end;
+
+  R := Screen.DesktopRect;
+  L := Left + Width;
+  if L + FIconLibForm.Width > R.Right then
+  begin
+    L := Left - FIconLibForm.Width;
+    if L < R.Left then
+      L := Left + (Width - FIconLibForm.Width) div 2;
+  end;
+  T := Top;
+  FIconLibForm.Left := L;
+  FIconLibForm.Top := T;
+
+  Result := FIconLibForm.ShowModal = mrOK;
 end;
 
 
 { TImageListEditorDlgEx }
-
+(*
 procedure TImageListEditorDlgEx.FormCreate(Sender: TObject);
 
   procedure AddButton(ACaption: String; AOnClick: TNotifyEvent; ABefore, AAfter: TButton);
@@ -310,7 +374,7 @@ procedure TImageListEditorDlgEx.SaveToImageList;
 begin
   FImageListEditor.SaveToImageList;
 end;
-
+*)
 
 { TImageListComponentEditorEx }
 

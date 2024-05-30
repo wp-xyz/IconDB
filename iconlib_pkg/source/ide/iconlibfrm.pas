@@ -9,7 +9,7 @@ uses
   // LazUtils
   LazFileUtils, LazConfigStorage, LazLoggerBase,
   // LCL
-  Forms, Controls, Graphics, Dialogs,
+  Forms, Controls, Graphics, Dialogs, ButtonPanel,
   // IDEIntf
   BaseIDEIntf, IDEOptionsIntf, IDEImagesIntf,
   // Icon lib
@@ -19,22 +19,27 @@ const
   ICONLIB_CONFIG_FILENAME = 'iconlibcfg.xml';
 
 type
-
   { TIconLibForm }
 
   TIconLibForm = class(TForm)
+    ButtonPanel1: TButtonPanel;
     procedure FormCreate(Sender: TObject);
+    procedure OKButtonClick(Sender: TObject);
   private
     FViewer: TIconViewerFrame;
+    FOnIconSelectClick: TNotifyEvent;
     FOnIconDblClick: TNotifyEvent;
   protected
     procedure AddDefaultIconFolder;
     procedure AddIconFolders;
-    procedure IconViewerDblClick(Sender: TObject);
-    procedure IconViewerFilter(Sender: TObject);
+    procedure IconViewerDblClickHandler(Sender: TObject);
+    procedure IconViewerFilterHandler(Sender: TObject);
+    procedure IconSelectHandler(Sender: TObject);
   public
     procedure LoadPictureFromIconLib(APicture: TPicture);
+    procedure LoadPictureSizesFromIconLib(ASizes: Array of TPoint; APictures: Array of TPicture);
     property OnIconDblClick: TNotifyEvent read FOnIconDblClick write FOnIconDblClick;
+    property OnIconSelectClick: TNotifyEvent read FOnIconSelectClick write FOnIconSelectClick;
   end;
 
 implementation
@@ -54,8 +59,8 @@ begin
   FViewer.ImageIndex_ExecuteFilter := IDEImages.GetImageIndex('item_filter', 16);
   FViewer.ImageIndex_ClearFilter := IDEImages.GetImageIndex('menu_clean', 16);
   FViewer.BorderSpacing.Top := 6;
-  FViewer.OnIconDblClick := @IconViewerDblClick;
-  FViewer.OnFilter := @IconViewerFilter;
+  FViewer.OnIconDblClick := @IconViewerDblClickHandler;
+  FViewer.OnFilter := @IconViewerFilterHandler;
   AddIconFolders;
 end;
 
@@ -98,13 +103,19 @@ begin
   end;
 end;
 
-procedure TIconLibForm.IconViewerDblClick(Sender: TObject);
+procedure TIconLibForm.IconSelectHandler(Sender: TObject);
+begin
+  if Assigned(FOnIconSelectClick) then
+    FOnIconSelectClick(Sender);
+end;
+
+procedure TIconLibForm.IconViewerDblClickHandler(Sender: TObject);
 begin
   if Assigned(FOnIconDblClick) then
     FOnIconDblClick(Sender);
 end;
 
-procedure TIconLibForm.IconViewerFilter(Sender: TObject);
+procedure TIconLibForm.IconViewerFilterHandler(Sender: TObject);
 begin
   Caption := Format('Icon Library (%d out of %d icons)', [FViewer.FilteredCount, FViewer.TotalCount]);
 end;
@@ -113,6 +124,44 @@ procedure TIconLibForm.LoadPictureFromIconLib(APicture: TPicture);
 begin
   if FViewer.SelectedIcon <> nil then
     APicture.Assign(FViewer.SelectedIcon.Picture);
+end;
+
+procedure TIconLibForm.LoadPictureSizesFromIconLib(ASizes: Array of TPoint;
+  APictures: Array of TPicture);
+var
+  i: Integer;
+  item, largestItem: TIconItem;
+  w, h: Integer;
+begin
+  DebugLn([Length(ASizes), ' ', Length(APictures)]);
+
+  if FViewer.SelectedIcon <> nil then
+  begin
+    // Assuming ASizes are ordered by size...
+    w := ASizes[High(ASizes)].X;
+    h := ASizes[High(ASizes)].Y;
+    largestItem := FViewer.IconViewer.FindIconSize(FViewer.SelectedIcon, w, h);
+    if largestItem = nil then                   // this should not happen...
+      largestItem := FViewer.IconViewer.FindLargestIcon(FViewer.SelectedIcon);
+
+    for i := 0 to High(ASizes) do
+    begin
+      w := ASizes[i].X;
+      h := ASizes[i].Y;
+      item := FViewer.IconViewer.FindIconSize(FViewer.SelectedIcon, w, h);
+      if item = nil then
+        item := largestItem;
+
+      DebugLn(['i=', i, ' APictures[i]=', PtrUInt(APictures[i]), ' item=', PtrUInt(item.Picture)]);
+
+      APictures[i].Assign(item.Picture);
+    end;
+  end;
+end;
+
+procedure TIconLibForm.OKButtonClick(Sender: TObject);
+begin
+  IconSelectHandler(Sender);
 end;
 
 end.
