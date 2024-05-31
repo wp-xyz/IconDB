@@ -17,7 +17,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  Buttons, ButtonPanel, Spin;
+  Buttons, ButtonPanel, Spin,
+  IconLibStrConsts;
 
 type
 
@@ -36,13 +37,12 @@ type
     ButtonPanel: TButtonPanel;
     edFilter: TEdit;
     FilterPanel: TPanel;
-    Label1: TLabel;
-    Label2: TLabel;
-    Label3: TLabel;
+    lblKeywords: TLabel;
+    lblFilter: TLabel;
     lblColumns: TLabel;
     lbKeywords: TListBox;
-    KeywordPanel: TPanel;
-    CenterPanel: TPanel;
+    KeywordsPanel: TPanel;
+    OperationPanel: TPanel;
     RightPanel: TPanel;
     seColumns: TSpinEdit;
     procedure btnClearClick(Sender: TObject);
@@ -52,14 +52,18 @@ type
     procedure btnNOTClick(Sender: TObject);
     procedure btnORClick(Sender: TObject);
     procedure FormActivate(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
     procedure lbKeywordsDblClick(Sender: TObject);
     procedure seColumnsChange(Sender: TObject);
   private
+    FActivated: Boolean;
     function GetFilter: String;
     procedure SetFilter(AValue: String);
     procedure SetKeywords(AValue: TStrings);
+    procedure UpdateLayout;
 
   public
+    procedure UpdateLanguage;
     property Filter: String read GetFilter write SetFilter;
     property Keywords: TStrings write SetKeywords;
 
@@ -110,12 +114,12 @@ var
   list: TStringList;
 begin
   keyword := '';
-  if InputQuery('New keyword', 'Keyword', keyword) then
+  if InputQuery(RSKeywordEditor_NewKeyword, RSKeywordEditor_Keyword, keyword) then
   begin
     idx := lbKeywords.Items.IndexOf(keyword);
     if idx > -1 then
     begin
-      MessageDlg('Keyword already defined.', mtInformation, [mbOK], 0);
+      MessageDlg(RSKeywordEditor_KeywordExists, mtInformation, [mbOK], 0);
       lbKeywords.ItemIndex := idx;
     end else
     begin
@@ -144,22 +148,17 @@ begin
 end;
 
 procedure TKeywordFilterEditorForm.FormActivate(Sender: TObject);
-var
-  w: Integer;
 begin
-  w := btnNew.Width;
-  if btnEdit.Width > w then w := btnEdit.Width;
-  if lblColumns.Width > w then w := lblColumns.Width;
-  btnNew.Constraints.MinWidth := w;
-  btnEdit.Constraints.MinWidth := w;
+  if not FActivated then
+  begin
+    FActivated := true;
+    UpdateLayout;
+  end;
+end;
 
-  Constraints.MinWidth :=
-    btnAdd.Width + btnAND.Width + btnOR.Width + btnNOT.Width + btnClear.Width +
-    btnAdd.BorderSpacing.Right * 4 + KeywordPanel.BorderSpacing.Around * 2;
-
-  Constraints.MinHeight :=
-    RightPanel.Top + RightPanel.Height - KeywordPanel.BorderSpacing.Around +
-    ButtonPanel.Height + 2*ButtonPanel.BorderSpacing.Around
+procedure TKeywordFilterEditorForm.FormCreate(Sender: TObject);
+begin
+  UpdateLanguage;
 end;
 
 function TKeywordFilterEditorForm.GetFilter: String;
@@ -185,6 +184,34 @@ end;
 procedure TKeywordFilterEditorForm.SetKeywords(AValue: TStrings);
 begin
   lbKeywords.Items.Assign(AValue);
+end;
+
+procedure TKeywordFilterEditorForm.UpdateLanguage;
+begin
+  Caption := RSKeywordEditor_Caption;
+  lblFilter.Caption := RSKeywordEditor_Filter;
+  lblKeywords.Caption := RSKeywordEditor_Keywords;
+  btnAdd.Caption := RSKeywordEditor_Add;
+  btnClear.Caption := RSKeywordEditor_Clear;
+  btnNew.Caption := RSKeywordEditor_New;
+  btnEdit.Caption := RSKeywordEditor_Edit;
+  lblColumns.Caption := RSKeywordeditor_Columns;
+  UpdateLayout;
+end;
+
+procedure TKeywordFilterEditorForm.UpdateLayout;
+begin
+  Constraints.MinWidth :=
+    OperationPanel.Width + OperationPanel.BorderSpacing.Left * 2;
+
+  Constraints.MinHeight :=
+    KeywordsPanel.Top + RightPanel.Top + seColumns.Top + seColumns.Height +
+    ButtonPanel.Height + 2*ButtonPanel.BorderSpacing.Around;
+
+  if Width < Constraints.MinWidth then   // Enforce constraints
+    Width := 0;
+  if Height < Constraints.MinHeight then
+    Height := 0;
 end;
 
 end.

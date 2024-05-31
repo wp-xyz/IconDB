@@ -6,7 +6,7 @@
   for details about the license.
  *****************************************************************************
 
- A form for adding/editing icon keywords and icon styles.
+ A form for assigning keywords and styles to icons.
 }
 
 unit IconLibMetaData;
@@ -16,9 +16,9 @@ unit IconLibMetaData;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ButtonPanel,
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ButtonPanel, LCLStrConsts,
   StdCtrls, ExtCtrls, ExtDlgs,
-  IconThumbnails;
+  IconLibStrConsts, IconThumbnails;
 
 type
 
@@ -31,9 +31,11 @@ type
     mmoKeywords: TMemo;
     Image: TImage;
     lblKeywords: TLabel;
+    procedure FormCreate(Sender: TObject);
   public
     procedure ControlsToMetadata(AIcon: TIconItem);
     procedure MetadataToControls(AIcon: TIconItem);
+    procedure UpdateLanguage;
   end;
 
 var
@@ -42,6 +44,11 @@ var
 implementation
 
 {$R *.lfm}
+
+procedure TIconMetadataForm.FormCreate(Sender: TObject);
+begin
+  UpdateLanguage;
+end;
 
 { Extracts metadata from the form controls to the provided icon item. }
 procedure TIconMetadataForm.ControlsToMetadata(AIcon: TIconItem);
@@ -63,6 +70,20 @@ begin
   mmoKeywords.SelStart := Length(mmoKeywords.Text);
   cmbStyle.ItemIndex := Integer(AIcon.Style) - 1;
   Image.Picture.Assign(AIcon.Picture);
+end;
+
+procedure TIconMetadataForm.UpdateLanguage;
+begin
+  Caption := RSMetadata_Caption;
+  lblKeywords.Caption := RSMetadata_Keywords;
+  lblStyle.Caption := RSMetadata_Style;
+  (*  Update only when translation of keywords and styles is finished.
+  cmbStyle.Items.Clear;
+  cmbStyle.Items.Add(RSMetadata_ClassicStyle);
+  cmbStyle.Items.Add(RSMetadata_FlatStyle);
+  cmbStyle.Items.Add(RSMetadata_OutlineStyle);
+  cmbStyle.Items.Add(RSMetadata_Outline2Style);
+  *)
 end;
 
 end.

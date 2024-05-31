@@ -26,13 +26,13 @@ uses
   // BuildIntf
   IDEOptionsIntf,
   // Icon lib
-  IconLibCommon, IconThumbnails, IconViewer;
+  IconLibStrConstsIDE, IconLibCommon, IconThumbnails, IconViewer;
 
 type
   { TIconLibForm }
 
   TIconLibForm = class(TForm)
-    ButtonPanel1: TButtonPanel;
+    ButtonPanel: TButtonPanel;
     procedure FormCreate(Sender: TObject);
     procedure OKButtonClick(Sender: TObject);
   private
@@ -72,6 +72,8 @@ begin
   FViewer.OnIconDblClick := @IconViewerDblClickHandler;
   FViewer.OnFilter := @IconViewerFilterHandler;
   AddIconFolders;
+
+  ButtonPanel.OKButton.Caption := RSIconLibIDE_Select;
 end;
 
 procedure TIconLibForm.AddDefaultIconFolder;
@@ -127,7 +129,7 @@ end;
 
 procedure TIconLibForm.IconViewerFilterHandler(Sender: TObject);
 begin
-  Caption := Format('Icon Library (%d out of %d icons)', [FViewer.FilteredCount, FViewer.TotalCount]);
+  Caption := Format(RSIconLibIDE_Caption, [FViewer.FilteredCount, FViewer.TotalCount]);
 end;
 
 procedure TIconLibForm.LoadPictureFromIconLib(APicture: TPicture);
@@ -161,9 +163,6 @@ begin
       item := FViewer.IconViewer.FindIconSize(FViewer.SelectedIcon, w, h);
       if item = nil then
         item := largestItem;
-
-      DebugLn(['i=', i, ' APictures[i]=', PtrUInt(APictures[i]), ' item=', PtrUInt(item.Picture)]);
-
       APictures[i].Assign(item.Picture);
     end;
   end;

@@ -7,6 +7,7 @@ inherited ImageListEditorDlgEx: TImageListEditorDlgEx
   ClientHeight = 538
   ClientWidth = 591
   ShowHint = True
+  OnCreate = FormCreate
   inherited GroupBoxR: TGroupBox
     AnchorSideTop.Control = Owner
     AnchorSideRight.Control = Owner
@@ -33,46 +34,65 @@ inherited ImageListEditorDlgEx: TImageListEditorDlgEx
     AnchorSideTop.Control = Owner
     Height = 494
     ClientHeight = 474
+    inherited BtnAdd: TButton
+      TabOrder = 1
+    end
     inherited BtnClear: TButton
       Top = 267
+      TabOrder = 10
     end
     inherited BtnDelete: TButton
       Top = 238
+      TabOrder = 9
     end
     inherited BtnMoveUp: TButton
       Top = 296
+      TabOrder = 11
     end
     inherited BtnMoveDown: TButton
       Top = 325
+      TabOrder = 12
     end
     inherited BtnSave: TButton
       Top = 354
+      TabOrder = 13
     end
     inherited btnSaveAll: TButton
       Top = 383
+      TabOrder = 14
     end
     inherited BtnReplace: TButton
       Top = 122
+      TabOrder = 5
     end
     inherited ImageListBox: TListBox
       Height = 462
+      TabOrder = 0
     end
     inherited btnAddNewResolution: TButton
       Top = 412
+      TabOrder = 15
     end
     inherited BtnReplaceAll: TButton
       Top = 151
+      TabOrder = 6
+    end
+    inherited BtnAddMoreResolutions: TButton
+      TabOrder = 2
     end
     inherited btnDeleteResolution: TButton
       Top = 441
+      TabOrder = 16
     end
     inherited BtnAddSliced: TButton
       AnchorSideTop.Control = BtnAddFromIconLib
       Top = 93
+      TabOrder = 4
     end
     inherited BtnPasteFromClipboard: TButton
       AnchorSideTop.Control = BtnReplaceFromIconLib
       Top = 209
+      TabOrder = 8
     end
     object BtnReplaceFromIconLib: TButton[15]
       AnchorSideLeft.Control = ImageListBox
@@ -89,7 +109,7 @@ inherited ImageListEditorDlgEx: TImageListEditorDlgEx
       BorderSpacing.Left = 6
       BorderSpacing.Top = 4
       Caption = 'Replace from Icon Lib >'
-      TabOrder = 15
+      TabOrder = 7
       OnClick = BtnReplaceFromIconLibClick
     end
     object BtnAddFromIconLib: TButton[16]
@@ -107,7 +127,7 @@ inherited ImageListEditorDlgEx: TImageListEditorDlgEx
       BorderSpacing.Left = 6
       BorderSpacing.Top = 4
       Caption = 'Add from Icon Lib >'
-      TabOrder = 16
+      TabOrder = 3
       OnClick = BtnAddFromIconLibClick
     end
   end

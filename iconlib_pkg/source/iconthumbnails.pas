@@ -26,7 +26,7 @@ uses
   laz2_dom, laz2_xmlread, laz2_xmlwrite,
   {$endif}
   FileUtil, LazFileUtils, Graphics, Controls, Dialogs, Menus, Forms,
-  BasicThumbnails;
+  IconLibStrConsts, BasicThumbnails;
 
 type
   TIconItem = class;
@@ -226,7 +226,10 @@ var
 begin
   AList.Clear;
   for style in TIconStyle do
-    AList.Add(ICONSTYLE_NAMES[style]);
+    if style = isAnyStyle then
+      AList.Add(RSMetadata_AnyStyle)
+    else
+      AList.Add(ICONSTYLE_NAMES[style]);
 end;
 
 function StrToIconStyle(AText: String): TIconStyle;
@@ -581,7 +584,7 @@ begin
   {$endif}
   if MetadataDirty then
   begin
-    res := MessageDlg('Metadata have been changed. Save?', mtConfirmation, [mbYes, mbNo], 0);
+    res := MessageDlg(RSIconViewer_AskSaveMetadata, mtConfirmation, [mbYes, mbNo], 0);
     if res = mrYes then
       WriteMetadataFiles;
   end;
@@ -1043,13 +1046,13 @@ begin
   AMenu.Items.Clear;
 
   menuItem := TMenuItem.Create(AMenu);
-  menuItem.Caption := 'Show all';
+  menuItem.Caption := RSIconViewer_ShowAll;
   menuItem.Tag := -1;
   menuItem.OnClick := @IconFolderClicked;
   AMenu.Items.Add(menuItem);
 
   menuItem := TMenuItem.Create(AMenu);
-  menuItem.Caption := 'Hide all';
+  menuItem.Caption := RSIconViewer_HideAll;
   menuItem.Tag := -2;
   menuItem.OnClick := @IconFolderClicked;
   AMenu.Items.Add(menuItem);

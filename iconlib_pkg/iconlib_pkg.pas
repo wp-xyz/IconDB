@@ -9,7 +9,7 @@ interface
 
 uses
   BasicThumbnails, IconKeywordFilterEditor, IconThumbNails, IconViewer, 
-  IconLibFolders, IconLibMetaData;
+  IconLibFolders, IconLibMetaData, IconLibStrConsts;
 
 implementation
 

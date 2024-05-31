@@ -9,7 +9,8 @@ interface
 
 uses
   ImageListEditorEx, IconLibSettings, IconLibReg, IconLibFrm, 
-  GraphPropEditsEx, GraphicPropEditEx, IconLibCommon, LazarusPackageIntf;
+  GraphPropEditsEx, GraphicPropEditEx, IconLibCommon, IconLibStrConstsIDE, 
+  LazarusPackageIntf;
 
 implementation
 

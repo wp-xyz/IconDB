@@ -33,7 +33,8 @@ uses
   // IdeIntf
   LazIDEIntf, IDEOptEditorIntf, IDEImagesIntf,
   // Icon Lib
-  IconLibCommon, IconThumbnails, IconViewer, IconLibFolders, IconLibMetadata;
+  IconLibStrConstsIDE, IconLibCommon, IconThumbnails, IconViewer,
+  IconLibFolders, IconLibMetadata;
 
 
 { TIconLibSettings
@@ -108,7 +109,7 @@ end;
 
 class function TIconLibSettings.GetGroupCaption: String;
 begin
-  Result := 'Icon Library';
+  Result := RSIconLibIDE_IconLibrary;
 end;
 
 class function TIconLibSettings.GetInstance: TAbstractIDEOptions;
@@ -131,7 +132,6 @@ begin
 
   FViewer := TIconViewerFrame.Create(self);
   FViewer.Align := alClient;
-  FViewer.Parent := self; //FIconLibGroupBox;
   FViewer.IconViewer.FocusedColor := clWindowText;
   FViewer.IconViewer.ThumbnailColor := clWindow;
   FViewer.ImageList := IDEImages.Images_16;
@@ -139,17 +139,19 @@ begin
   FViewer.ImageIndex_ClearFilter := IDEImages.GetImageIndex('menu_clean', 16);
   FViewer.OnIconDblClick := @IconViewerDblClick;
   FViewer.OnFilter := @IconViewerFilter;
+  FViewer.Parent := self; //FIconLibGroupBox;
+  FViewer.UpdateLanguage;
 
   Toolbar.Images := IDEImages.Images_16;
 
-  tbFolders.Caption := 'Folders...';
-  tbFolders.Hint := 'Icon folder management';
+  tbFolders.Caption := RSIconLibIDE_Folders;
+  tbFolders.Hint := RSIconLibIDE_FolderHint;
   tbFolders.ImageIndex := IDEImages.GetImageIndex('laz_open');
-  tbEditMetadata.Caption := 'Metadata...';
-  tbEditMetadata.Hint := 'Edit icon metadata';
+  tbEditMetadata.Caption := RSIconLibIDE_Metadata;
+  tbEditMetadata.Hint := RSIconLibIDE_MetadataHint;
   tbEditMetadata.ImageIndex := IDEImages.GetImageIndex('laz_edit');
-  tbSaveMetadata.Caption := 'Save metadata';
-  tbSaveMetadata.Hint := 'Save icon metadata files';
+  tbSaveMetadata.Caption := RSIconLibIDE_SaveMetadata;
+  tbSaveMetadata.Hint := RSIconLibIDE_SaveMetadataHint;
   tbSaveMetadata.ImageIndex := IDEImages.GetImageIndex('laz_save');
 end;
 
@@ -228,7 +230,7 @@ end;
 
 function TIconLibSettingsFrame.GetTitle: String;
 begin
-  Result := 'General';  //rsGeneral;
+  Result := RSIconLibIDE_General;
 end;
 
 procedure TIconLibSettingsFrame.IconViewerDblClick(Sender: TObject);

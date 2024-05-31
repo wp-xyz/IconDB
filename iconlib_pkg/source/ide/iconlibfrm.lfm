@@ -8,7 +8,7 @@ object IconLibForm: TIconLibForm
   ClientWidth = 800
   LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
-  object ButtonPanel1: TButtonPanel
+  object ButtonPanel: TButtonPanel
     Left = 6
     Height = 34
     Top = 560

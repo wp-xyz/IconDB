@@ -48,7 +48,16 @@
         <Filename Value="source\ide\iconlibcommon.pas"/>
         <UnitName Value="iconlibcommon"/>
       </Item>
+      <Item>
+        <Filename Value="source\ide\iconlibstrconstside.pas"/>
+        <UnitName Value="iconlibstrconstside"/>
+      </Item>
     </Files>
+    <i18n>
+      <EnableI18N Value="True"/>
+      <OutDir Value="languages"/>
+      <EnableI18NForLFM Value="True"/>
+    </i18n>
     <RequiredPkgs>
       <Item>
         <PackageName Value="iconlib_pkg"/>

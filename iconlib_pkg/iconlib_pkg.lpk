@@ -24,20 +24,12 @@
         <UnitName Value="BasicThumbnails"/>
       </Item>
       <Item>
-        <Filename Value="source\iconkeywordfiltereditor.lfm"/>
-        <Type Value="LFM"/>
-      </Item>
-      <Item>
         <Filename Value="source\iconkeywordfiltereditor.pas"/>
         <UnitName Value="IconKeywordFilterEditor"/>
       </Item>
       <Item>
         <Filename Value="source\iconthumbnails.pas"/>
         <UnitName Value="IconThumbNails"/>
-      </Item>
-      <Item>
-        <Filename Value="source\iconviewer.lfm"/>
-        <Type Value="LFM"/>
       </Item>
       <Item>
         <Filename Value="source\iconviewer.pas"/>
@@ -51,7 +43,16 @@
         <Filename Value="source\iconlibmetadata.pas"/>
         <UnitName Value="IconLibMetaData"/>
       </Item>
+      <Item>
+        <Filename Value="source\iconlibstrconsts.pas"/>
+        <UnitName Value="iconlibstrconsts"/>
+      </Item>
     </Files>
+    <i18n>
+      <EnableI18N Value="True"/>
+      <OutDir Value="languages"/>
+      <EnableI18NForLFM Value="True"/>
+    </i18n>
     <RequiredPkgs>
       <Item>
         <PackageName Value="LCL"/>

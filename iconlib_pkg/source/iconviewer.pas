@@ -22,7 +22,7 @@ uses
   // LCL
   Forms, Controls, Graphics, StdCtrls, ExtCtrls, FileCtrl, Buttons, Dialogs, ImgList,
   // Icon lib
-  IconThumbnails, IconKeywordFilterEditor;
+  IconLibStrConsts, IconThumbnails, IconKeywordFilterEditor;
 
 type
 
@@ -47,6 +47,8 @@ type
     IconDetailsPanel: TPanel;
     btnExecuteFilter: TSpeedButton;
     btnClearFilter: TSpeedButton;
+    CaptionPanel: TPanel;
+    InfoValuePanel: TPanel;
     procedure btnClearFilterClick(Sender: TObject);
     procedure btnExecuteFilterClick(Sender: TObject);
     procedure btnKeywordEditorClick(Sender: TObject);
@@ -80,6 +82,7 @@ type
     procedure DoIconViewerSelect(Sender: TObject);
     procedure UpdateCmds;
     procedure UpdateIconDetails;
+//    procedure UpdateLayout;
 
   public
     constructor Create(AOwner: TComponent); override;
@@ -91,6 +94,7 @@ type
     procedure SetKeywordsHistory(AList: TStrings);
     procedure UpdateIconSizes(ASizeIndex: Integer);
     procedure UpdateIconStyles(AStyleIndex: Integer);
+    procedure UpdateLanguage;
 
     property FilteredCount: Integer read GetFilteredCount;
     property IconViewer: TIconViewer read FIconViewer;
@@ -127,14 +131,8 @@ begin
   FIconViewer.OnFilter := @DoIconViewerFilter;
   FIconViewer.OnSelect := @DoIconViewerSelect;
 
-  cmbFilterBySize.Hint := 'Filter by icon size';
-  cmbFilterByStyle.Hint := 'Filter by icon style';
-  cmbFilterByKeywords.Hint := 'Expression to filter by keywords';
-  btnKeywordEditor.Hint := 'Enter/edit a keyword filter';
-  btnClearFilter.Hint := 'Clears the keyword filter';
-  btnExecuteFilter.Hint := 'Filters by keywords';
-
   UpdateIconDetails;
+  UpdateLanguage;
 end;
 
 procedure TIconViewerFrame.AddIconFolder(AFolder: String; Hidden: Boolean = false);
@@ -245,31 +243,22 @@ begin
 end;
 
 procedure TIconViewerFrame.CreateHandle;
-var
-  w: Integer;
 begin
   inherited;
-
+                {
   if not FLayoutFixed then
   begin
     FLayoutFixed := true;
-    w := lblFileName.Width;
-    if w < lblSize.Width then w := lblSize.Width;
-    if w < lblKeywords.Width then w := lblKeywords.Width;
-    inc(w, 8);
-    infoFileName.BorderSpacing.Left := w;
-    infoSize.BorderSpacing.Left := w;
-    infoStyle.BorderSpacing.Left := w;
-    infoKeywords.BorderSpacing.Left := w;
+    UpdateLayout;
   end;
+  }
 end;
 
 procedure TIconViewerFrame.DeleteSelectedIcon;
 var
   res: TModalResult;
 begin
-  res := MessageDlg('Do you really want to delete the selected icon from the library?',
-    mtConfirmation, [mbYes, mbNo], 0);
+  res := MessageDlg(RSIconViewer_ConfirmDeleteIconMsg, mtConfirmation, [mbYes, mbNo], 0);
   if res = mrYes then
   begin
     IconViewer.DeleteIcon(IconViewer.SelectedIcon);
@@ -457,7 +446,7 @@ end;
 procedure TIconViewerFrame.UpdateIconSizes(ASizeIndex: Integer);
 begin
   FIconViewer.GetIconSizesAsStrings(cmbFilterBySize.Items);
-  cmbFilterBySize.Items.Insert(0, '(any size)');
+  cmbFilterBySize.Items.Insert(0, RSMetadata_AnySize);
   if ASizeIndex < 0 then ASizeIndex := 0;
   cmbFilterBySize.ItemIndex := ASizeIndex;
   if ASizeIndex = 0 then
@@ -477,5 +466,58 @@ begin
     FIconViewer.FilterByIconStyle := TIconStyle(AStyleIndex);
 end;
 
+procedure TIconViewerFrame.UpdateLanguage;
+var
+  idx: Integer;
+begin
+  cmbFilterBySize.Hint := RSIconViewer_FilterByIconSizeHint;
+  cmbFilterByStyle.Hint := RSIconViewer_FilterByIconStyleHint;
+  cmbFilterByKeywords.Hint := RSIconViewer_ExpressionToFilterByKeywordsHint;
+  btnKeywordEditor.Hint := RSIconViewer_EditKeywordFilterHint;
+  btnClearFilter.Hint := RSIconViewer_ClearFilterHint;
+  btnExecuteFilter.Hint := RSIconViewer_FilterByKeywordsHint;
+
+  lblFileName.Caption := RSIconViewer_FileNameLbl;
+  lblSize.Caption := RSIconViewer_SizeLbl;
+  lblStyle.Caption := RSIconViewer_StyleLbl;
+  lblKeywords.Caption := RSIconViewer_KeywordsLbl;
+
+  cmbFilterByKeywords.TextHint := RSIconViewer_EnterKeywordsHere;
+
+  (*         // activate only when translation of keywords and styles is ready!
+  idx := cmbFilterByStyle.ItemIndex;
+  cmbFilterByStyle.Items.BeginUpdate;
+  try
+    cmbFilterByStyle.Clear;
+    cmbFilterByStyle.Items.Add(RSMetadata_ClassicStyle);
+    cmbFilterByStyle.Items.Add(RSMetadata_Flatstyle);
+    cmbFilterByStyle.Items.Add(RSMetadata_OutlineStyle);
+    cmbFilterByStyle.Items.Add(RSMetadata_Outline2Style);
+    if idx < cmbFilterBystyle.Items.Count then
+      cmbFilterByStyle.ItemIndex := idx;
+  finally
+    cmbFilterByStyle.Items.EndUpdate;
+  end;
+  *)
+
+//  UpdateLayout;
+end;
+                                       {
+procedure TIconViewerFrame.UpdateLayout;
+const
+  DISTANCE = 8;
+var
+  w: Integer;
+begin
+  w := lblFileName.Width;
+  if w < lblSize.Width then w := lblSize.Width;
+  if w < lblKeywords.Width then w := lblKeywords.Width;
+  inc(w, lblFileName.Left + Scale96ToFont(DISTANCE));
+  infoFileName.BorderSpacing.Left := w;
+  infoSize.BorderSpacing.Left := w;
+  infoStyle.BorderSpacing.Left := w;
+  infoKeywords.BorderSpacing.Left := w;
+end;
+                }
 end.
 

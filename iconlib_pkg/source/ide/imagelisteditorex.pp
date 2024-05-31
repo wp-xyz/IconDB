@@ -34,7 +34,7 @@ uses
   // IDEIntf
   PropEdits, ComponentEditors, ImageListEditor, BaseIDEIntf, ObjInspStrConsts, IDEImagesIntf,
   // Thumbnails
-  IconLibCommon, IconThumbnails, IconViewer, IconLibFrm;
+  IconLibStrConstsIDE, IconLibCommon, IconThumbnails, IconViewer, IconLibFrm;
 
 type
 
@@ -45,6 +45,7 @@ type
     BtnAddFromIconLib: TButton;
     procedure BtnAddFromIconLibClick(Sender: TObject);
     procedure BtnReplaceFromIconLibClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     FIconLibForm: TIconLibForm;
     FReplace: Boolean;
@@ -151,6 +152,13 @@ begin
     AddReplaceFromIconLib(true);
 end;
 
+procedure TImageListEditorDlgEx.FormCreate(Sender: TObject);
+begin
+  inherited;
+  BtnAddFromIconLib.Caption := RSImgListEditor_AddFromIconLib;
+  BtnReplaceFromIconLib.Caption := RSImgListEditor_ReplaceFromIconLib;
+end;
+
 procedure TImageListEditorDlgEx.IconLibDblClick(Sender: TObject);
 begin
   FIconLibForm.ModalResult := mrOK;
@@ -164,7 +172,6 @@ begin
   if FIconLibForm = nil then
   begin
     FIconLibForm := TIconLibForm.Create(self);
-//    FIconLibForm.OnIconSelectClick := @IconLibSelectClick;
     FIconLibForm.OnIconDblClick := @IconLibDblClick;
   end;
 

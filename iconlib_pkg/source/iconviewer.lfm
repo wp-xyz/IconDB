@@ -114,125 +114,155 @@ object IconViewerFrame: TIconViewerFrame
     end
   end
   object IconDetailsPanel: TPanel
-    Left = 12
+    Left = 6
     Height = 68
-    Top = 283
-    Width = 556
+    Top = 289
+    Width = 562
     Align = alBottom
     AutoSize = True
     BorderSpacing.Left = 6
-    BorderSpacing.Around = 6
+    BorderSpacing.Top = 6
+    BorderSpacing.Right = 6
     BevelOuter = bvNone
     ClientHeight = 68
-    ClientWidth = 556
+    ClientWidth = 562
     TabOrder = 1
     OnResize = IconDetailsPanelResize
-    object lblFileName: TLabel
+    object CaptionPanel: TPanel
       AnchorSideLeft.Control = IconDetailsPanel
       AnchorSideTop.Control = IconDetailsPanel
       Left = 0
-      Height = 15
+      Height = 68
       Top = 0
-      Width = 54
-      Caption = 'File name:'
-      Font.Style = [fsItalic]
-      ParentFont = False
-    end
-    object infoFileName: TLabel
-      AnchorSideLeft.Control = IconDetailsPanel
-      AnchorSideTop.Control = lblFileName
-      AnchorSideRight.Control = IconDetailsPanel
-      AnchorSideRight.Side = asrBottom
-      Left = 80
-      Height = 15
-      Top = 0
-      Width = 468
-      Anchors = [akTop, akLeft, akRight]
-      BorderSpacing.Left = 80
-      BorderSpacing.Right = 8
-      Caption = 'infoFileName'
-    end
-    object lblSize: TLabel
-      AnchorSideLeft.Control = lblFileName
-      AnchorSideTop.Control = lblFileName
-      AnchorSideTop.Side = asrBottom
-      Left = 0
-      Height = 15
-      Top = 17
-      Width = 23
-      BorderSpacing.Top = 2
-      Caption = 'Size:'
-      Font.Style = [fsItalic]
-      ParentFont = False
-    end
-    object infoSize: TLabel
-      AnchorSideLeft.Control = IconDetailsPanel
-      AnchorSideTop.Control = lblSize
-      Left = 80
-      Height = 15
-      Top = 17
-      Width = 100
-      BorderSpacing.Left = 80
-      Caption = 'infoSize'
-      Constraints.MinWidth = 100
-    end
-    object lblKeywords: TLabel
-      AnchorSideLeft.Control = lblFileName
-      AnchorSideTop.Control = lblStyle
-      AnchorSideTop.Side = asrBottom
-      Left = 0
-      Height = 15
-      Top = 51
       Width = 58
-      BorderSpacing.Top = 2
-      BorderSpacing.Bottom = 2
-      Caption = 'Keywords: '
-      Font.Style = [fsItalic]
-      ParentFont = False
+      AutoSize = True
+      BorderSpacing.Right = 8
+      BevelOuter = bvNone
+      ClientHeight = 68
+      ClientWidth = 58
+      TabOrder = 0
+      object lblFileName: TLabel
+        AnchorSideLeft.Control = CaptionPanel
+        AnchorSideTop.Control = CaptionPanel
+        Left = 0
+        Height = 15
+        Top = 0
+        Width = 54
+        Caption = 'File name:'
+        Font.Style = [fsItalic]
+        ParentFont = False
+      end
+      object lblSize: TLabel
+        AnchorSideLeft.Control = CaptionPanel
+        AnchorSideTop.Control = lblFileName
+        AnchorSideTop.Side = asrBottom
+        Left = 0
+        Height = 15
+        Top = 17
+        Width = 23
+        BorderSpacing.Top = 2
+        Caption = 'Size:'
+        Font.Style = [fsItalic]
+        ParentFont = False
+      end
+      object lblKeywords: TLabel
+        AnchorSideLeft.Control = CaptionPanel
+        AnchorSideTop.Control = lblStyle
+        AnchorSideTop.Side = asrBottom
+        Left = 0
+        Height = 15
+        Top = 51
+        Width = 58
+        BorderSpacing.Top = 2
+        BorderSpacing.Bottom = 2
+        Caption = 'Keywords: '
+        Font.Style = [fsItalic]
+        ParentFont = False
+      end
+      object lblStyle: TLabel
+        AnchorSideLeft.Control = CaptionPanel
+        AnchorSideTop.Control = lblSize
+        AnchorSideTop.Side = asrBottom
+        Left = 0
+        Height = 15
+        Top = 34
+        Width = 28
+        BorderSpacing.Top = 2
+        Caption = 'Style:'
+        Font.Style = [fsItalic]
+        ParentFont = False
+      end
     end
-    object infoKeywords: TLabel
-      AnchorSideLeft.Control = IconDetailsPanel
-      AnchorSideTop.Control = lblKeywords
+    object InfoValuePanel: TPanel
+      AnchorSideLeft.Control = CaptionPanel
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = IconDetailsPanel
       AnchorSideRight.Control = IconDetailsPanel
       AnchorSideRight.Side = asrBottom
-      Left = 80
-      Height = 15
-      Top = 51
-      Width = 468
+      Left = 66
+      Height = 66
+      Top = 0
+      Width = 496
       Anchors = [akTop, akLeft, akRight]
-      BorderSpacing.Left = 80
-      BorderSpacing.Right = 8
-      Caption = 'infoKeywords'
-      WordWrap = True
-    end
-    object lblStyle: TLabel
-      AnchorSideLeft.Control = IconDetailsPanel
-      AnchorSideTop.Control = lblSize
-      AnchorSideTop.Side = asrBottom
-      Left = 0
-      Height = 15
-      Top = 34
-      Width = 28
-      BorderSpacing.Top = 2
-      Caption = 'Style:'
-      Font.Style = [fsItalic]
-      ParentFont = False
-    end
-    object infoStyle: TLabel
-      AnchorSideLeft.Control = IconDetailsPanel
-      AnchorSideTop.Control = lblStyle
-      Left = 80
-      Height = 15
-      Top = 34
-      Width = 46
-      BorderSpacing.Left = 80
-      Caption = 'infoStyle'
+      AutoSize = True
+      BevelOuter = bvNone
+      ClientHeight = 66
+      ClientWidth = 496
+      TabOrder = 1
+      object infoFileName: TLabel
+        AnchorSideLeft.Control = InfoValuePanel
+        AnchorSideTop.Control = InfoValuePanel
+        AnchorSideRight.Side = asrBottom
+        Left = 0
+        Height = 15
+        Top = 0
+        Width = 71
+        Caption = 'infoFileName'
+      end
+      object infoSize: TLabel
+        AnchorSideLeft.Control = InfoValuePanel
+        AnchorSideTop.Control = infoFileName
+        AnchorSideTop.Side = asrBottom
+        Left = 0
+        Height = 15
+        Top = 17
+        Width = 100
+        BorderSpacing.Top = 2
+        Caption = 'infoSize'
+        Constraints.MinWidth = 100
+      end
+      object infoKeywords: TLabel
+        AnchorSideLeft.Control = InfoValuePanel
+        AnchorSideTop.Control = infoStyle
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = InfoValuePanel
+        AnchorSideRight.Side = asrBottom
+        Left = 0
+        Height = 15
+        Top = 51
+        Width = 496
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Top = 2
+        Caption = 'infoKeywords'
+        WordWrap = True
+      end
+      object infoStyle: TLabel
+        AnchorSideLeft.Control = InfoValuePanel
+        AnchorSideTop.Control = infoSize
+        AnchorSideTop.Side = asrBottom
+        Left = 0
+        Height = 15
+        Top = 34
+        Width = 46
+        BorderSpacing.Top = 2
+        Caption = 'infoStyle'
+      end
     end
   end
   object Bevel1: TBevel
     Left = 0
     Height = 4
-    Top = 273
+    Top = 279
     Width = 574
     Align = alBottom
     Shape = bsBottomLine

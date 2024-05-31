@@ -18,7 +18,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ButtonPanel, StdCtrls,
-  CheckLst, ExtCtrls;
+  CheckLst, ExtCtrls,
+  IconLibStrConsts;
 
 type
 
@@ -39,11 +40,13 @@ type
     procedure btnMoveFolderUpClick(Sender: TObject);
     procedure btnAddFolderClick(Sender: TObject);
     procedure clbFoldersSelectionChange(Sender: TObject; User: boolean);
+    procedure FormCreate(Sender: TObject);
   private
 
   public
     procedure GetIconFolders(AList: TStrings);
     procedure SetIconFolders(AList: TStrings);
+    procedure UpdateLanguage;
 
   end;
 
@@ -57,8 +60,7 @@ var
 begin
   if clbFolders.ItemIndex > -1 then
   begin
-    res := MessageDlg('Do you really want to remove this folder from the icon library?',
-      mtConfirmation, [mbYes, mbNo], 0);
+    res := MessageDlg(RSFolders_ConfirmDeleteFolderMsg, mtConfirmation, [mbYes, mbNo], 0);
     if res = mrYes then
       clbFolders.Items.Delete(clbFolders.ItemIndex);
   end;
@@ -110,6 +112,11 @@ begin
   btnMoveFolderDown.Enabled := (idx > -1) and (idx < clbFolders.Items.Count-1);
 end;
 
+procedure TIconFolderForm.FormCreate(Sender: TObject);
+begin
+  UpdateLanguage;
+end;
+
 { Copies the listbox entries to the given list which will be passed on to the
   IconViewer's IconList by the caller.
   Hidden folders have non-nil Objects property in the outpist list. }
@@ -154,6 +161,16 @@ begin
   finally
     clbFolders.Items.EndUpdate;
   end;
+end;
+
+procedure TIconFolderForm.UpdateLanguage;
+begin
+  Caption := RSFolders_IconLibFolders;
+  FolderPanel.Caption := RSFolders_IconLibFolders;
+  btnAddFolder.Caption := RSFolders_Add;
+  btnDeleteFolder.Caption := RSFolders_Delete;
+  btnMoveFolderUp.Caption := RSFolders_MoveUp;
+  btnMoveFolderDown.Caption := RSFolders_MoveDown;
 end;
 
 end.

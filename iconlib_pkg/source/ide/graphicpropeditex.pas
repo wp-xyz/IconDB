@@ -16,7 +16,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  GraphicPropEdit, IconLibFrm;
+  GraphicPropEdit, IconLibStrConstsIDE, IconLibFrm;
 
 type
 
@@ -24,6 +24,7 @@ type
 
   TGraphicPropertyEditorFormEx = class(TGraphicPropertyEditorForm)
     IconLibButton: TButton;
+    procedure FormCreate(Sender: TObject);
     procedure IconLibButtonClick(Sender: TObject);
   private
     FIconLibForm: TIconLibForm;
@@ -42,6 +43,12 @@ procedure TGraphicPropertyEditorFormEx.IconLibButtonClick(Sender: TObject);
 begin
   if ShowIconLib then
     FIconLibForm.LoadPictureFromIconLib(ImagePreview.Picture);
+end;
+
+procedure TGraphicPropertyEditorFormEx.FormCreate(Sender: TObject);
+begin
+  inherited;
+  IconLibButton.Caption := RSGraphPropEditor_IconLib;
 end;
 
 procedure TGraphicPropertyEditorFormEx.IconLibDblClick(Sender: TObject);
