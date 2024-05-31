@@ -1,14 +1,22 @@
 {
  *****************************************************************************
+  This file is part of a Lazarus Package, IconLib.
+
   See the file COPYING.modifiedLGPL.txt, included in the Lazarus distribution,
   for details about the license.
  *****************************************************************************
 
  Extended graphic property editors for searching icons by keywords.
 
+ Changes required in Laz 3.99 unit GraphicPropEdit
+
+ - After the form class declaration, add
+
+     TGraphicPropertyEditorFormClass = class of TGraphicPropertyEditorForm;
+
  Changes required in Laz 3.99, unit GraphPropEdits (IDEIntf):
 
- - add protected class function GetEditorFormClass to TGraphicPropertyEditor,
+ - Add protected virtual class function GetEditorFormClass to TGraphicPropertyEditor,
    TPicturePropertyEditor and TButtonGlyphPropEditor:
 
      class function GetEditorFormClass: TGraphicPropertyEditorFormClass; virtual;
@@ -18,25 +26,11 @@
        Result := TGraphicPropertyEditorForm;
      end;
 
-     class function TPicturePropertyEditor.GetEditorFormClass: TGraphicPropertyEditorFormClass;
-     begin
-       Result := TGraphicPropertyEditorForm;
-     end;
+ - In the Edit method of these property editors, find the line
 
-     class function TButtonGlyphPropEditor.GetEditorFormClass: TGraphicPropertyEditorFormClass;
-     begin
-       Result := TGraphicPropertyEditorForm;
-     end;
+     TheDialog := TGraphicPropertyEditorForm.Create(nil);
 
- - In the Edit method of these three property editors, find the line
-   "TheDialog := TGraphicPropertyEditorForm.Create(nil);" and replace the
-   word "TGraphicPropertyEditorForm" by "GetEditorFormClass"
-
- Changes required in Laz 3.99 unit GraphicPropEdit
-
- - After the form class declaration, add
-
-     TGraphicPropertyEditorFormClass = class of TGraphicPropertyEditorForm;
+   and replace the word "TGraphicPropertyEditorForm" by "GetEditorFormClass"
 }
 
 unit GraphPropEditsEx;

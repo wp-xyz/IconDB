@@ -1,5 +1,15 @@
-unit BasicThumbnails;
+{
+ *****************************************************************************
+  This file is part of a Lazarus Package, IconLib.
 
+  See the file COPYING.modifiedLGPL.txt, included in the Lazarus distribution,
+  for details about the license.
+ *****************************************************************************
+
+ Basic thumbnail and thumbnail viewer classes.
+}
+
+unit BasicThumbnails;
 {$mode ObjFPC}{$H+}
 
 interface

@@ -1,5 +1,7 @@
 {
  *****************************************************************************
+  This file is part of a Lazarus Package, IconLib.
+
   See the file COPYING.modifiedLGPL.txt, included in the Lazarus distribution,
   for details about the license.
  *****************************************************************************
@@ -32,10 +34,7 @@ uses
   // IDEIntf
   PropEdits, ComponentEditors, ImageListEditor, BaseIDEIntf, ObjInspStrConsts, IDEImagesIntf,
   // Thumbnails
-  IconThumbnails, IconViewer, IconLibFrm;
-
-const
-  ICONLIB_CONFIG_FILENAME = 'iconlibcfg.xml';
+  IconLibCommon, IconThumbnails, IconViewer, IconLibFrm;
 
 type
 

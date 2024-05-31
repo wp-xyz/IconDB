@@ -33,10 +33,8 @@ uses
   // IdeIntf
   LazIDEIntf, IDEOptEditorIntf, IDEImagesIntf,
   // Icon Lib
-  IconThumbnails, IconViewer, IconLibFolders, IconLibMetadata;
+  IconLibCommon, IconThumbnails, IconViewer, IconLibFolders, IconLibMetadata;
 
-const
-  ICONLIB_CONFIG_FILENAME = 'iconlibcfg.xml';
 
 { TIconLibSettings
   The Options Group ID, and, perhaps, a place in the Tree View }

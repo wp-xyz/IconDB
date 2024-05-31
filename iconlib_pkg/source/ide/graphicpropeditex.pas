@@ -1,5 +1,15 @@
-unit GraphicPropEditEx;
+{
+ *****************************************************************************
+  This file is part of a Lazarus Package, IconLib.
 
+  See the file COPYING.modifiedLGPL.txt, included in the Lazarus distribution,
+  for details about the license.
+ *****************************************************************************
+
+ Extended graphic property editor form allowing searching icons by keywords.
+}
+
+unit GraphicPropEditEx;
 {$mode ObjFPC}{$H+}
 
 interface

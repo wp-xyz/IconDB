@@ -1,3 +1,15 @@
+{
+ *****************************************************************************
+  This file is part of a Lazarus Package, IconLib.
+
+  See the file COPYING.modifiedLGPL.txt, included in the Lazarus distribution,
+  for details about the license.
+ *****************************************************************************
+
+ A form for management of the folders from which icons are included in the
+ icon library.
+}
+
 unit IconLibFolders;
 
 {$mode ObjFPC}{$H+}
@@ -7,7 +19,6 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ButtonPanel, StdCtrls,
   CheckLst, ExtCtrls;
-//  ilGlobal;
 
 type
 

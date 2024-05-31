@@ -1,3 +1,14 @@
+{
+ *****************************************************************************
+  This file is part of a Lazarus Package, IconLib.
+
+  See the file COPYING.modifiedLGPL.txt, included in the Lazarus distribution,
+  for details about the license.
+ *****************************************************************************
+
+ A form for adding/editing icon keywords and icon styles.
+}
+
 unit IconLibMetaData;
 
 {$mode ObjFPC}{$H+}

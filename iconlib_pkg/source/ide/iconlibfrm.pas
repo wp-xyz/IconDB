@@ -1,5 +1,16 @@
-unit IconLibFrm;
+{
+ *****************************************************************************
+  This file is part of a Lazarus Package, IconLib.
 
+  See the file COPYING.modifiedLGPL.txt, included in the Lazarus distribution,
+  for details about the license.
+ *****************************************************************************
+
+ Form with icon viewer needed by the extended graphic property and imagelist
+ component editors which allow searching icons by keywords.
+}
+
+unit IconLibFrm;
 {$mode objfpc}{$H+}
 
 interface
@@ -11,12 +22,11 @@ uses
   // LCL
   Forms, Controls, Graphics, Dialogs, ButtonPanel,
   // IDEIntf
-  BaseIDEIntf, IDEOptionsIntf, IDEImagesIntf,
+  BaseIDEIntf, IDEImagesIntf,
+  // BuildIntf
+  IDEOptionsIntf,
   // Icon lib
-  IconThumbnails, IconViewer;
-
-const
-  ICONLIB_CONFIG_FILENAME = 'iconlibcfg.xml';
+  IconLibCommon, IconThumbnails, IconViewer;
 
 type
   { TIconLibForm }

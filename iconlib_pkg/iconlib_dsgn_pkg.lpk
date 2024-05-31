@@ -44,6 +44,10 @@
         <Filename Value="source\ide\graphicpropeditex.pas"/>
         <UnitName Value="graphicpropeditex"/>
       </Item>
+      <Item>
+        <Filename Value="source\ide\iconlibcommon.pas"/>
+        <UnitName Value="iconlibcommon"/>
+      </Item>
     </Files>
     <RequiredPkgs>
       <Item>
