@@ -88,7 +88,7 @@ var
   LazDir: String;
 begin
   LazDir := AppendPathDelim(IDEEnvironmentOptions.GetParsedLazarusDirectory);
-  FViewer.AddIconFolder(LazDir + 'images/general_purpose/');
+  FViewer.AddIconFolder(LazDir + DEFAULT_IMAGE_FOLDER);  // images/general_purpose/
 end;
 
 procedure TIconLibForm.IconSelectHandler(Sender: TObject);

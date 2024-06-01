@@ -7,6 +7,6 @@
 {"hash":95158922,"name":"ticonviewerframe.lblstyle.caption","sourcebytes":[83,116,121,108,101,58],"value":"Style:"},
 {"hash":154047989,"name":"ticonviewerframe.infofilename.caption","sourcebytes":[105,110,102,111,70,105,108,101,78,97,109,101],"value":"infoFileName"},
 {"hash":81045509,"name":"ticonviewerframe.infosize.caption","sourcebytes":[105,110,102,111,83,105,122,101],"value":"infoSize"},
-{"hash":202030243,"name":"ticonviewerframe.infokeywords.caption","sourcebytes":[105,110,102,111,75,101,121,119,111,114,100,115],"value":"infoKeywords"},
-{"hash":223006821,"name":"ticonviewerframe.infostyle.caption","sourcebytes":[105,110,102,111,83,116,121,108,101],"value":"infoStyle"}
+{"hash":223006821,"name":"ticonviewerframe.infostyle.caption","sourcebytes":[105,110,102,111,83,116,121,108,101],"value":"infoStyle"},
+{"hash":202030243,"name":"ticonviewerframe.infokeywords.caption","sourcebytes":[105,110,102,111,75,101,121,119,111,114,100,115],"value":"infoKeywords"}
 ]}

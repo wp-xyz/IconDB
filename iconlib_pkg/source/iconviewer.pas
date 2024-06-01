@@ -18,7 +18,7 @@ interface
 uses
   Classes, SysUtils,
   // LazUtils
-  LazFileUtils,
+  LazFileUtils, LazLoggerBase,
   // LCL
   Forms, Controls, Graphics, StdCtrls, ExtCtrls, FileCtrl, Buttons, Dialogs, ImgList,
   // Icon lib
@@ -48,7 +48,6 @@ type
     btnExecuteFilter: TSpeedButton;
     btnClearFilter: TSpeedButton;
     CaptionPanel: TPanel;
-    InfoValuePanel: TPanel;
     procedure btnClearFilterClick(Sender: TObject);
     procedure btnExecuteFilterClick(Sender: TObject);
     procedure btnKeywordEditorClick(Sender: TObject);
@@ -56,7 +55,6 @@ type
     procedure cmbFilterBySizeChange(Sender: TObject);
     procedure cmbFilterByStyleChange(Sender: TObject);
     procedure IconDetailsPanelResize(Sender: TObject);
-
   private
     FIconViewer: TIconViewer;
     FLayoutFixed: Boolean;
@@ -107,7 +105,6 @@ type
     property TotalCount: Integer read GetTotalCount;
     property OnFilter: TNotifyEvent read FOnFilter write FOnFilter;
     property OnIconDblClick: TNotifyEvent read FOnIconDblClick write FOnIconDblClick;
-
 
   end;
 
@@ -334,7 +331,8 @@ begin
   if FIconViewer.SelectedIcon <> nil then
   begin
     infoFileName.Hint := FIconViewer.SelectedIcon.FileName;
-    infoFileName.Caption := MinimizeName(infoFileName.Hint, Canvas, infoFileName.Width - infoFileName.BorderSpacing.Right);
+    infoFileName.Caption := MinimizeName(infoFileName.Hint, infoFileName.Canvas, IconDetailsPanel.Width - infoFileName.Left);
+    infoFileName.AdjustSize;
   end;
 end;
 
@@ -421,7 +419,7 @@ begin
   if FIconViewer.SelectedIcon <> nil then
   begin
     infoFileName.Hint := FIconViewer.SelectedIcon.FileName;
-    infoFileName.Caption := MinimizeName(infoFileName.Hint, Canvas, infoFileName.Width - infoFileName.BorderSpacing.Right);
+    infoFileName.Caption := MinimizeName(infoFileName.Hint, infoFileName.Canvas, IconDetailsPanel.Width - infoFileName.Left);
     infoSize.Caption := FIconViewer.SelectedIcon.SizeAsString;
     infoStyle.Caption := FIconViewer.SelectedIcon.StyleAsString;
     keywordList := TStringList.Create;

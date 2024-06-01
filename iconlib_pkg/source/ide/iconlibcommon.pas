@@ -17,6 +17,7 @@ uses
 
 const
   ICONLIB_CONFIG_FILENAME = 'iconlibcfg.xml';
+  DEFAULT_IMAGE_FOLDER = 'images/general_purpose/';
 
 implementation
 

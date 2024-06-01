@@ -141,7 +141,7 @@ begin
   FViewer.ImageIndex_ClearFilter := IDEImages.GetImageIndex('menu_clean', 16);
   FViewer.OnIconDblClick := @IconViewerDblClick;
   FViewer.OnFilter := @IconViewerFilter;
-  FViewer.Parent := self; //FIconLibGroupBox;
+  FViewer.Parent := self;
   FViewer.UpdateLanguage;
 
   Toolbar.Images := IDEImages.Images_16;
@@ -167,7 +167,7 @@ var
   lazDir: String;
 begin
   lazDir := AppendPathDelim(IDEEnvironmentOptions.GetParsedLazarusDirectory);
-  FViewer.AddIconFolder(LazDir + 'images/general_purpose/');
+  FViewer.AddIconFolder(LazDir + DEFAULT_IMAGE_FOLDER);  // images/general_purpose/
 end;
 
 procedure TIconLibSettingsFrame.CenterForm(AForm: TCustomForm);

@@ -1,21 +1,21 @@
 object IconLibSettingsFrame: TIconLibSettingsFrame
   Left = 0
-  Height = 451
+  Height = 230
   Top = 0
-  Width = 708
-  ClientHeight = 451
-  ClientWidth = 708
+  Width = 372
+  ClientHeight = 230
+  ClientWidth = 372
   ParentFont = False
   ParentShowHint = False
   ShowHint = True
   TabOrder = 0
-  DesignLeft = 567
-  DesignTop = 426
+  DesignLeft = 592
+  DesignTop = 215
   object ToolBar: TToolBar
     Left = 0
     Height = 26
     Top = 0
-    Width = 708
+    Width = 372
     Caption = 'ToolBar'
     EdgeBorders = []
     List = True

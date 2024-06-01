@@ -1,10 +1,10 @@
 object IconViewerFrame: TIconViewerFrame
   Left = 0
-  Height = 357
+  Height = 289
   Top = 0
-  Width = 574
-  ClientHeight = 357
-  ClientWidth = 574
+  Width = 453
+  ClientHeight = 289
+  ClientWidth = 453
   TabOrder = 0
   DesignLeft = 319
   DesignTop = 171
@@ -12,12 +12,12 @@ object IconViewerFrame: TIconViewerFrame
     Left = 0
     Height = 29
     Top = 0
-    Width = 574
+    Width = 453
     Align = alTop
     AutoSize = True
     BevelOuter = bvNone
     ClientHeight = 29
-    ClientWidth = 574
+    ClientWidth = 453
     ParentBackground = False
     ParentColor = False
     TabOrder = 0
@@ -63,7 +63,7 @@ object IconViewerFrame: TIconViewerFrame
       Left = 200
       Height = 23
       Top = 0
-      Width = 290
+      Width = 169
       Anchors = [akTop, akLeft, akRight]
       BorderSpacing.Left = 6
       BorderSpacing.Right = 2
@@ -78,7 +78,7 @@ object IconViewerFrame: TIconViewerFrame
       AnchorSideTop.Control = cmbFilterByKeywords
       AnchorSideTop.Side = asrCenter
       AnchorSideRight.Control = btnClearFilter
-      Left = 492
+      Left = 371
       Height = 24
       Top = -1
       Width = 24
@@ -92,7 +92,7 @@ object IconViewerFrame: TIconViewerFrame
       AnchorSideTop.Side = asrCenter
       AnchorSideRight.Control = FilterPanel
       AnchorSideRight.Side = asrBottom
-      Left = 544
+      Left = 423
       Height = 24
       Top = -1
       Width = 24
@@ -104,7 +104,7 @@ object IconViewerFrame: TIconViewerFrame
       AnchorSideTop.Control = cmbFilterByKeywords
       AnchorSideTop.Side = asrCenter
       AnchorSideRight.Control = btnExecuteFilter
-      Left = 518
+      Left = 397
       Height = 24
       Top = -1
       Width = 24
@@ -116,8 +116,8 @@ object IconViewerFrame: TIconViewerFrame
   object IconDetailsPanel: TPanel
     Left = 6
     Height = 68
-    Top = 289
-    Width = 562
+    Top = 221
+    Width = 441
     Align = alBottom
     AutoSize = True
     BorderSpacing.Left = 6
@@ -125,7 +125,7 @@ object IconViewerFrame: TIconViewerFrame
     BorderSpacing.Right = 6
     BevelOuter = bvNone
     ClientHeight = 68
-    ClientWidth = 562
+    ClientWidth = 441
     TabOrder = 1
     OnResize = IconDetailsPanelResize
     object CaptionPanel: TPanel
@@ -193,77 +193,62 @@ object IconViewerFrame: TIconViewerFrame
         ParentFont = False
       end
     end
-    object InfoValuePanel: TPanel
+    object infoFileName: TLabel
       AnchorSideLeft.Control = CaptionPanel
       AnchorSideLeft.Side = asrBottom
-      AnchorSideTop.Control = IconDetailsPanel
+      AnchorSideRight.Side = asrBottom
+      Left = 66
+      Height = 15
+      Top = 0
+      Width = 71
+      Caption = 'infoFileName'
+    end
+    object infoSize: TLabel
+      AnchorSideLeft.Control = CaptionPanel
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = infoFileName
+      AnchorSideTop.Side = asrBottom
+      Left = 66
+      Height = 15
+      Top = 17
+      Width = 41
+      BorderSpacing.Top = 2
+      Caption = 'infoSize'
+    end
+    object infoStyle: TLabel
+      AnchorSideLeft.Control = CaptionPanel
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = infoSize
+      AnchorSideTop.Side = asrBottom
+      Left = 66
+      Height = 15
+      Top = 34
+      Width = 46
+      BorderSpacing.Top = 2
+      Caption = 'infoStyle'
+    end
+    object infoKeywords: TLabel
+      AnchorSideLeft.Control = CaptionPanel
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = infoStyle
+      AnchorSideTop.Side = asrBottom
       AnchorSideRight.Control = IconDetailsPanel
       AnchorSideRight.Side = asrBottom
       Left = 66
-      Height = 66
-      Top = 0
-      Width = 496
+      Height = 15
+      Top = 51
+      Width = 375
       Anchors = [akTop, akLeft, akRight]
-      AutoSize = True
-      BevelOuter = bvNone
-      ClientHeight = 66
-      ClientWidth = 496
-      TabOrder = 1
-      object infoFileName: TLabel
-        AnchorSideLeft.Control = InfoValuePanel
-        AnchorSideTop.Control = InfoValuePanel
-        AnchorSideRight.Side = asrBottom
-        Left = 0
-        Height = 15
-        Top = 0
-        Width = 71
-        Caption = 'infoFileName'
-      end
-      object infoSize: TLabel
-        AnchorSideLeft.Control = InfoValuePanel
-        AnchorSideTop.Control = infoFileName
-        AnchorSideTop.Side = asrBottom
-        Left = 0
-        Height = 15
-        Top = 17
-        Width = 100
-        BorderSpacing.Top = 2
-        Caption = 'infoSize'
-        Constraints.MinWidth = 100
-      end
-      object infoKeywords: TLabel
-        AnchorSideLeft.Control = InfoValuePanel
-        AnchorSideTop.Control = infoStyle
-        AnchorSideTop.Side = asrBottom
-        AnchorSideRight.Control = InfoValuePanel
-        AnchorSideRight.Side = asrBottom
-        Left = 0
-        Height = 15
-        Top = 51
-        Width = 496
-        Anchors = [akTop, akLeft, akRight]
-        BorderSpacing.Top = 2
-        Caption = 'infoKeywords'
-        WordWrap = True
-      end
-      object infoStyle: TLabel
-        AnchorSideLeft.Control = InfoValuePanel
-        AnchorSideTop.Control = infoSize
-        AnchorSideTop.Side = asrBottom
-        Left = 0
-        Height = 15
-        Top = 34
-        Width = 46
-        BorderSpacing.Top = 2
-        Caption = 'infoStyle'
-      end
+      BorderSpacing.Top = 2
+      Caption = 'infoKeywords'
+      WordWrap = True
     end
   end
   object Bevel1: TBevel
     Left = 0
     Height = 4
-    Top = 279
-    Width = 574
+    Top = 211
+    Width = 453
     Align = alBottom
     Shape = bsBottomLine
   end
@@ -271,7 +256,7 @@ object IconViewerFrame: TIconViewerFrame
     Left = 0
     Height = 2
     Top = 29
-    Width = 574
+    Width = 453
     Align = alTop
     Shape = bsBottomLine
   end
