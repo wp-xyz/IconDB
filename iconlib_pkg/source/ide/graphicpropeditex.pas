@@ -79,6 +79,8 @@ begin
   FIconLibForm.Left := L;
   FIconLibForm.Top := T;
 
+  FIconLibForm.ReadSettings('GraphicPropertyEditor');
+
   Result := FIconLibForm.ShowModal = mrOK;
 end;
 

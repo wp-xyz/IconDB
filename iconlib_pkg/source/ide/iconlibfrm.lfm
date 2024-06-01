@@ -7,6 +7,7 @@ object IconLibForm: TIconLibForm
   ClientHeight = 600
   ClientWidth = 800
   LCLVersion = '3.99.0.0'
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   object ButtonPanel: TButtonPanel
     Left = 6

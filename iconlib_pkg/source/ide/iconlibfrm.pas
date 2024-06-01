@@ -26,28 +26,31 @@ uses
   // BuildIntf
   IDEOptionsIntf,
   // Icon lib
-  IconLibStrConstsIDE, IconLibCommon, IconThumbnails, IconViewer;
+  IconLibStrConstsIDE, IconLibCommon, IconThumbnails, IconViewer, IconLibSettings;
 
 type
   { TIconLibForm }
 
   TIconLibForm = class(TForm)
     ButtonPanel: TButtonPanel;
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormCreate(Sender: TObject);
     procedure OKButtonClick(Sender: TObject);
   private
     FViewer: TIconViewerFrame;
     FOnIconSelectClick: TNotifyEvent;
     FOnIconDblClick: TNotifyEvent;
+    FSettingsNodeName: String;
   protected
     procedure AddDefaultIconFolder;
-    procedure AddIconFolders;
     procedure IconViewerDblClickHandler(Sender: TObject);
     procedure IconViewerFilterHandler(Sender: TObject);
     procedure IconSelectHandler(Sender: TObject);
   public
     procedure LoadPictureFromIconLib(APicture: TPicture);
     procedure LoadPictureSizesFromIconLib(ASizes: Array of TPoint; APictures: Array of TPicture);
+    procedure ReadSettings(ANodeName: String);
+    procedure WriteSettings;
     property OnIconDblClick: TNotifyEvent read FOnIconDblClick write FOnIconDblClick;
     property OnIconSelectClick: TNotifyEvent read FOnIconSelectClick write FOnIconSelectClick;
   end;
@@ -71,9 +74,13 @@ begin
   FViewer.BorderSpacing.Top := 6;
   FViewer.OnIconDblClick := @IconViewerDblClickHandler;
   FViewer.OnFilter := @IconViewerFilterHandler;
-  AddIconFolders;
-
   ButtonPanel.OKButton.Caption := RSIconLibIDE_Select;
+end;
+
+procedure TIconLibForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+  if CanClose then
+    WriteSettings;
 end;
 
 procedure TIconLibForm.AddDefaultIconFolder;
@@ -82,37 +89,6 @@ var
 begin
   LazDir := AppendPathDelim(IDEEnvironmentOptions.GetParsedLazarusDirectory);
   FViewer.AddIconFolder(LazDir + 'images/general_purpose/');
-end;
-
-procedure TIconLibForm.AddIconFolders;
-var
-  Config: TConfigStorage;
-  folder: String;
-  isHidden: Boolean;
-  n, i: Integer;
-begin
-  try
-    Config := GetIDEConfigStorage(ICONLIB_CONFIG_FILENAME, true);
-    try
-      n := Config.GetValue('IconLib/Folders/Count', 0);
-      if n = 0 then
-        AddDefaultIconFolder
-      else
-        for i := 0 to n-1 do
-        begin
-          folder := Config.GetValue('IconLib/Folders/Item' + IntToStr(i) + '/Value', '');
-          isHidden := Config.GetValue('IconLib/Folders/Item' + IntToStr(i) + '/Hidden', false);
-          if (folder <> '') and DirectoryExists(folder) then
-            FViewer.AddIconFolder(folder, isHidden);
-        end;
-    finally
-      Config.Free;
-    end;
-  except
-    on E: Exception do begin
-      DebugLn('TIconLibSettingsFrame.ReadSettings Loading ' +  ICONLIB_CONFIG_FILENAME + ' failed: ' + E.Message);
-    end;
-  end;
 end;
 
 procedure TIconLibForm.IconSelectHandler(Sender: TObject);
@@ -171,6 +147,46 @@ end;
 procedure TIconLibForm.OKButtonClick(Sender: TObject);
 begin
   IconSelectHandler(Sender);
+end;
+
+procedure TIconLibForm.ReadSettings(ANodeName: String);
+var
+  Config: TConfigStorage;
+begin
+  FSettingsNodeName := ANodeName;
+  try
+    Config := GetIDEConfigStorage(ICONLIB_CONFIG_FILENAME, true);
+    try
+      GlobalReadSettings(Config, FViewer, ANodeName);
+    finally
+      Config.Free;
+    end;
+  except
+    on E: Exception do begin
+      DebugLn('TIconLibSettingsFrame.ReadSettings Loading ' +  ICONLIB_CONFIG_FILENAME + ' failed: ' + E.Message);
+    end;
+  end;
+  if FViewer.IconViewer.IconFolders.Count = 0 then
+    AddDefaultIconFolder;
+end;
+
+procedure TIconLibForm.WriteSettings;
+var
+  Config: TConfigStorage;
+begin
+  try
+    Config := GetIDEConfigStorage(ICONLIB_CONFIG_FILENAME, true); //, false);
+    try
+      GlobalWriteSettings(Config, FViewer, FSettingsNodeName);
+      Config.WriteToDisk;
+    finally
+      Config.Free;
+    end;
+  except
+     on E: Exception do begin
+       DebugLn('TIconLibSettingsFrame.ReadSettings Saving ' + ICONLIB_CONFIG_FILENAME + ' failed: ' + E.Message);
+     end;
+  end;
 end;
 
 end.

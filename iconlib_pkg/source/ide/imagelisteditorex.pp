@@ -187,6 +187,8 @@ begin
   FIconLibForm.Left := L;
   FIconLibForm.Top := T;
 
+  FIconLibForm.ReadSettings('ImageListComponentEditor');
+
   Result := FIconLibForm.ShowModal = mrOK;
 end;
 

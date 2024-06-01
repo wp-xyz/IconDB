@@ -86,6 +86,8 @@ type
     procedure RestoreSettings({%H-}AOptions: TAbstractIDEOptions); override;
   end;
 
+procedure GlobalReadSettings(AConfig: TConfigStorage; AViewer: TIconViewerFrame; ANodeName: String);
+procedure GlobalWriteSettings(AConfig: TConfigStorage; AViewer: TIconViewerFrame; ANodeName: String);
 
 var
   IconLibOptionsGroup: integer;
@@ -246,46 +248,13 @@ end;
 procedure TIconLibSettingsFrame.ReadSettings(AOptions: TAbstractIDEOptions);
 var
   Config: TConfigStorage;
-  folder: String;
-  isHidden: Boolean;
-  n, i: Integer;
-  s: String;
-  list: TStrings;
 begin
   try
     Config := GetIDEConfigStorage(ICONLIB_CONFIG_FILENAME, true);
     try
-      // Icon folder list
-      n := Config.GetValue('IconLib/Folders/Count', 0);
-      if n = 0 then
-        AddDefaultFolder
-      else
-        for i := 0 to n-1 do
-        begin
-          folder := Config.GetValue('IconLib/Folders/Item' + IntToStr(i) + '/Value', '');
-          isHidden := Config.GetValue('IconLib/Folders/Item' + IntToStr(i) + '/Hidden', false);
-          if (folder <> '') and DirectoryExists(folder) then
-            FViewer.AddIconFolder(folder, isHidden);
-        end;
-
-      // Keyword filter history list
-      list := TStringList.Create;
-      try
-        n := Config.GetValue('IconLib/FilterHistory/Count', 0);
-        for i := 0 to n-1 do
-        begin
-          s := Config.GetValue('IconLib/FilterHistory/Item' + IntToStr(i) + '/Value', '');
-          if s <> '' then list.Add(s);
-        end;
-        FViewer.SetKeywordsHistory(list);
-      finally
-        list.Free;
-      end;
-
-      // Read the icon size and style filter settings
-      FViewer.SizeFilter := Config.GetValue('IconLib/Settings/SizeFilter/Value', '');
-      FViewer.StyleFilter := Config.GetValue('IconLib/Settings/StyleFilter/Value', '');
-
+      GlobalReadSettings(Config, FViewer, 'IDEOptions');
+      if FViewer.IconViewer.IconFolders.Count = 0 then
+        AddDefaultFolder;
     finally
       Config.Free;
     end;
@@ -332,43 +301,11 @@ end;
 procedure TIconLibSettingsFrame.WriteSettings(AOptions: TAbstractIDEOptions);
 var
   Config: TConfigStorage;
-  i: Integer;
-  list: TStrings;
-  s: String;
 begin
   try
-     Config := GetIDEConfigStorage(ICONLIB_CONFIG_FILENAME, false);
+     Config := GetIDEConfigStorage(ICONLIB_CONFIG_FILENAME, true); //, false);
      try
-       list := TStringList.Create;
-       try
-         // Icon folder list
-         FViewer.IconViewer.WriteIconFolders(list);
-         Config.SetValue('IconLib/Folders/Count', list.Count);
-         for i := 0 to list.Count-1 do
-         begin
-           Config.SetValue('IconLib/Folders/Item' + IntToStr(i) + '/Value', list[i]);
-           if list.Objects[i] <> nil then
-             Config.SetValue('IconLib/Folders/Item' + IntToStr(i) + '/Hidden', true);
-         end;
-
-         // Keyword filter history list
-         list.Clear;
-         FViewer.GetKeywordsHistory(list);
-         Config.SetValue('IconLib/FilterHistory/Count', list.Count);
-         for i := 0 to list.Count-1 do
-           Config.SetValue('IconLib/FilterHistory/Item' + IntToStr(i) + '/Value', list[i]);
-       finally
-         list.Free;
-       end;
-
-       // Write the icon size and style filter settings
-       s := FViewer.SizeFilter;
-       if s <> '' then
-         Config.SetValue('IconLib/Settings/SizeFilter/Value', s);
-       s := FViewer.StyleFilter;
-       if s <> '' then
-         Config.SetValue('IconLib/Settings/StyleFilter/Value', s);
-
+       GlobalWriteSettings(Config, FViewer, 'IDEOptions');
      finally
        Config.Free;
      end;
@@ -382,6 +319,94 @@ end;
 procedure TIconLibSettingsFrame.RestoreSettings(AOptions: TAbstractIDEOptions);
 begin
   inherited RestoreSettings(AOptions);
+end;
+
+{------------------------------------------------------------------------------}
+
+procedure GlobalReadSettings(AConfig: TConfigStorage; AViewer: TIconViewerFrame;
+  ANodeName: String);
+var
+  folder: String;
+  isHidden: Boolean;
+  n, i: Integer;
+  s: String;
+  list: TStrings;
+begin
+  // Icon folder list
+  n := AConfig.GetValue('IconLib/Folders/Count', 0);
+  for i := 0 to n-1 do
+  begin
+    folder := AConfig.GetValue(Format('IconLib/Folders/Item%d/Value', [i]), '');
+    isHidden := AConfig.GetValue(Format('IconLib/Folders/Item%d/Hidden', [i]), false);
+    if (folder <> '') and DirectoryExists(folder) then
+      AViewer.AddIconFolder(folder, isHidden);
+  end;
+
+  // Keyword filter history list
+  list := TStringList.Create;
+  try
+    n := AConfig.GetValue('IconLib/FilterHistory/Count', 0);
+    for i := 0 to n-1 do
+    begin
+      s := AConfig.GetValue(Format('IconLib/FilterHistory/Item%d/Value', [i]), '');
+      if s <> '' then list.Add(s);
+    end;
+    AViewer.SetKeywordsHistory(list);
+  finally
+    list.Free;
+  end;
+
+  // Read the icon size and style filter settings
+  if (ANodeName <> '') and (ANodename[Length(ANodeName)] = '/') then Delete(ANodeName, Length(ANodeName), 1);
+  if (ANodeName <> '') and (ANodeName[1] = '/') then Delete(ANodeName, 1, 1);
+  if ANodeName <> '' then
+  begin
+    AViewer.SizeFilter := AConfig.GetValue(Format('IconLib/%s/SizeFilter/Value', [ANodeName]), '');
+    AViewer.StyleFilter := AConfig.GetValue(Format('IconLib/%s/StyleFilter/Value', [ANodeName]), '');
+  end;
+end;
+
+procedure GlobalWriteSettings(AConfig: TConfigStorage; AViewer: TIconViewerFrame;
+  ANodeName: String);
+var
+  i: Integer;
+  list: TStrings;
+  s: String;
+begin
+  list := TStringList.Create;
+  try
+    // Icon folder list
+    AViewer.IconViewer.WriteIconFolders(list);
+    AConfig.SetValue('IconLib/Folders/Count', list.Count);
+    for i := 0 to list.Count-1 do
+    begin
+      AConfig.SetValue(Format('IconLib/Folders/Item%d/Value', [i]), list[i]);
+      if list.Objects[i] <> nil then
+        AConfig.SetValue(Format('IconLib/Folders/Item%d/Hidden', [i]), true);
+    end;
+
+    // Keyword filter history list
+    list.Clear;
+    AViewer.GetKeywordsHistory(list);
+    AConfig.SetValue('IconLib/FilterHistory/Count', list.Count);
+    for i := 0 to list.Count-1 do
+      AConfig.SetValue(Format('IconLib/FilterHistory/Item%d/Value', [i]), list[i]);
+  finally
+    list.Free;
+  end;
+
+  // Write the icon size and style filter settings
+  if (ANodeName <> '') and (ANodename[Length(ANodeName)] = '/') then Delete(ANodeName, Length(ANodeName), 1);
+  if (ANodeName <> '') and (ANodeName[1] = '/') then Delete(ANodeName, 1, 1);
+  if ANodeName <> '' then
+  begin
+    s := AViewer.SizeFilter;
+    if s <> '' then
+      AConfig.SetValue(Format('IconLib/%s/SizeFilter/Value', [ANodeName]), s);
+    s := AViewer.StyleFilter;
+    if s <> '' then
+      AConfig.SetValue(Format('IconLib/%s/StyleFilter/Value', [ANodeName]), s);
+  end;
 end;
 
 
