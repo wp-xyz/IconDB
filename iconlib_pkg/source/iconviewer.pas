@@ -74,13 +74,11 @@ type
 
   protected
     procedure AddKeywordFilterToHistory(AFilter: String);
-    procedure CreateHandle; override;
     procedure DoIconViewerDblClick(Sender: TObject);
     procedure DoIconViewerFilter(Sender: TObject);
     procedure DoIconViewerSelect(Sender: TObject);
     procedure UpdateCmds;
     procedure UpdateIconDetails;
-//    procedure UpdateLayout;
 
   public
     constructor Create(AOwner: TComponent); override;
@@ -107,6 +105,7 @@ type
     property OnIconDblClick: TNotifyEvent read FOnIconDblClick write FOnIconDblClick;
 
   end;
+
 
 implementation
 
@@ -188,7 +187,6 @@ begin
       cmbFilterByKeywords.Text := F.Filter;
       FIconViewer.FilterByIconKeywords := F.Filter;
       AddKeywordFilterToHistory(F.Filter);
-      //FIconViewer.Invalidate;
     end;
   finally
     L.Free;
@@ -237,18 +235,6 @@ begin
   IconViewer.CopyMetadataToNameBase(AIcon);
   IconViewer.Invalidate;
   UpdateIconDetails;
-end;
-
-procedure TIconViewerFrame.CreateHandle;
-begin
-  inherited;
-                {
-  if not FLayoutFixed then
-  begin
-    FLayoutFixed := true;
-    UpdateLayout;
-  end;
-  }
 end;
 
 procedure TIconViewerFrame.DeleteSelectedIcon;
@@ -332,7 +318,6 @@ begin
   begin
     infoFileName.Hint := FIconViewer.SelectedIcon.FileName;
     infoFileName.Caption := MinimizeName(infoFileName.Hint, infoFileName.Canvas, IconDetailsPanel.Width - infoFileName.Left);
-    infoFileName.AdjustSize;
   end;
 end;
 
@@ -500,22 +485,6 @@ begin
 
 //  UpdateLayout;
 end;
-                                       {
-procedure TIconViewerFrame.UpdateLayout;
-const
-  DISTANCE = 8;
-var
-  w: Integer;
-begin
-  w := lblFileName.Width;
-  if w < lblSize.Width then w := lblSize.Width;
-  if w < lblKeywords.Width then w := lblKeywords.Width;
-  inc(w, lblFileName.Left + Scale96ToFont(DISTANCE));
-  infoFileName.BorderSpacing.Left := w;
-  infoSize.BorderSpacing.Left := w;
-  infoStyle.BorderSpacing.Left := w;
-  infoKeywords.BorderSpacing.Left := w;
-end;
-                }
+
 end.
 

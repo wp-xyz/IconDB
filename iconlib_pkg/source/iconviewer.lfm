@@ -1,10 +1,10 @@
 object IconViewerFrame: TIconViewerFrame
   Left = 0
-  Height = 289
+  Height = 291
   Top = 0
-  Width = 453
-  ClientHeight = 289
-  ClientWidth = 453
+  Width = 425
+  ClientHeight = 291
+  ClientWidth = 425
   TabOrder = 0
   DesignLeft = 319
   DesignTop = 171
@@ -12,12 +12,12 @@ object IconViewerFrame: TIconViewerFrame
     Left = 0
     Height = 29
     Top = 0
-    Width = 453
+    Width = 425
     Align = alTop
     AutoSize = True
     BevelOuter = bvNone
     ClientHeight = 29
-    ClientWidth = 453
+    ClientWidth = 425
     ParentBackground = False
     ParentColor = False
     TabOrder = 0
@@ -63,7 +63,7 @@ object IconViewerFrame: TIconViewerFrame
       Left = 200
       Height = 23
       Top = 0
-      Width = 169
+      Width = 141
       Anchors = [akTop, akLeft, akRight]
       BorderSpacing.Left = 6
       BorderSpacing.Right = 2
@@ -78,7 +78,7 @@ object IconViewerFrame: TIconViewerFrame
       AnchorSideTop.Control = cmbFilterByKeywords
       AnchorSideTop.Side = asrCenter
       AnchorSideRight.Control = btnClearFilter
-      Left = 371
+      Left = 343
       Height = 24
       Top = -1
       Width = 24
@@ -92,7 +92,7 @@ object IconViewerFrame: TIconViewerFrame
       AnchorSideTop.Side = asrCenter
       AnchorSideRight.Control = FilterPanel
       AnchorSideRight.Side = asrBottom
-      Left = 423
+      Left = 395
       Height = 24
       Top = -1
       Width = 24
@@ -104,7 +104,7 @@ object IconViewerFrame: TIconViewerFrame
       AnchorSideTop.Control = cmbFilterByKeywords
       AnchorSideTop.Side = asrCenter
       AnchorSideRight.Control = btnExecuteFilter
-      Left = 397
+      Left = 369
       Height = 24
       Top = -1
       Width = 24
@@ -116,8 +116,8 @@ object IconViewerFrame: TIconViewerFrame
   object IconDetailsPanel: TPanel
     Left = 6
     Height = 68
-    Top = 221
-    Width = 441
+    Top = 223
+    Width = 413
     Align = alBottom
     AutoSize = True
     BorderSpacing.Left = 6
@@ -125,7 +125,7 @@ object IconViewerFrame: TIconViewerFrame
     BorderSpacing.Right = 6
     BevelOuter = bvNone
     ClientHeight = 68
-    ClientWidth = 441
+    ClientWidth = 413
     TabOrder = 1
     OnResize = IconDetailsPanelResize
     object CaptionPanel: TPanel
@@ -237,7 +237,7 @@ object IconViewerFrame: TIconViewerFrame
       Left = 66
       Height = 15
       Top = 51
-      Width = 375
+      Width = 347
       Anchors = [akTop, akLeft, akRight]
       BorderSpacing.Top = 2
       Caption = 'infoKeywords'
@@ -247,8 +247,8 @@ object IconViewerFrame: TIconViewerFrame
   object Bevel1: TBevel
     Left = 0
     Height = 4
-    Top = 211
-    Width = 453
+    Top = 213
+    Width = 425
     Align = alBottom
     Shape = bsBottomLine
   end
@@ -256,7 +256,7 @@ object IconViewerFrame: TIconViewerFrame
     Left = 0
     Height = 2
     Top = 29
-    Width = 453
+    Width = 425
     Align = alTop
     Shape = bsBottomLine
   end

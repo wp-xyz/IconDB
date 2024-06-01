@@ -72,7 +72,6 @@ type
     procedure EditFolders;
     procedure EditIconMetaData(AIcon: TIconItem);
     procedure IconViewerDblClick(Sender: TObject);
-    procedure IconViewerFilter(Sender: TObject);
     procedure SaveMetadataFiles;
 
   public
@@ -92,6 +91,7 @@ procedure GlobalWriteSettings(AConfig: TConfigStorage; AViewer: TIconViewerFrame
 var
   IconLibOptionsGroup: integer;
   IconLibOptionsFrameID: integer;
+
 
 implementation
 
@@ -140,7 +140,6 @@ begin
   FViewer.ImageIndex_ExecuteFilter := IDEImages.GetImageIndex('item_filter', 16);
   FViewer.ImageIndex_ClearFilter := IDEImages.GetImageIndex('menu_clean', 16);
   FViewer.OnIconDblClick := @IconViewerDblClick;
-  FViewer.OnFilter := @IconViewerFilter;
   FViewer.Parent := self;
   FViewer.UpdateLanguage;
 
@@ -238,11 +237,6 @@ end;
 procedure TIconLibSettingsFrame.IconViewerDblClick(Sender: TObject);
 begin
   EditIconMetadata(FViewer.IconViewer.SelectedIcon);
-end;
-
-procedure TIconLibSettingsFrame.IconViewerFilter(Sender: TObject);
-begin
-  //FIconLibGroupbox.Caption := Format('Icon Library (%d out of %d icons)', [FViewer.FilteredCount, FViewer.TotalCount]);
 end;
 
 procedure TIconLibSettingsFrame.ReadSettings(AOptions: TAbstractIDEOptions);
@@ -412,6 +406,6 @@ end;
 
 initialization
   IconLibOptionsGroup := GetFreeIDEOptionsGroupIndex(GroupEditor);
-  RegisterIDEOptionsGroup(IconLibOptionsGroup, TIconLibSettings, False);   // F cos I get Index from above line. I think.
+  RegisterIDEOptionsGroup(IconLibOptionsGroup, TIconLibSettings, False);
 
 end.
