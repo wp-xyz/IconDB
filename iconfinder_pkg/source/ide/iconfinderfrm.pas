@@ -10,7 +10,7 @@
  component editors which allow searching icons by keywords.
 }
 
-unit IconLibFrm;
+unit IconFinderFrm;
 {$mode objfpc}{$H+}
 
 interface
@@ -26,12 +26,12 @@ uses
   // BuildIntf
   IDEOptionsIntf,
   // Icon lib
-  IconLibStrConstsIDE, IconLibCommon, IconThumbnails, IconViewer, IconLibSettings;
+  IconFinderStrConstsIDE, IconFinderCommon, IconThumbnails, IconViewer, IconFinderSettings;
 
 type
-  { TIconLibForm }
+  { TIconFinderForm }
 
-  TIconLibForm = class(TForm)
+  TIconFinderForm = class(TForm)
     ButtonPanel: TButtonPanel;
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormCreate(Sender: TObject);
@@ -47,8 +47,8 @@ type
     procedure IconViewerFilterHandler(Sender: TObject);
     procedure IconSelectHandler(Sender: TObject);
   public
-    procedure LoadPictureFromIconLib(APicture: TPicture);
-    procedure LoadPictureSizesFromIconLib(ASizes: Array of TPoint; APictures: Array of TPicture);
+    procedure LoadPictureFromIconFinder(APicture: TPicture);
+    procedure LoadPictureSizesFromIconFinder(ASizes: Array of TPoint; APictures: Array of TPicture);
     procedure ReadSettings(ANodeName: String);
     procedure WriteSettings;
     property OnIconDblClick: TNotifyEvent read FOnIconDblClick write FOnIconDblClick;
@@ -59,9 +59,9 @@ implementation
 
 {$R *.lfm}
 
-{ TIconLibForm }
+{ TIconFinderForm }
 
-procedure TIconLibForm.FormCreate(Sender: TObject);
+procedure TIconFinderForm.FormCreate(Sender: TObject);
 begin
   FViewer := TIconViewerFrame.Create(self);
   FViewer.Align := alClient;
@@ -74,16 +74,16 @@ begin
   FViewer.BorderSpacing.Top := 6;
   FViewer.OnIconDblClick := @IconViewerDblClickHandler;
   FViewer.OnFilter := @IconViewerFilterHandler;
-  ButtonPanel.OKButton.Caption := RSIconLibIDE_Select;
+  ButtonPanel.OKButton.Caption := RSIconFinderIDE_Select;
 end;
 
-procedure TIconLibForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+procedure TIconFinderForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
   if CanClose then
     WriteSettings;
 end;
 
-procedure TIconLibForm.AddDefaultIconFolder;
+procedure TIconFinderForm.AddDefaultIconFolder;
 var
   LazDir: String;
 begin
@@ -91,37 +91,37 @@ begin
   FViewer.AddIconFolder(LazDir + DEFAULT_IMAGE_FOLDER);  // images/general_purpose/
 end;
 
-procedure TIconLibForm.IconSelectHandler(Sender: TObject);
+procedure TIconFinderForm.IconSelectHandler(Sender: TObject);
 begin
   if Assigned(FOnIconSelectClick) then
     FOnIconSelectClick(Sender);
 end;
 
-procedure TIconLibForm.IconViewerDblClickHandler(Sender: TObject);
+procedure TIconFinderForm.IconViewerDblClickHandler(Sender: TObject);
 begin
   if Assigned(FOnIconDblClick) then
     FOnIconDblClick(Sender);
 end;
 
-procedure TIconLibForm.IconViewerFilterHandler(Sender: TObject);
+procedure TIconFinderForm.IconViewerFilterHandler(Sender: TObject);
 begin
-  Caption := Format(RSIconLibIDE_Caption, [FViewer.FilteredCount, FViewer.TotalCount]);
+  Caption := Format(RSIconFinderIDE_Caption, [FViewer.FilteredCount, FViewer.TotalCount]);
 end;
 
-procedure TIconLibForm.LoadPictureFromIconLib(APicture: TPicture);
+procedure TIconFinderForm.LoadPictureFromIconFinder(APicture: TPicture);
 begin
   if FViewer.SelectedIcon <> nil then
     APicture.Assign(FViewer.SelectedIcon.Picture);
 end;
 
-procedure TIconLibForm.LoadPictureSizesFromIconLib(ASizes: Array of TPoint;
+procedure TIconFinderForm.LoadPictureSizesFromIconFinder(ASizes: Array of TPoint;
   APictures: Array of TPicture);
 var
   i: Integer;
   item, largestItem: TIconItem;
   w, h: Integer;
 begin
-  DebugLn([Length(ASizes), ' ', Length(APictures)]);
+  //DebugLn([Length(ASizes), ' ', Length(APictures)]);
 
   if FViewer.SelectedIcon <> nil then
   begin
@@ -144,18 +144,18 @@ begin
   end;
 end;
 
-procedure TIconLibForm.OKButtonClick(Sender: TObject);
+procedure TIconFinderForm.OKButtonClick(Sender: TObject);
 begin
   IconSelectHandler(Sender);
 end;
 
-procedure TIconLibForm.ReadSettings(ANodeName: String);
+procedure TIconFinderForm.ReadSettings(ANodeName: String);
 var
   Config: TConfigStorage;
 begin
   FSettingsNodeName := ANodeName;
   try
-    Config := GetIDEConfigStorage(ICONLIB_CONFIG_FILENAME, true);
+    Config := GetIDEConfigStorage(ICONFINDER_CONFIG_FILENAME, true);
     try
       GlobalReadSettings(Config, FViewer, ANodeName);
     finally
@@ -163,19 +163,19 @@ begin
     end;
   except
     on E: Exception do begin
-      DebugLn('TIconLibSettingsFrame.ReadSettings Loading ' +  ICONLIB_CONFIG_FILENAME + ' failed: ' + E.Message);
+      DebugLn('TIconFinderSettingsFrame.ReadSettings Loading ' +  ICONFINDER_CONFIG_FILENAME + ' failed: ' + E.Message);
     end;
   end;
   if FViewer.IconViewer.IconFolders.Count = 0 then
     AddDefaultIconFolder;
 end;
 
-procedure TIconLibForm.WriteSettings;
+procedure TIconFinderForm.WriteSettings;
 var
   Config: TConfigStorage;
 begin
   try
-    Config := GetIDEConfigStorage(ICONLIB_CONFIG_FILENAME, true); //, false);
+    Config := GetIDEConfigStorage(ICONFINDER_CONFIG_FILENAME, true); //, false);
     try
       GlobalWriteSettings(Config, FViewer, FSettingsNodeName);
       Config.WriteToDisk;
@@ -184,7 +184,7 @@ begin
     end;
   except
      on E: Exception do begin
-       DebugLn('TIconLibSettingsFrame.ReadSettings Saving ' + ICONLIB_CONFIG_FILENAME + ' failed: ' + E.Message);
+       DebugLn('TIconFinderSettingsFrame.ReadSettings Saving ' + ICONFINDER_CONFIG_FILENAME + ' failed: ' + E.Message);
      end;
   end;
 end;

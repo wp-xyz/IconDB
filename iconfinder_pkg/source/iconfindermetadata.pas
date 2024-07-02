@@ -9,7 +9,7 @@
  A form for assigning keywords and styles to icons.
 }
 
-unit IconLibMetaData;
+unit IconFinderMetaData;
 
 {$mode ObjFPC}{$H+}
 

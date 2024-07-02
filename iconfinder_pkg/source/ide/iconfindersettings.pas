@@ -6,17 +6,17 @@
   for details about the license.
  **********************************************************************
 
- Settings for the Icon Lib addon to the IDE:
+ Settings for the Icon Finder addon to the IDE:
  - add/remove folders with icons to be included
  - rearrange folders
  - define keywords
  - save keywords to "metadata.xml" file in the icon folder.
 
- The settings are stored in the file "iconlib.xml" in the Lazarus user profile
- (primary config directory).
+ The settings are stored in the file "iconfindercfg.xml" in the 
+ Lazarus user profile (primary config directory).
 }
 
-unit IconLibSettings;
+unit IconFinderSettings;
 
 {$mode ObjFPC}{$H+}
 
@@ -32,16 +32,16 @@ uses
   IDEOptionsIntf, baseIDEIntf,
   // IdeIntf
   LazIDEIntf, IDEOptEditorIntf, IDEImagesIntf,
-  // Icon Lib
-  IconLibStrConstsIDE, IconLibCommon, IconThumbnails, IconViewer,
-  IconLibFolders, IconLibMetadata;
+  // Icon Finder
+  IconFinderStrConstsIDE, IconFinderCommon, IconThumbnails, IconViewer,
+  IconFinderFolders, IconFinderMetadata;
 
 
-{ TIconLibSettings
+{ TIconFinderSettings
   The Options Group ID, and, perhaps, a place in the Tree View }
 
 type
-  TIconLibSettings = class(TAbstractIDEEnvironmentOptions) // needed by options group.
+  TIconFinderSettings = class(TAbstractIDEEnvironmentOptions) // needed by options group.
   private
 
   public
@@ -53,11 +53,11 @@ type
   end;
 
 
-{ TIconLibSettingsFrame
+{ TIconFinderSettingsFrame
   This is the frame displayed when the user clicks the Tree View node }
 
 type
-  TIconLibSettingsFrame = class(TAbstractIDEOptionsEditor)
+  TIconFinderSettingsFrame = class(TAbstractIDEOptionsEditor)
     ToolBar: TToolBar;
     tbFolders: TToolButton;
     tbEditMetadata: TToolButton;
@@ -89,46 +89,46 @@ procedure GlobalReadSettings(AConfig: TConfigStorage; AViewer: TIconViewerFrame;
 procedure GlobalWriteSettings(AConfig: TConfigStorage; AViewer: TIconViewerFrame; ANodeName: String);
 
 var
-  IconLibOptionsGroup: integer;
-  IconLibOptionsFrameID: integer;
+  IconFinderOptionsGroup: integer;
+  IconFinderOptionsFrameID: integer;
 
 
 implementation
 
 {$R *.lfm}
 
-{ TIconLibSettings }
+{ TIconFinderSettings }
 
-constructor TIconLibSettings.Create(const pbReadRegFile: boolean);
+constructor TIconFinderSettings.Create(const pbReadRegFile: boolean);
 begin
   // inherited Create;
 end;
 
-destructor TIconLibSettings.Destroy;
+destructor TIconFinderSettings.Destroy;
 begin
   inherited Destroy;
 end;
 
-class function TIconLibSettings.GetGroupCaption: String;
+class function TIconFinderSettings.GetGroupCaption: String;
 begin
-  Result := RSIconLibIDE_IconLibrary;
+  Result := RSIconFinderIDE_IconLibrary;
 end;
 
-class function TIconLibSettings.GetInstance: TAbstractIDEOptions;
+class function TIconFinderSettings.GetInstance: TAbstractIDEOptions;
 begin
   //result := TAbstractIDEOptions(self);    // Nope, it does not like that !
   result := nil;
 end;
 
-procedure TIconLibSettings.DoAfterWrite(Restore: boolean);
+procedure TIconFinderSettings.DoAfterWrite(Restore: boolean);
 begin
   inherited DoAfterWrite(Restore);
 end;
 
 
-{ TIconLibSettingsFrame }
+{ TIconFinderSettingsFrame }
 
-constructor TIconLibSettingsFrame.Create(TheOwner: TComponent);
+constructor TIconFinderSettingsFrame.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
 
@@ -145,23 +145,23 @@ begin
 
   Toolbar.Images := IDEImages.Images_16;
 
-  tbFolders.Caption := RSIconLibIDE_Folders;
-  tbFolders.Hint := RSIconLibIDE_FolderHint;
+  tbFolders.Caption := RSIconFinderIDE_Folders;
+  tbFolders.Hint := RSIconFinderIDE_FolderHint;
   tbFolders.ImageIndex := IDEImages.GetImageIndex('laz_open');
-  tbEditMetadata.Caption := RSIconLibIDE_Metadata;
-  tbEditMetadata.Hint := RSIconLibIDE_MetadataHint;
+  tbEditMetadata.Caption := RSIconFinderIDE_Metadata;
+  tbEditMetadata.Hint := RSIconFinderIDE_MetadataHint;
   tbEditMetadata.ImageIndex := IDEImages.GetImageIndex('laz_edit');
-  tbSaveMetadata.Caption := RSIconLibIDE_SaveMetadata;
-  tbSaveMetadata.Hint := RSIconLibIDE_SaveMetadataHint;
+  tbSaveMetadata.Caption := RSIconFinderIDE_SaveMetadata;
+  tbSaveMetadata.Hint := RSIconFinderIDE_SaveMetadataHint;
   tbSaveMetadata.ImageIndex := IDEImages.GetImageIndex('laz_save');
 end;
 
-destructor TIconLibSettingsFrame.Destroy;
+destructor TIconFinderSettingsFrame.Destroy;
 begin
   inherited Destroy;
 end;
 
-procedure TIconLibSettingsFrame.AddDefaultFolder;
+procedure TIconFinderSettingsFrame.AddDefaultFolder;
 var
   lazDir: String;
 begin
@@ -169,7 +169,7 @@ begin
   FViewer.AddIconFolder(LazDir + DEFAULT_IMAGE_FOLDER);  // images/general_purpose/
 end;
 
-procedure TIconLibSettingsFrame.CenterForm(AForm: TCustomForm);
+procedure TIconFinderSettingsFrame.CenterForm(AForm: TCustomForm);
 var
   P: TPoint;
 begin
@@ -177,7 +177,7 @@ begin
   AForm.SetBounds(P.X, P.Y, AForm.Width, AForm.Height);
 end;
 
-procedure TIconLibSettingsFrame.EditFolders;
+procedure TIconFinderSettingsFrame.EditFolders;
 var
   F: TIconFolderForm;
   folders: TStrings;
@@ -208,7 +208,7 @@ end;
 { Opens the metadata editor for specifying the keywords and the style of the
   currently selected icon. The data are copied to all icons sharing the same
   name base. }
-procedure TIconlibSettingsFrame.EditIconMetaData(AIcon: TIconItem);
+procedure TIconFinderSettingsFrame.EditIconMetaData(AIcon: TIconItem);
 var
   F: TIconMetadataForm;
 begin
@@ -229,22 +229,22 @@ begin
   end;
 end;
 
-function TIconLibSettingsFrame.GetTitle: String;
+function TIconFinderSettingsFrame.GetTitle: String;
 begin
-  Result := RSIconLibIDE_General;
+  Result := RSIconFinderIDE_General;
 end;
 
-procedure TIconLibSettingsFrame.IconViewerDblClick(Sender: TObject);
+procedure TIconFinderSettingsFrame.IconViewerDblClick(Sender: TObject);
 begin
   EditIconMetadata(FViewer.IconViewer.SelectedIcon);
 end;
 
-procedure TIconLibSettingsFrame.ReadSettings(AOptions: TAbstractIDEOptions);
+procedure TIconFinderSettingsFrame.ReadSettings(AOptions: TAbstractIDEOptions);
 var
   Config: TConfigStorage;
 begin
   try
-    Config := GetIDEConfigStorage(ICONLIB_CONFIG_FILENAME, true);
+    Config := GetIDEConfigStorage(ICONFINDER_CONFIG_FILENAME, true);
     try
       GlobalReadSettings(Config, FViewer, 'IDEOptions');
       if FViewer.IconViewer.IconFolders.Count = 0 then
@@ -254,50 +254,50 @@ begin
     end;
   except
     on E: Exception do begin
-      DebugLn('TIconLibSettingsFrame.ReadSettings Loading ' +  ICONLIB_CONFIG_FILENAME + ' failed: ' + E.Message);
+      DebugLn('TIconFinderSettingsFrame.ReadSettings Loading ' +  ICONFINDER_CONFIG_FILENAME + ' failed: ' + E.Message);
     end;
   end;
 end;
 
 // Maybe the initial settings before we have a config file ?  Labels and Captions.
-procedure TIconLibSettingsFrame.Setup(ADialog: TAbstractOptionsEditorDialog);
+procedure TIconFinderSettingsFrame.Setup(ADialog: TAbstractOptionsEditorDialog);
 begin
   if FViewer.IconViewer.IconFolders.Count = 0 then
     AddDefaultFolder;
 end;
 
-class function TIconLibSettingsFrame.SupportedOptionsClass: TAbstractIDEOptionsClass;
+class function TIconFinderSettingsFrame.SupportedOptionsClass: TAbstractIDEOptionsClass;
 begin
   Result := nil;
 end;
 
-procedure TIconLibSettingsFrame.tbFoldersClick(Sender: TObject);
+procedure TIconFinderSettingsFrame.tbFoldersClick(Sender: TObject);
 begin
   EditFolders;
 end;
 
-procedure TIconLibSettingsFrame.tbEditMetadataClick(Sender: TObject);
+procedure TIconFinderSettingsFrame.tbEditMetadataClick(Sender: TObject);
 begin
   EditIconMetaData(FViewer.IconViewer.SelectedIcon);
 end;
 
-procedure TIconLibSettingsFrame.tbSaveMetadataClick(Sender: TObject);
+procedure TIconFinderSettingsFrame.tbSaveMetadataClick(Sender: TObject);
 begin
   SaveMetadataFiles;
 end;
 
-procedure TIconLibSettingsFrame.SaveMetadataFiles;
+procedure TIconFinderSettingsFrame.SaveMetadataFiles;
 begin
   FViewer.IconViewer.WriteMetadataFiles;
 end;
 
 // Gets called whenever user opens Options tree.
-procedure TIconLibSettingsFrame.WriteSettings(AOptions: TAbstractIDEOptions);
+procedure TIconFinderSettingsFrame.WriteSettings(AOptions: TAbstractIDEOptions);
 var
   Config: TConfigStorage;
 begin
   try
-     Config := GetIDEConfigStorage(ICONLIB_CONFIG_FILENAME, true); //, false);
+     Config := GetIDEConfigStorage(ICONFINDER_CONFIG_FILENAME, true); //, false);
      try
        GlobalWriteSettings(Config, FViewer, 'IDEOptions');
      finally
@@ -305,12 +305,12 @@ begin
      end;
    except
      on E: Exception do begin
-       DebugLn('TIconLibSettingsFrame.ReadSettings Saving ' + ICONLIB_CONFIG_FILENAME + ' failed: ' + E.Message);
+       DebugLn('TIconFinderSettingsFrame.ReadSettings Saving ' + ICONFINDER_CONFIG_FILENAME + ' failed: ' + E.Message);
      end;
    end;
 end;
 
-procedure TIconLibSettingsFrame.RestoreSettings(AOptions: TAbstractIDEOptions);
+procedure TIconFinderSettingsFrame.RestoreSettings(AOptions: TAbstractIDEOptions);
 begin
   inherited RestoreSettings(AOptions);
 end;
@@ -327,11 +327,11 @@ var
   list: TStrings;
 begin
   // Icon folder list
-  n := AConfig.GetValue('IconLib/Folders/Count', 0);
+  n := AConfig.GetValue('IconFinder/Folders/Count', 0);
   for i := 0 to n-1 do
   begin
-    folder := AConfig.GetValue(Format('IconLib/Folders/Item%d/Value', [i]), '');
-    isHidden := AConfig.GetValue(Format('IconLib/Folders/Item%d/Hidden', [i]), false);
+    folder := AConfig.GetValue(Format('IconFinder/Folders/Item%d/Value', [i]), '');
+    isHidden := AConfig.GetValue(Format('IconFinder/Folders/Item%d/Hidden', [i]), false);
     if (folder <> '') and DirectoryExists(folder) then
       AViewer.AddIconFolder(folder, isHidden);
   end;
@@ -339,10 +339,10 @@ begin
   // Keyword filter history list
   list := TStringList.Create;
   try
-    n := AConfig.GetValue('IconLib/FilterHistory/Count', 0);
+    n := AConfig.GetValue('IconFinder/FilterHistory/Count', 0);
     for i := 0 to n-1 do
     begin
-      s := AConfig.GetValue(Format('IconLib/FilterHistory/Item%d/Value', [i]), '');
+      s := AConfig.GetValue(Format('IconFinder/FilterHistory/Item%d/Value', [i]), '');
       if s <> '' then list.Add(s);
     end;
     AViewer.SetKeywordsHistory(list);
@@ -355,8 +355,8 @@ begin
   if (ANodeName <> '') and (ANodeName[1] = '/') then Delete(ANodeName, 1, 1);
   if ANodeName <> '' then
   begin
-    AViewer.SizeFilter := AConfig.GetValue(Format('IconLib/%s/SizeFilter/Value', [ANodeName]), '');
-    AViewer.StyleFilter := AConfig.GetValue(Format('IconLib/%s/StyleFilter/Value', [ANodeName]), '');
+    AViewer.SizeFilter := AConfig.GetValue(Format('IconFinder/%s/SizeFilter/Value', [ANodeName]), '');
+    AViewer.StyleFilter := AConfig.GetValue(Format('IconFinder/%s/StyleFilter/Value', [ANodeName]), '');
   end;
 end;
 
@@ -371,20 +371,20 @@ begin
   try
     // Icon folder list
     AViewer.IconViewer.WriteIconFolders(list);
-    AConfig.SetValue('IconLib/Folders/Count', list.Count);
+    AConfig.SetValue('IconFinder/Folders/Count', list.Count);
     for i := 0 to list.Count-1 do
     begin
-      AConfig.SetValue(Format('IconLib/Folders/Item%d/Value', [i]), list[i]);
+      AConfig.SetValue(Format('IconFinder/Folders/Item%d/Value', [i]), list[i]);
       if list.Objects[i] <> nil then
-        AConfig.SetValue(Format('IconLib/Folders/Item%d/Hidden', [i]), true);
+        AConfig.SetValue(Format('IconFinder/Folders/Item%d/Hidden', [i]), true);
     end;
 
     // Keyword filter history list
     list.Clear;
     AViewer.GetKeywordsHistory(list);
-    AConfig.SetValue('IconLib/FilterHistory/Count', list.Count);
+    AConfig.SetValue('IconFinder/FilterHistory/Count', list.Count);
     for i := 0 to list.Count-1 do
-      AConfig.SetValue(Format('IconLib/FilterHistory/Item%d/Value', [i]), list[i]);
+      AConfig.SetValue(Format('IconFinder/FilterHistory/Item%d/Value', [i]), list[i]);
   finally
     list.Free;
   end;
@@ -396,16 +396,16 @@ begin
   begin
     s := AViewer.SizeFilter;
     if s <> '' then
-      AConfig.SetValue(Format('IconLib/%s/SizeFilter/Value', [ANodeName]), s);
+      AConfig.SetValue(Format('IconFinder/%s/SizeFilter/Value', [ANodeName]), s);
     s := AViewer.StyleFilter;
     if s <> '' then
-      AConfig.SetValue(Format('IconLib/%s/StyleFilter/Value', [ANodeName]), s);
+      AConfig.SetValue(Format('IconFinder/%s/StyleFilter/Value', [ANodeName]), s);
   end;
 end;
 
 
 initialization
-  IconLibOptionsGroup := GetFreeIDEOptionsGroupIndex(GroupEditor);
-  RegisterIDEOptionsGroup(IconLibOptionsGroup, TIconLibSettings, False);
+  IconFinderOptionsGroup := GetFreeIDEOptionsGroupIndex(GroupEditor);
+  RegisterIDEOptionsGroup(IconFinderOptionsGroup, TIconFinderSettings, False);
 
 end.

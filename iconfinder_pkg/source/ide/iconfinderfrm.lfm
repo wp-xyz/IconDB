@@ -1,9 +1,9 @@
-object IconLibForm: TIconLibForm
+object IconFinderForm: TIconFinderForm
   Left = 383
   Height = 600
   Top = 186
   Width = 800
-  Caption = 'Icon Library'
+  Caption = 'Icon Finder'
   ClientHeight = 600
   ClientWidth = 800
   LCLVersion = '3.99.0.0'

@@ -28,13 +28,13 @@ uses
   // LazUtils
   LazFileUtils, LazLoggerBase, LazConfigStorage,
   // LCL
-  Forms, Controls, Graphics, Dialogs, ImgList, StdCtrls,
+  Forms, Controls, Graphics, Dialogs, ImgList, StdCtrls, ComCtrls, Menus, ActnList,
   // BuildIntf
   IDEOptionsIntf,
   // IDEIntf
   PropEdits, ComponentEditors, ImageListEditor, BaseIDEIntf, ObjInspStrConsts, IDEImagesIntf,
   // Thumbnails
-  IconLibStrConstsIDE, IconLibCommon, IconThumbnails, IconViewer, IconLibFrm;
+  IconFinderStrConstsIDE, IconFinderCommon, IconThumbnails, IconViewer, IconFinderFrm;
 
 type
 
@@ -43,16 +43,20 @@ type
   TImageListEditorDlgEx = class(TImageListEditorDlg)
     BtnReplaceFromIconLib: TButton;
     BtnAddFromIconLib: TButton;
-    procedure BtnAddFromIconLibClick(Sender: TObject);
-    procedure BtnReplaceFromIconLibClick(Sender: TObject);
+//    procedure BtnAddFromIconLibClick(Sender: TObject);
+//    procedure BtnReplaceFromIconLibClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
-    FIconLibForm: TIconLibForm;
+    FIconFinderForm: TIconFinderForm;
     FReplace: Boolean;
-    procedure AddReplaceFromIconLib(AReplace: Boolean);
-    procedure IconLibDblClick(Sender: TObject);
+    procedure AddImgFromIconFinder(Sender: TObject);
+    procedure AddReplaceFromIconFinder(AReplace: Boolean);
+    procedure IconFinderDblClick(Sender: TObject);
+    procedure ReplaceImgByIconFinder(Sender: TObject);
+  protected
+    procedure UpdateCmds; override;
   public
-    function ShowIconLib: Boolean;
+    function ShowIconFinder: Boolean;
   end;
 
 
@@ -92,7 +96,13 @@ end;
 
 { TImageListEditorDlgEx }
 
-procedure TImageListEditorDlgEx.AddReplaceFromIconLib(AReplace: Boolean);
+procedure TImageListEditorDlgEx.AddImgFromIconFinder(Sender: TObject);
+begin
+  if ShowIconFinder then
+    AddReplaceFromIconFinder(false);
+end;
+
+procedure TImageListEditorDlgEx.AddReplaceFromIconFinder(AReplace: Boolean);
 var
   res: TCustomImageListResolution;
   sizes: array of TPoint = nil;
@@ -119,8 +129,8 @@ begin
     for i := 0 to High(pictures) do
       pictures[i] := TPicture.Create;
 
-    // Get pictures form icon lib
-    FIconLibForm.LoadPictureSizesFromIconLib(sizes, pictures);
+    // Get pictures form icon finder
+    FIconFinderForm.LoadPictureSizesFromIconFinder(sizes, pictures);
 
     // First, add the largest image to the imagelist
     if AReplace then
@@ -139,57 +149,93 @@ begin
   ImageListbox.Invalidate;
   UpdatePreviewImage;
 end;
-
-procedure TImageListEditorDlgEx.BtnAddFromIconLibClick(Sender: TObject);
+                                            (*
+procedure TImageListEditorDlgEx.BtnAddFromIconFinderClick(Sender: TObject);
 begin
-  if ShowIconLib then
-    AddReplaceFromIconLib(false);
+  if ShowIconFinder then
+    AddReplaceFromIconFinder(false);
 end;
 
-procedure TImageListEditorDlgEx.BtnReplaceFromIconLibClick(Sender: TObject);
+procedure TImageListEditorDlgEx.BtnReplaceFromIconFinderClick(Sender: TObject);
 begin
-  if ShowIconLib then
-    AddReplaceFromIconLib(true);
+  if ShowIconFinder then
+    AddReplaceFromIconFinder(true);
 end;
-
+                                                  *)
 procedure TImageListEditorDlgEx.FormCreate(Sender: TObject);
+var
+  acAdd: TAction;
+  acReplace: TAction;
+  mAdd: TMenuItem;
+  mReplace: TMenuItem;
 begin
   inherited;
-  BtnAddFromIconLib.Caption := RSImgListEditor_AddFromIconLib;
-  BtnReplaceFromIconLib.Caption := RSImgListEditor_ReplaceFromIconLib;
+
+  acAdd := TAction.Create(ActionList);
+  acAdd.Caption := RSImgListEditor_AddFromIconFinder;
+  acAdd.OnExecute := @AddImgfromIconFinder;
+
+  acReplace := TAction.Create(ActionList);
+  acReplace.Caption := RSImgListEditor_ReplaceFromIconFinder;
+  acReplace.OnExecute := @ReplaceImgByIconFinder;
+
+  mAdd := TMenuItem.Create(AddPopupMenu);
+  mAdd.Action := acAdd;
+  AddPopupMenu.Items.Insert(3, mAdd);
+
+  mReplace := TMenuItem.Create(ReplacePopupMenu);
+  mReplace.Action := acReplace;
+  ReplacePopupMenu.Items.Add(mReplace);
+
+  {
+  BtnAddFromIconFinder.Caption := RSImgListEditor_AddFromIconFinder;
+  BtnReplaceFromIconFinder.Caption := RSImgListEditor_ReplaceFromIconFinder;
+  }
 end;
 
-procedure TImageListEditorDlgEx.IconLibDblClick(Sender: TObject);
+procedure TImageListEditorDlgEx.IconFinderDblClick(Sender: TObject);
 begin
-  FIconLibForm.ModalResult := mrOK;
+  FIconFinderForm.ModalResult := mrOK;
 end;
 
-function TImageListEditorDlgEx.ShowIconLib: Boolean;
+function TImageListEditorDlgEx.ShowIconFinder: Boolean;
 var
   L, T: Integer;
   R: TRect;
 begin
-  if FIconLibForm = nil then
+  if FIconFinderForm = nil then
   begin
-    FIconLibForm := TIconLibForm.Create(self);
-    FIconLibForm.OnIconDblClick := @IconLibDblClick;
+    FIconFinderForm := TIconFinderForm.Create(self);
+    FIconFinderForm.OnIconDblClick := @IconFinderDblClick;
   end;
 
   R := Screen.DesktopRect;
   L := Left + Width;
-  if L + FIconLibForm.Width > R.Right then
+  if L + FIconFinderForm.Width > R.Right then
   begin
-    L := Left - FIconLibForm.Width;
+    L := Left - FIconFinderForm.Width;
     if L < R.Left then
-      L := Left + (Width - FIconLibForm.Width) div 2;
+      L := Left + (Width - FIconFinderForm.Width) div 2;
   end;
   T := Top;
-  FIconLibForm.Left := L;
-  FIconLibForm.Top := T;
+  FIconFinderForm.Left := L;
+  FIconFinderForm.Top := T;
 
-  FIconLibForm.ReadSettings('ImageListComponentEditor');
+  FIconFinderForm.ReadSettings('ImageListComponentEditor');
 
-  Result := FIconLibForm.ShowModal = mrOK;
+  Result := FIconFinderForm.ShowModal = mrOK;
+end;
+
+procedure TImageListEditorDlgEx.ReplaceImgByIconFinder(Sender: TObject);
+begin
+  if ShowIconFinder then
+    AddReplaceFromIconFinder(true);
+end;
+
+procedure TImageListEditorDlgEx.UpdateCmds;
+begin
+  inherited;
+  tbReplace.Enabled := true;
 end;
 
 

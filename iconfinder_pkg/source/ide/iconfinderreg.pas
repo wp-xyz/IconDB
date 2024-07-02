@@ -12,7 +12,7 @@
  - a settings page in the Options form of the IDE for setting up IconLib.
 }
 
-unit IconLibReg;
+unit IconFinderReg;
 {$mode objfpc}{$H+}
 
 interface
@@ -31,7 +31,7 @@ procedure Register;
 implementation
 
 uses
-  IconLibSettings;
+  IconFinderSettings;
 
 procedure Register;
 begin
@@ -45,7 +45,7 @@ begin
   RegisterComponentEditor(TImageList, TImageListComponentEditorEx);
 
   // Register options page in IDE
-  IconLibOptionsFrameID := RegisterIDEOptionsEditor(IconLibOptionsGroup, TIconLibSettingsFrame, 9999)^.Index;  // AIndex = what ???
+  IconFinderOptionsFrameID := RegisterIDEOptionsEditor(IconFinderOptionsGroup, TIconFinderSettingsFrame, 9999)^.Index;  // AIndex = what ???
 end;
 
 

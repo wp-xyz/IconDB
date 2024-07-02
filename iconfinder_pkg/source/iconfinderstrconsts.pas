@@ -1,4 +1,4 @@
-unit IconLibStrConsts;
+unit IconFinderStrConsts;
 
 {$mode objfpc}{$H+}
 

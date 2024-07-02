@@ -6,7 +6,6 @@ msgid "Add..."
 msgstr ""
 
 #: iconlibstrconsts.rsfolders_confirmdeletefoldermsg
-msgctxt "iconlibstrconsts.rsfolders_confirmdeletefoldermsg"
 msgid "Do you really want to remove this folder from the icon library?"
 msgstr ""
 
@@ -139,37 +138,30 @@ msgid "(any style)"
 msgstr ""
 
 #: iconlibstrconsts.rsmetadata_caption
-msgctxt "iconlibstrconsts.rsmetadata_caption"
 msgid "Edit Icon Metadata"
 msgstr ""
 
 #: iconlibstrconsts.rsmetadata_classicstyle
-msgctxt "iconlibstrconsts.rsmetadata_classicstyle"
 msgid "Classic"
 msgstr ""
 
 #: iconlibstrconsts.rsmetadata_flatstyle
-msgctxt "iconlibstrconsts.rsmetadata_flatstyle"
 msgid "Flat"
 msgstr ""
 
 #: iconlibstrconsts.rsmetadata_keywords
-msgctxt "iconlibstrconsts.rsmetadata_keywords"
 msgid "Keywords (one keyword per line)"
 msgstr ""
 
 #: iconlibstrconsts.rsmetadata_outline2style
-msgctxt "iconlibstrconsts.rsmetadata_outline2style"
 msgid "Outline 2-color"
 msgstr ""
 
 #: iconlibstrconsts.rsmetadata_outlinestyle
-msgctxt "iconlibstrconsts.rsmetadata_outlinestyle"
 msgid "Outline"
 msgstr ""
 
 #: iconlibstrconsts.rsmetadata_style
-msgctxt "iconlibstrconsts.rsmetadata_style"
 msgid "Style"
 msgstr ""
 

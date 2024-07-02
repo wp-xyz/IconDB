@@ -10,7 +10,7 @@
  icon library.
 }
 
-unit IconLibFolders;
+unit IconFinderFolders;
 
 {$mode ObjFPC}{$H+}
 

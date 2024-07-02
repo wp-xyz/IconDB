@@ -22,7 +22,7 @@ inherited GraphicPropertyEditorFormEx: TGraphicPropertyEditorFormEx
       Left = 415
       Height = 353
       ClientHeight = 353
-      object IconLibButton: TButton[5]
+      object IconFinderButton: TButton[5]
         AnchorSideLeft.Control = LoadButton
         AnchorSideTop.Control = PasteButton
         AnchorSideTop.Side = asrBottom
@@ -34,9 +34,9 @@ inherited GraphicPropertyEditorFormEx: TGraphicPropertyEditorFormEx
         Width = 74
         Anchors = [akTop, akLeft, akRight]
         BorderSpacing.Top = 6
-        Caption = 'Icon Lib >'
+        Caption = 'Icon Finder >'
         TabOrder = 5
-        OnClick = IconLibButtonClick
+        OnClick = IconFinderButtonClick
       end
     end
   end

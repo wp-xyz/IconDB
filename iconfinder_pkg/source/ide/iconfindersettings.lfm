@@ -1,4 +1,4 @@
-object IconLibSettingsFrame: TIconLibSettingsFrame
+object IconFinderSettingsFrame: TIconFinderSettingsFrame
   Left = 0
   Height = 230
   Top = 0
