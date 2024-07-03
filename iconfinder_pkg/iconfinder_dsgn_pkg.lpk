@@ -18,6 +18,7 @@
     </CompilerOptions>
     <Description Value="Tool for finding toolbar icons in the Lazarus images folder (design-time package)"/>
     <License Value="LGPL with linking exception"/>
+    <Version Minor="1"/>
     <Files>
       <Item>
         <Filename Value="source\ide\imagelisteditorex.pp"/>
@@ -50,7 +51,7 @@
       </Item>
       <Item>
         <Filename Value="source\ide\iconfinderstrconstside.pas"/>
-        <UnitName Value="IconFinderStrConstsDIDE"/>
+        <UnitName Value="iconfinderstrconstside"/>
       </Item>
     </Files>
     <i18n>

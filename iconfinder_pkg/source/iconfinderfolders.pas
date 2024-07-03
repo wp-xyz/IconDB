@@ -1,13 +1,13 @@
 {
  *****************************************************************************
-  This file is part of a Lazarus Package, IconLib.
+  This file is part of a Lazarus Package, IconFinder.
 
   See the file COPYING.modifiedLGPL.txt, included in the Lazarus distribution,
   for details about the license.
  *****************************************************************************
 
  A form for management of the folders from which icons are included in the
- icon library.
+ icon finder library.
 }
 
 unit IconFinderFolders;
@@ -19,7 +19,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ButtonPanel, StdCtrls,
   CheckLst, ExtCtrls,
-  IconLibStrConsts;
+  IconFinderStrConsts;
 
 type
 
@@ -165,8 +165,8 @@ end;
 
 procedure TIconFolderForm.UpdateLanguage;
 begin
-  Caption := RSFolders_IconLibFolders;
-  FolderPanel.Caption := RSFolders_IconLibFolders;
+  Caption := RSFolders_IconFinderFolders;
+  FolderPanel.Caption := RSFolders_IconFinderFolders;
   btnAddFolder.Caption := RSFolders_Add;
   btnDeleteFolder.Caption := RSFolders_Delete;
   btnMoveFolderUp.Caption := RSFolders_MoveUp;

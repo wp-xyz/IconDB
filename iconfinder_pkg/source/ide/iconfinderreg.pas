@@ -1,6 +1,6 @@
 {
  *****************************************************************************
-  This file is part of a Lazarus Package, IconLib.
+  This file is part of a Lazarus Package, IconFinder.
 
   See the file COPYING.modifiedLGPL.txt, included in the Lazarus distribution,
   for details about the license.
@@ -9,7 +9,7 @@
  Unit for registration of
  - new property editors for TGraphic, TImage, TSpeedButton.Glyph, TBitBtn.Glyph
  - new component editor for TImageList
- - a settings page in the Options form of the IDE for setting up IconLib.
+ - a settings page in the Options form of the IDE for setting up IconFinder.
 }
 
 unit IconFinderReg;
@@ -23,7 +23,7 @@ uses
   Controls, Graphics, Buttons,
   // IDEIntf
   PropEdits, ComponentEditors, IDEOptEditorIntf,
-  // IconLib
+  // IconFinder
   ImageListEditorEx, GraphPropEditsEx;
 
 procedure Register;

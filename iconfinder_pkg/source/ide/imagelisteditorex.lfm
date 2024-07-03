@@ -36,36 +36,6 @@ inherited ImageListEditorDlgEx: TImageListEditorDlgEx
     inherited ImageListBox: TListBox
       Height = 351
     end
-    object BtnReplaceFromIconLib: TButton[1]
-      AnchorSideLeft.Control = ImageListBox
-      AnchorSideLeft.Side = asrBottom
-      AnchorSideTop.Side = asrBottom
-      AnchorSideRight.Side = asrBottom
-      Left = 198
-      Height = 25
-      Top = 180
-      Width = 152
-      Anchors = [akTop, akLeft, akRight]
-      BorderSpacing.Left = 6
-      BorderSpacing.Top = 4
-      Caption = 'Replace from Icon Lib >'
-      TabOrder = 1
-    end
-    object BtnAddFromIconLib: TButton[2]
-      AnchorSideLeft.Control = ImageListBox
-      AnchorSideLeft.Side = asrBottom
-      AnchorSideTop.Side = asrBottom
-      AnchorSideRight.Side = asrBottom
-      Left = 198
-      Height = 25
-      Top = 64
-      Width = 149
-      Anchors = [akTop, akLeft, akRight]
-      BorderSpacing.Left = 6
-      BorderSpacing.Top = 4
-      Caption = 'Add from Icon Lib >'
-      TabOrder = 2
-    end
   end
   inherited BtnPanel: TButtonPanel
     Top = 435

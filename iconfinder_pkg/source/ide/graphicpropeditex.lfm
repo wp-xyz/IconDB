@@ -14,27 +14,60 @@ inherited GraphicPropertyEditorFormEx: TGraphicPropertyEditorFormEx
     ClientWidth = 501
     inherited ScrollBox: TScrollBox
       Height = 341
-      Width = 403
+      Width = 396
       ClientHeight = 337
-      ClientWidth = 399
+      ClientWidth = 392
     end
     inherited LoadSaveBtnPanel: TPanel
-      Left = 415
+      Left = 408
       Height = 353
+      Width = 93
       ClientHeight = 353
+      ClientWidth = 93
+      inherited LoadButton: TButton
+        Width = 81
+      end
+      inherited SaveButton: TButton
+        AnchorSideLeft.Control = nil
+        AnchorSideTop.Control = nil
+        AnchorSideRight.Control = nil
+        Width = 81
+      end
+      inherited ClearButton: TButton
+        AnchorSideLeft.Control = nil
+        AnchorSideTop.Control = nil
+        AnchorSideRight.Control = nil
+        Width = 81
+      end
+      inherited CopyButton: TButton
+        AnchorSideLeft.Control = nil
+        AnchorSideTop.Control = nil
+        AnchorSideTop.Side = asrTop
+        AnchorSideRight.Control = nil
+        AnchorSideRight.Side = asrTop
+        Width = 81
+        Align = alTop
+        BorderSpacing.Around = 6
+      end
+      inherited PasteButton: TButton
+        AnchorSideLeft.Control = nil
+        AnchorSideTop.Control = nil
+        AnchorSideTop.Side = asrTop
+        AnchorSideRight.Control = nil
+        AnchorSideRight.Side = asrTop
+        Width = 81
+        Align = alTop
+        BorderSpacing.Around = 6
+      end
       object IconFinderButton: TButton[5]
-        AnchorSideLeft.Control = LoadButton
-        AnchorSideTop.Control = PasteButton
-        AnchorSideTop.Side = asrBottom
-        AnchorSideRight.Control = LoadButton
-        AnchorSideRight.Side = asrBottom
         Left = 6
         Height = 25
         Top = 161
-        Width = 74
-        Anchors = [akTop, akLeft, akRight]
-        BorderSpacing.Top = 6
-        Caption = 'Icon Finder >'
+        Width = 81
+        Align = alTop
+        AutoSize = True
+        BorderSpacing.Around = 6
+        Caption = 'Icon Finder'
         TabOrder = 5
         OnClick = IconFinderButtonClick
       end

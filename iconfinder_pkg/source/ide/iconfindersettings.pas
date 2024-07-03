@@ -1,6 +1,6 @@
 {
  **********************************************************************
-  This file is part of a Lazarus Package, IconLib.
+  This file is part of a Lazarus Package, IconFinder.
 
   See the file COPYING.modifiedLGPL.txt, included in this distribution,
   for details about the license.

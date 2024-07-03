@@ -2,7 +2,7 @@ msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8"
 
 #: iconfinderstrconstside.rsgraphpropeditor_iconfinder
-msgid "IconFinder >"
+msgid "Icon Finder ..."
 msgstr ""
 
 #: iconfinderstrconstside.rsiconfinderide_caption
@@ -47,10 +47,10 @@ msgid "Select"
 msgstr ""
 
 #: iconfinderstrconstside.rsimglisteditor_addfromiconfinder
-msgid "Add from Icon Finder >"
+msgid "Add from Icon Finder ..."
 msgstr ""
 
 #: iconfinderstrconstside.rsimglisteditor_replacefromiconfinder
-msgid "Replace by Icon Finder >"
+msgid "Replace by Icon Finder ..."
 msgstr ""
 

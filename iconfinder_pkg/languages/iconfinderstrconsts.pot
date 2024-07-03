@@ -14,8 +14,8 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: iconfinderstrconsts.rsfolders_iconlibfolders
-msgctxt "iconfinderstrconsts.rsfolders_iconlibfolders"
+#: iconfinderstrconsts.rsfolders_iconfinderfolders
+msgctxt "iconfinderstrconsts.rsfolders_iconfinderfolders"
 msgid "Icon Folders"
 msgstr ""
 

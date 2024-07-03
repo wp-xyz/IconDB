@@ -1,6 +1,6 @@
 {
  *****************************************************************************
-  This file is part of a Lazarus Package, IconLib.
+  This file is part of a Lazarus Package, IconFinder.
 
   See the file COPYING.modifiedLGPL.txt, included in the Lazarus distribution,
   for details about the license.
@@ -21,8 +21,8 @@ uses
   LazFileUtils, LazLoggerBase,
   // LCL
   Forms, Controls, Graphics, StdCtrls, ExtCtrls, FileCtrl, Buttons, Dialogs, ImgList,
-  // Icon lib
-  IconLibStrConsts, IconThumbnails, IconKeywordFilterEditor;
+  // Icon Finder
+  IconFinderStrConsts, IconThumbnails, IconKeywordFilterEditor;
 
 type
 

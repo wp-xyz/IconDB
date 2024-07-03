@@ -8,6 +8,7 @@ uses
   Classes, SysUtils;
 
 resourcestring
+
   // IconFinderFrm
   RSIconFinderIDE_Caption = 'Icon Finder (%d out of %d icons)';
   RSIconFinderIDE_Select = 'Select';
@@ -23,11 +24,11 @@ resourcestring
   RSIconFinderIDE_General = 'General';
 
   // ImageListEditorEx
-  RSImgListEditor_AddFromIconFinder = 'Add from Icon Finder >';
-  RSImgListEditor_ReplaceFromIconFinder = 'Replace by Icon Finder >';
+  RSImgListEditor_AddFromIconFinder = 'Add from Icon Finder ...';
+  RSImgListEditor_ReplaceFromIconFinder = 'Replace by Icon Finder ...';
 
   // GraphicPropEditEx
-  RSGraphPropEditor_IconFinder = 'IconFinder >';
+  RSGraphPropEditor_IconFinder = 'Icon Finder ...';
 
 implementation
 

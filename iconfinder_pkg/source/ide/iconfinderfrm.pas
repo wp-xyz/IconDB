@@ -1,6 +1,6 @@
 {
  *****************************************************************************
-  This file is part of a Lazarus Package, IconLib.
+  This file is part of a Lazarus Package, IconFinder.
 
   See the file COPYING.modifiedLGPL.txt, included in the Lazarus distribution,
   for details about the license.
@@ -25,7 +25,7 @@ uses
   BaseIDEIntf, IDEImagesIntf,
   // BuildIntf
   IDEOptionsIntf,
-  // Icon lib
+  // Icon Finder
   IconFinderStrConstsIDE, IconFinderCommon, IconThumbnails, IconViewer, IconFinderSettings;
 
 type

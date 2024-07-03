@@ -18,6 +18,7 @@
     </CompilerOptions>
     <Description Value="Tool for finding toolbar icons in the Lazarus images folder (run-time package)"/>
     <License Value="LGPL with linking exception"/>
+    <Version Minor="1"/>
     <Files>
       <Item>
         <Filename Value="source\basicthumbnails.pas"/>

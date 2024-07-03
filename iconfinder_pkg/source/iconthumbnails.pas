@@ -1,6 +1,6 @@
 {
  *****************************************************************************
-  This file is part of a Lazarus Package, IconLib.
+  This file is part of a Lazarus Package, IconFinder.
 
   See the file COPYING.modifiedLGPL.txt, included in the Lazarus distribution,
   for details about the license.
@@ -14,19 +14,13 @@ unit IconThumbNails;
 {$mode ObjFPC}{$H+}
 {$define OVERLAY_ICONS}
 
-// Select one of these:
-{.$define METADATA_TXT}
-{$define METADATA_XML}
-
 interface
 
 uses
-  Classes, SysUtils, fgl, FPImage, StrUtils,
-  {$ifdef METADATA_XML}
+  Classes, SysUtils, fgl, FPImage, StrUtils, LazLoggerBase,
   laz2_dom, laz2_xmlread, laz2_xmlwrite,
-  {$endif}
   FileUtil, LazFileUtils, Graphics, Controls, Dialogs, Menus, Forms,
-  IconLibStrConsts, BasicThumbnails;
+  IconFinderStrConsts, BasicThumbnails;
 
 type
   TIconItem = class;
@@ -201,12 +195,7 @@ implementation
 
 const
   ICON_MARGIN = 8;  // or, more precisely: double of margin
-  {$ifdef METADATA_TXT}
-  METADATA_FILENAME = 'metadata.txt';
-  {$endif}
-  {$ifdef METADATA_XML}
   METADATA_FILENAME = 'metadata.xml';
-  {$endif}
   ICONSTYLE_NAMES: Array[TIconStyle] of String = (
     '(any style)', 'classic', 'flat', 'outline', 'outline 2-color'
   );
@@ -1157,53 +1146,6 @@ begin
 end;
 
 procedure TIconViewer.ReadMetadataFile(AFileName: String; AHidden: Boolean);
-{$ifdef METADATA_TXT}
-{ Reads the given metadata file which contains a list of all icons and their
-  metadata to be included by the viewer.
-  When AHidden is true the icons, however, are marked as being hidden and are
-  not displayed.
-
-  metadata.txt is a text file in which the lines have the following structure:
-    filename|width|height|style|keyword1;keyword2;...
-    Allowed styles: classic, flat, outline, outline 2-color }
-var
-  lines: TStrings;
-  i: Integer;
-  s: String;
-  parts: TStringArray;
-  style: TIconStyle;
-  w, h: Integer;
-  folder: String;
-  fn: String;
-begin
-  folder := ExtractFilePath(AFileName);
-  lines := TStringList.Create;
-  try
-    lines.LoadFromFile(AFileName);
-    for i := 0 to lines.Count-1 do
-    begin
-      s := lines[i];
-      if (s = '') or (s[1] = '#') then Continue;
-      parts := s.Split('|');
-      if Length(parts) = 5 then
-      begin
-        fn := folder + parts[0];
-        if FileExists(fn) then
-        begin
-          w := StrToInt(parts[1]);
-          h := StrToInt(parts[2]);
-          style := StrToIconStyle(parts[3]);
-          AddIcon(fn, parts[4], style, w, h).Hidden := AHidden;
-        end;
-      end;
-    end;
-  finally
-    lines.Free;
-  end;
-end;
-{$endif}
-
-{$ifdef METADATA_XML}
 var
   doc: TXMLDocument = nil;
   root: TDOMNode;
@@ -1224,6 +1166,9 @@ begin
   try
     files.Sorted := true;
     FindAllFiles(files, folder, IMAGES_MASK, false);
+
+    DebugLn('[ReadMetadataFile] files.Count=' + IntToStr(files.Count));
+
     ReadXMLFile(doc, AFileName);
     iconsNode := doc.DocumentElement.FindNode('icons');
     iconNode := iconsNode.FindNode('icon');
@@ -1299,7 +1244,6 @@ begin
     files.Free;
   end;
 end;
-{$endif}
 
 procedure TIconViewer.SetFilterByIconKeywords(AValue: String);
 begin
@@ -1485,53 +1429,6 @@ begin
 end;
 
 procedure TIconViewer.WriteMetadataFiles;
-{$ifdef METADATA_TXT}
-var
-  folder: String;
-  metadata: TStringList;
-  item: TIconItem;
-  i, j: Integer;
-  filename: String;
-  style: String;
-begin
-  Screen.Cursor := crHourglass;
-  try
-    for i := 0 to FIconFolders.Count-1 do
-    begin
-      if not FIconFolders[i].Dirty then
-        Continue;
-      folder := AppendPathDelim(FIconFolders[i].FileName);
-      metadata := TStringList.Create;
-      try
-        if FileExists(folder + METADATA_FILENAME) then
-          CopyFile(folder + METADATA_FILENAME, folder + METADATA_FILENAME + '.bak');
-        metadata.Add('# IconLib Metadata file, v1.0');
-        metadata.Add('# File structure: "filename|width|height|style|keyword1;keyword2;..."');
-        metadata.Add('# Allowed styles: classic, flat, outline, outline 2-color');
-        metadata.Add('#');
-        for j := 0 to FIconList.Count-1 do
-        begin
-          item := FIconList[j];
-          filename := ExtractFileName(item.FileName);
-          if ExtractFilePath(item.FileName) = folder then
-          begin
-            if item.Style = isAnyStyle then style := '' else style := item.StyleAsString;
-            metadata.Add('%s|%d|%d|%s|%s', [
-              fileName, item.Width, item.Height, style, item.KeywordsAsString]);
-          end;
-        end;
-        metadata.SaveToFile(folder + METADATA_FILENAME);
-        FIconFolders[i].Dirty := false;
-      finally
-        metadata.Free;
-      end;
-    end;
-  finally
-    Screen.Cursor := crDefault;
-  end;
-end;
-{$endif}
-{$ifdef METADATA_XML}
 var
   folder, filename: String;
   doc: TXMLDocument;
@@ -1595,7 +1492,6 @@ begin
     Screen.Cursor := crDefault;
   end;
 end;
-{$endif}
 
 end.
 

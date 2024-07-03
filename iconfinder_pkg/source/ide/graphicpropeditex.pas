@@ -25,7 +25,7 @@ type
   TGraphicPropertyEditorFormEx = class(TGraphicPropertyEditorForm)
     IconFinderButton: TButton;
     procedure FormCreate(Sender: TObject);
-    procedure IconLibButtonClick(Sender: TObject);
+    procedure IconFinderButtonClick(Sender: TObject);
   private
     FIconFinderForm: TIconFinderForm;
     procedure IconFinderDblClick(Sender: TObject);
@@ -39,7 +39,7 @@ implementation
 
 { TGraphicPropertyEditorFormEx }
 
-procedure TGraphicPropertyEditorFormEx.IconLibButtonClick(Sender: TObject);
+procedure TGraphicPropertyEditorFormEx.IconFinderButtonClick(Sender: TObject);
 begin
   if ShowIconFinder then
     FIconFinderForm.LoadPictureFromIconFinder(ImagePreview.Picture);
@@ -49,6 +49,7 @@ procedure TGraphicPropertyEditorFormEx.FormCreate(Sender: TObject);
 begin
   inherited;
   IconFinderButton.Caption := RSGraphPropEditor_IconFinder;
+  LoadSaveBtnPanel.AutoSize := true;
 end;
 
 procedure TGraphicPropertyEditorFormEx.IconFinderDblClick(Sender: TObject);

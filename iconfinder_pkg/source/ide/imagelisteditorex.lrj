@@ -1,5 +1,3 @@
 {"version":1,"strings":[
 {"hash":261960568,"name":"timagelisteditordlgex.caption","sourcebytes":[73,109,97,103,101,76,105,115,116,69,100,105,116,111,114,68,108,103,69,120],"value":"ImageListEditorDlgEx"},
-{"hash":42574030,"name":"timagelisteditordlgex.btnreplacefromiconlib.caption","sourcebytes":[82,101,112,108,97,99,101,32,102,114,111,109,32,73,99,111,110,32,76,105,98,32,62],"value":"Replace from Icon Lib >"},
-{"hash":35676590,"name":"timagelisteditordlgex.btnaddfromiconlib.caption","sourcebytes":[65,100,100,32,102,114,111,109,32,73,99,111,110,32,76,105,98,32,62],"value":"Add from Icon Lib >"}
 ]}

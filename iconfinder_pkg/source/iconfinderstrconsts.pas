@@ -27,7 +27,7 @@ resourcestring
   RSIconViewer_KeywordsLbl = 'Keywords:';
   RSIconViewer_ConfirmDeleteIconMsg = 'Do you really want to delete the selected icon from the library?';
 
-  // IconLibMetadata
+  // IconFinderMetadata
   RSMetadata_Caption = 'Edit Icon Metadata';
   RSMetadata_Keywords = 'Keywords (one keyword per line)';
   RSMetadata_Style = 'Style';
@@ -38,8 +38,8 @@ resourcestring
   RSMetadata_AnyStyle = '(any style)';
   RSMetadata_AnySize = '(any size)';
 
-  // IconLibFolders
-  RSFolders_IconLibFolders = 'Icon Folders';
+  // IconFinderFolders
+  RSFolders_IconFinderFolders = 'Icon Folders';
   RSFolders_Add = 'Add...';
   RSFolders_Delete = 'Delete';
   RSFolders_MoveUp = 'Move up';

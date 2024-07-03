@@ -1,6 +1,6 @@
 {
  *****************************************************************************
-  This file is part of a Lazarus Package, IconLib.
+  This file is part of a Lazarus Package, IconFinder.
 
   See the file COPYING.modifiedLGPL.txt, included in the Lazarus distribution,
   for details about the license.
@@ -41,20 +41,13 @@ type
   { TImageListEditorDlgEx }
 
   TImageListEditorDlgEx = class(TImageListEditorDlg)
-    BtnReplaceFromIconLib: TButton;
-    BtnAddFromIconLib: TButton;
-//    procedure BtnAddFromIconLibClick(Sender: TObject);
-//    procedure BtnReplaceFromIconLibClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
     FIconFinderForm: TIconFinderForm;
-    FReplace: Boolean;
     procedure AddImgFromIconFinder(Sender: TObject);
     procedure AddReplaceFromIconFinder(AReplace: Boolean);
     procedure IconFinderDblClick(Sender: TObject);
     procedure ReplaceImgByIconFinder(Sender: TObject);
-  protected
-    procedure UpdateCmds; override;
   public
     function ShowIconFinder: Boolean;
   end;
@@ -149,19 +142,7 @@ begin
   ImageListbox.Invalidate;
   UpdatePreviewImage;
 end;
-                                            (*
-procedure TImageListEditorDlgEx.BtnAddFromIconFinderClick(Sender: TObject);
-begin
-  if ShowIconFinder then
-    AddReplaceFromIconFinder(false);
-end;
 
-procedure TImageListEditorDlgEx.BtnReplaceFromIconFinderClick(Sender: TObject);
-begin
-  if ShowIconFinder then
-    AddReplaceFromIconFinder(true);
-end;
-                                                  *)
 procedure TImageListEditorDlgEx.FormCreate(Sender: TObject);
 var
   acAdd: TAction;
@@ -169,6 +150,8 @@ var
   mAdd: TMenuItem;
   mReplace: TMenuItem;
 begin
+  DebugLn('[TImageListEditorDlgEx.FormCreate] ENTER');
+
   inherited;
 
   acAdd := TAction.Create(ActionList);
@@ -187,10 +170,7 @@ begin
   mReplace.Action := acReplace;
   ReplacePopupMenu.Items.Add(mReplace);
 
-  {
-  BtnAddFromIconFinder.Caption := RSImgListEditor_AddFromIconFinder;
-  BtnReplaceFromIconFinder.Caption := RSImgListEditor_ReplaceFromIconFinder;
-  }
+  DebugLn('[TImageListEditorDlgEx.FormCreate] EXIT');
 end;
 
 procedure TImageListEditorDlgEx.IconFinderDblClick(Sender: TObject);
@@ -232,203 +212,6 @@ begin
     AddReplaceFromIconFinder(true);
 end;
 
-procedure TImageListEditorDlgEx.UpdateCmds;
-begin
-  inherited;
-  tbReplace.Enabled := true;
-end;
-
-
-{ TImageListEditorDlgEx }
-(*
-procedure TImageListEditorDlgEx.FormCreate(Sender: TObject);
-
-  procedure AddButton(ACaption: String; AOnClick: TNotifyEvent; ABefore, AAfter: TButton);
-  var
-    btn: TButton;
-  begin
-    btn := TButton.Create(FImageListEditor);
-    btn.Parent := FImageListEditor.GroupBoxL;
-    btn.Caption := ACaption;
-    btn.AutoSize := true;
-    btn.OnClick := AOnClick;
-
-    // Put new button between ABefore and AAfter
-    btn.BorderSpacing.Top := ABefore.BorderSpacing.Top;
-    btn.Anchors := btn.Anchors + [akRight];
-    btn.AnchorSideRight.Control := ABefore;
-    btn.AnchorSideRight.Side := asrRight;
-    btn.AnchorSideLeft.Control := ABefore;
-    btn.AnchorSideLeft.Side := asrLeft;
-    btn.AnchorSideTop.Control := ABefore;
-    btn.AnchorSideTop.Side := asrBottom;
-    AAfter.AnchorSideTop.Control := btn;
-  end;
-
-begin
-  FImageListEditor := TImageListEditorDlg.Create(self);
-  FImageListEditor.Parent := Self;
-  FImageListEditor.Align := alLeft;
-  FImageListEditor.BorderStyle := bsNone;
-  FImageListEditor.Show;
-
-  AddButton('Add from lib', @BtnLoadFromLibClick, FImageListEditor.BtnAddSliced, FImageListEditor.BtnReplace);
-  AddButton('Replace from lib', @BtnReplaceFromLibClick, FImageListEditor.BtnReplace, FImageListEditor.BtnReplaceAll);
-
-  FIconLibGroupbox := TGroupBox.Create(Self);
-  FIconLibGroupbox.Align := alClient;
-  FIconLibGroupbox.BorderSpacing.Top := 6;
-  FIconLibGroupbox.BorderSpacing.Right := 6;
-  FIconLibGroupbox.BorderSpacing.Bottom := 6;
-  FIconLibGroupbox.Caption := 'Icon Library';
-  FIconLibGroupbox.Parent := self;
-
-  FViewer := TIconViewerFrame.Create(self);
-  FViewer.Align := alClient;
-  FViewer.Parent := FIconLibGroupBox;
-  FViewer.IconViewer.FocusedColor := clWindowText;
-  FViewer.IconViewer.ThumbnailColor := clWindow;
-  FViewer.ImageList := IDEImages.Images_16;
-  FViewer.ImageIndex_ExecuteFilter := IDEImages.GetImageIndex('item_filter', 16);
-  FViewer.ImageIndex_ClearFilter := IDEImages.GetImageIndex('menu_clean', 16);
-  FViewer.OnIconDblClick := @IconViewerDblClick;
-  FViewer.OnFilter := @IconViewerFilter;
-  AddIconFolders;
-
-  Caption := sccsILEdtCaption;
-end;
-
-procedure TImageListEditorDlgEx.FormShow(Sender: TObject);
-begin
-  Constraints.MinHeight := FImageListEditor.Constraints.MinHeight;
-  if Height < Constraints.MinHeight then Height := 0;
-end;
-
-procedure TImageListEditorDlgEx.BtnLoadFromLibClick(Sender: TObject);
-begin
-  LoadFromIconLib(false);
-end;
-
-procedure TImageListEditorDlgEx.BtnReplaceFromLibClick(Sender: TObject);
-begin
-  LoadFromIconLib(true);
-end;
-
-procedure TImageListEditorDlgEx.AddDefaultIconFolder;
-var
-  LazDir: String;
-begin
-  LazDir := AppendPathDelim(IDEEnvironmentOptions.GetParsedLazarusDirectory);
-  FViewer.AddIconFolder(LazDir + 'images/general_purpose/');
-end;
-
-procedure TImageListEditorDlgEx.AddIconFolders;
-var
-  Config: TConfigStorage;
-  folder: String;
-  isHidden: Boolean;
-  n, i: Integer;
-begin
-  try
-    Config := GetIDEConfigStorage(ICONLIB_CONFIG_FILENAME, true);
-    try
-      n := Config.GetValue('IconLib/Folders/Count', 0);
-      if n = 0 then
-        AddDefaultIconFolder
-      else
-        for i := 0 to n-1 do
-        begin
-          folder := Config.GetValue('IconLib/Folders/Item' + IntToStr(i) + '/Value', '');
-          isHidden := Config.GetValue('IconLib/Folders/Item' + IntToStr(i) + '/Hidden', false);
-          if (folder <> '') and DirectoryExists(folder) then
-            FViewer.AddIconFolder(folder, isHidden);
-        end;
-    finally
-      Config.Free;
-    end;
-  except
-    on E: Exception do begin
-      DebugLn('TIconLibSettingsFrame.ReadSettings Loading ' +  ICONLIB_CONFIG_FILENAME + ' failed: ' + E.Message);
-    end;
-  end;
-end;
-
-function TImageListEditorDlgEx.GetModified: Boolean;
-begin
-  Result := FImageListEditor.Modified;
-end;
-
-procedure TImageListEditorDlgEx.IconViewerDblClick(Sender: TObject);
-begin
-  LoadFromIconLib(false);
-end;
-
-procedure TImageListEditorDlgEx.IconViewerFilter(Sender: TObject);
-begin
-  FIconLibGroupbox.Caption := Format('Icon Library (%d out of %d icons)', [FViewer.FilteredCount, FViewer.TotalCount]);
-end;
-
-function TImageListEditorDlgEx.ImageList: TImageList;
-begin
-  Result := FImageListEditor.ImageList;
-end;
-
-procedure TImageListEditorDlgEx.LoadFromIconLib(Replace: Boolean);
-var
-  i, w, h: Integer;
-  //pic: TPicture;
-  item, largestItem: TIconItem;
-  res: TCustomImageListResolution;
-begin
-  if FViewer.SelectedIcon <> nil then
-  begin
-    // Find largest icon
-    if FImageList.ResolutionCount = 0 then
-    begin
-      w := FImageList.Width;
-      h := FImageList.Height;
-    end else
-    begin
-      res := ImageList.ResolutionByIndex[ImageList.ResolutionCount-1];  // they are ordered by size
-      w := res.Width;
-      h := res.Height;
-    end;
-    largestItem := FViewer.IconViewer.FindIconSize(FViewer.SelectedIcon, w, h);
-    if largestItem = nil then                   // this should not happen...
-      largestItem := FViewer.IconViewer.FindLargestIcon(FViewer.SelectedIcon);
-
-    if Replace then
-      FImageListEditor.InternalAddImageToList(largestItem.Picture, atReplaceAllResolutions)
-    else
-      FImageListEditor.InternalAddImageToList(largestItem.Picture, atAdd);
-
-    // Iterate over all sizes registered in the imagelist.
-    for i := 0 to ImageList.ResolutionCount-1 do
-    begin
-      res := ImageList.ResolutionByIndex[i];
-      w := res.Width;
-      h := res.Height;
-      item := FViewer.IconViewer.FindIconSize(FViewer.SelectedIcon, w, h);
-      if item = nil then
-        item := largestItem;
-      FImageListEditor.InternalAddImageToList(item.Picture, atReplace);
-    end;
-    FImageListEditor.ImageListbox.Invalidate;
-    FImageListEditor.UpdatePreviewImage;
-  end;
-end;
-
-procedure TImageListEditorDlgEx.LoadFromImageList(AImageList: TImageList);
-begin
-  FImageListEditor.LoadFromImageList(AImageList);
-  FImageList := AImageList;
-end;
-
-procedure TImageListEditorDlgEx.SaveToImageList;
-begin
-  FImageListEditor.SaveToImageList;
-end;
-*)
 
 { TImageListComponentEditorEx }
 
