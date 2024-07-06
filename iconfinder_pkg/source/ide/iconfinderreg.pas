@@ -30,6 +30,8 @@ procedure Register;
 
 implementation
 
+{$R iconfinder_ide_img.res}
+
 uses
   IconFinderSettings;
 

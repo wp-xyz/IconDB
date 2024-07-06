@@ -1,1 +1,2 @@
-lazres ..\source\overlay.res ovl_H_8.png ovl_H_12.png ovl_H_16.png
+lazres ..\source\overlay.res @imagelist_ovl.txt
+lazres ..\source\ide\iconfinder_ide_img.res @imagelist_ide.txt

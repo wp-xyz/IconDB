@@ -156,10 +156,12 @@ begin
 
   acAdd := TAction.Create(ActionList);
   acAdd.Caption := RSImgListEditor_AddFromIconFinder;
+  acAdd.ImageIndex := IDEImages.GetImageIndex('add_icon_from_finder', 16);
   acAdd.OnExecute := @AddImgfromIconFinder;
 
   acReplace := TAction.Create(ActionList);
   acReplace.Caption := RSImgListEditor_ReplaceFromIconFinder;
+  acReplace.ImageIndex := IDEImages.GetImageIndex('replace_by_finder', 16);
   acReplace.OnExecute := @ReplaceImgByIconFinder;
 
   mAdd := TMenuItem.Create(AddPopupMenu);

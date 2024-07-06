@@ -27,7 +27,6 @@ msgid "Delete"
 msgstr "Entfernen"
 
 #: iconfinderstrconsts.rsfolders_iconfinderfolders
-#, fuzzy
 msgctxt "iconfinderstrconsts.rsfolders_iconfinderfolders"
 msgid "Icon Folders"
 msgstr "Icon-Ordner"
@@ -216,4 +215,3 @@ msgstr "Außenlinie"
 msgctxt "iconfinderstrconsts.rsmetadata_style"
 msgid "Style"
 msgstr "Stil"
-
