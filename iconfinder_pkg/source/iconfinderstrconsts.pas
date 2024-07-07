@@ -45,6 +45,7 @@ resourcestring
   RSFolders_MoveUp = 'Move up';
   RSFolders_MoveDown = 'Move down';
   RSFolders_ConfirmDeleteFolderMsg = 'Do you really want to remove this folder from the icon library?';
+  RSFolders_NoImages = 'Aborted. No supported images in folder "%s".';
 
   // IconKeywordFilter editor
   RSKeywordEditor_Caption = 'Keyword Filter Editor';

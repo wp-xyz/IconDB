@@ -188,13 +188,17 @@ begin
   try
     FViewer.IconViewer.WriteIconFolders(folders);
     CenterForm(F);
+//    DebugLn('[EditFolders] - 0');
     F.SetIconFolders(folders);
     if F.ShowModal = mrOK then
     begin
       Screen.BeginWaitCursor;
       try
+//        DebugLn('[EditFolders] - 1');
         F.GetIconFolders(folders);
+//        DebugLn('[EditFolders] - 2');
         FViewer.ReadIconFolders(folders);
+//        DebugLn('[EditFolders] - 3');
       finally
         Screen.EndWaitCursor;
       end;

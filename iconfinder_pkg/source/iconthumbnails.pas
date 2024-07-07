@@ -186,6 +186,9 @@ function IconStyleToStr(AStyle: TIconStyle): String;
 procedure IconStylesToStrings(AList: TStrings);
 function StrToIconStyle(AText: String): TIconStyle;
 
+const
+  IMAGES_MASK = '*.png;*.bmp';
+
 
 implementation
 
@@ -199,7 +202,6 @@ const
   ICONSTYLE_NAMES: Array[TIconStyle] of String = (
     '(any style)', 'classic', 'flat', 'outline', 'outline 2-color'
   );
-  IMAGES_MASK = '*.png;*.bmp';
 
 function IconStyleToStr(AStyle: TIconStyle): String;
 begin

@@ -27,6 +27,11 @@ msgstr ""
 msgid "Move up"
 msgstr ""
 
+#: iconfinderstrconsts.rsfolders_noimages
+#, object-pascal-format
+msgid "Aborted. No supported images in folder \"%s\"."
+msgstr ""
+
 #: iconfinderstrconsts.rsiconviewer_asksavemetadata
 msgid "Metadata have been changed. Save?"
 msgstr ""

@@ -41,6 +41,11 @@ msgctxt "iconfinderstrconsts.rsfolders_moveup"
 msgid "Move up"
 msgstr "Nach unten"
 
+#: iconfinderstrconsts.rsfolders_noimages
+#, object-pascal-format
+msgid "Aborted. No supported images in folder \"%s\"."
+msgstr "Abbruch. Keine unterstützten Bilder im Order \"%s\"."
+
 #: iconfinderstrconsts.rsiconviewer_asksavemetadata
 msgctxt "iconfinderstrconsts.rsiconviewer_asksavemetadata"
 msgid "Metadata have been changed. Save?"

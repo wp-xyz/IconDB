@@ -17,9 +17,10 @@ unit IconFinderFolders;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ButtonPanel, StdCtrls,
-  CheckLst, ExtCtrls,
-  IconFinderStrConsts;
+  Classes, SysUtils,
+  LazLoggerBase, LazFileUtils,
+  Forms, Controls, Graphics, Dialogs, ButtonPanel, StdCtrls, CheckLst, ExtCtrls,
+  IconFinderStrConsts, IconThumbnails;
 
 type
 
@@ -57,12 +58,14 @@ implementation
 procedure TIconFolderForm.btnDeleteFolderClick(Sender: TObject);
 var
   res: TModalResult;
+  idx: Integer;
 begin
-  if clbFolders.ItemIndex > -1 then
+  idx := clbFolders.ItemIndex;
+  if idx > -1 then
   begin
     res := MessageDlg(RSFolders_ConfirmDeleteFolderMsg, mtConfirmation, [mbYes, mbNo], 0);
     if res = mrYes then
-      clbFolders.Items.Delete(clbFolders.ItemIndex);
+      clbFolders.Items.Delete(idx);
   end;
 end;
 
@@ -91,11 +94,37 @@ begin
 end;
 
 procedure TIconFolderForm.btnAddFolderClick(Sender: TObject);
+
+  function DirContainsFileMask(ADirectory, AMask: String): Boolean;
+  var
+    info: TSearchRec;
+    masks: TStringArray;
+    i: Integer;
+  begin
+    masks := AMask.Split(';');
+    for i := 0 to High(masks) do
+    begin
+      if FindFirst(ADirectory + masks[i], faAnyFile, info) = 0 then
+      begin
+        Result := true;
+        exit;
+      end;
+    end;
+    Result := false;
+  end;
+
 var
   idx: Integer;
+  folder: String;
 begin
   if SelectDirectoryDialog.Execute then
   begin
+    folder := AppendPathDelim(SelectDirectoryDialog.FileName);
+    if not DirContainsFileMask(folder, IMAGES_MASK) then
+    begin
+      MessageDlg(Format(RSFolders_NoImages, [folder]), mtError, [mbOK], 0);
+      exit;
+    end;
     idx := clbFolders.Items.Add(SelectDirectoryDialog.FileName);
     clbFolders.Checked[idx] := true;
   end;
