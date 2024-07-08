@@ -65,6 +65,7 @@ type
     procedure ExportKeywordsToStrings(AList: TStrings);
     function HasKeyword(AKeyword: String): Boolean;
     function HasKeywordPart(AKeywordPart: String): Boolean;
+    procedure ReleasePicture;
     procedure SetKeywordsFromStrings(AList: TStrings);
 
     property Directory: String read GetDirectory;
@@ -146,6 +147,7 @@ type
     procedure ReadMetadataFile(AFileName: String; AHidden: Boolean);
     procedure SetSelectedIndex(AValue: Integer); override;
     function ThumbnailMarked(AThumbnail: TBasicThumbnail): Boolean; override;
+    procedure ThumbnailOutside(AThumbnail: TBasicThumbnail); override;
 
   public
     constructor Create(AOwner: TComponent); override;
@@ -400,6 +402,11 @@ procedure TIconItem.ExportKeywordsToStrings(AList: TStrings);
 begin
   Assert(AList <> nil);
   AList.Assign(FKeywords);
+end;
+
+procedure TIconItem.ReleasePicture;
+begin
+  FreeAndNil(FPicture);
 end;
 
 procedure TIconItem.SetKeywordsFromStrings(AList: TStrings);
@@ -1362,6 +1369,17 @@ var
 begin
   item := TIconThumbnail(AThumbnail).Item;
   Result := (item.KeywordCount = 0) or (item.Style = isAnyStyle);
+end;
+
+{ The specified thumbnail is outside the drawing area. In this implementation
+  of the icon viewer we release the associated picture to avoid running out
+  of memory, in particular in the 32-bit IDE. }
+procedure TIconViewer.ThumbnailOutside(AThumbnail: TBasicThumbnail);
+var
+  item: TIconItem;
+begin
+  item := TIconThumbnail(AThumbnail).Item;
+  if item <> nil then item.ReleasePicture;
 end;
 
 procedure TIconViewer.UnlockFilter;

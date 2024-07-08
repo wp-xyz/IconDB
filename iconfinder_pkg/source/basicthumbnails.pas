@@ -80,6 +80,7 @@ type
     procedure SetSelectedIndex(AValue: Integer); virtual;
     procedure SingleSelect(AThumbnail: TBasicThumbnail);
     function ThumbnailMarked({%H-}AThumbnail: TBasicThumbnail): Boolean; virtual;
+    procedure ThumbnailOutside(AThumbnail: TBasicThumbnail); virtual;
     function ThumbnailVisible(AThumbnail: TBasicThumbnail): Boolean;
 
     property ThumbnailList: TThumbnailList read FThumbnailList;
@@ -467,7 +468,8 @@ begin
       Canvas.Clipping := true;
       DrawThumbnail(thumb, R);
       Canvas.Clipping := false;
-    end;
+    end else
+      ThumbnailOutside(thumb);
   end;
 end;
 
@@ -593,7 +595,12 @@ begin
   Result := false;
 end;
 
-function TBasicThumbnailviewer.ThumbnailVisible(AThumbnail: TBasicThumbnail): Boolean;
+procedure TBasicThumbnailViewer.ThumbnailOutside(AThumbnail: TBasicThumbnail);
+begin
+  // to be overridden
+end;
+
+function TBasicThumbnailViewer.ThumbnailVisible(AThumbnail: TBasicThumbnail): Boolean;
 var
   x: Integer;
   y: Integer;
