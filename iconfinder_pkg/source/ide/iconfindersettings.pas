@@ -9,8 +9,8 @@
  Settings for the Icon Finder addon to the IDE:
  - add/remove folders with icons to be included
  - rearrange folders
- - define keywords
- - save keywords to "metadata.xml" file in the icon folder.
+ - define metadata (keywords, styles)
+ - save keywords and styles to "metadata.xml" file in the icon folder.
 
  The settings are stored in the file "iconfindercfg.xml" in the 
  Lazarus user profile (primary config directory).
@@ -188,17 +188,17 @@ begin
   try
     FViewer.IconViewer.WriteIconFolders(folders);
     CenterForm(F);
-//    DebugLn('[EditFolders] - 0');
+    DebugLn('[EditFolders] - 0');
     F.SetIconFolders(folders);
     if F.ShowModal = mrOK then
     begin
       Screen.BeginWaitCursor;
       try
-//        DebugLn('[EditFolders] - 1');
+        DebugLn('[EditFolders] - 1');
         F.GetIconFolders(folders);
-//        DebugLn('[EditFolders] - 2');
+        DebugLn('[EditFolders] - 2');
         FViewer.ReadIconFolders(folders);
-//        DebugLn('[EditFolders] - 3');
+        DebugLn('[EditFolders] - 3');
       finally
         Screen.EndWaitCursor;
       end;

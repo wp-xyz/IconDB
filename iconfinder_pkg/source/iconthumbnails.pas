@@ -1175,9 +1175,6 @@ begin
   try
     files.Sorted := true;
     FindAllFiles(files, folder, IMAGES_MASK, false);
-
-    DebugLn('[ReadMetadataFile] files.Count=' + IntToStr(files.Count));
-
     ReadXMLFile(doc, AFileName);
     iconsNode := doc.DocumentElement.FindNode('icons');
     iconNode := iconsNode.FindNode('icon');
@@ -1317,6 +1314,14 @@ begin
     exit;
   end;
 
+  // Make sure that folder of file is not hidden
+  folder := ExtractFilePath(AFileName);
+  if TIconFolderList(FIconFolders).IsHidden(folder) then
+  begin
+    SelectedIndex := -1;
+    exit;
+  end;
+
   // Find the index of the icon with the given filename among all thumbnails.
   idx := -1;
   for i := 0 to ThumbnailCount-1 do
@@ -1330,17 +1335,7 @@ begin
     end;
   end;
 
-  if idx > -1 then
-  begin
-    // Make sure that the folder is not hidden
-    folder := ExtractFilePath(AFileName);
-    if not TIconFolderList(FIconFolders).IsHidden(folder) then
-    begin
-      SelectedIndex := idx;
-      exit;
-    end;
-  end;
-
+  // Not found
   SelectedIndex := -1;
 end;
 
