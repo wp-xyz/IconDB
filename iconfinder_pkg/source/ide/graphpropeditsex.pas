@@ -7,30 +7,6 @@
  *****************************************************************************
 
  Extended graphic property editors for searching icons by keywords.
-
- Changes required in Laz 3.99 unit GraphicPropEdit
-
- - After the form class declaration, add
-
-     TGraphicPropertyEditorFormClass = class of TGraphicPropertyEditorForm;
-
- Changes required in Laz 3.99, unit GraphPropEdits (IDEIntf):
-
- - Add protected virtual class function GetEditorFormClass to TGraphicPropertyEditor,
-   TPicturePropertyEditor and TButtonGlyphPropEditor:
-
-     class function GetEditorFormClass: TGraphicPropertyEditorFormClass; virtual;
-
-     class function TGraphicPropertyEditor.GetEditorFormClass: TGraphicPropertyEditorFormClass;
-     begin
-       Result := TGraphicPropertyEditorForm;
-     end;
-
- - In the Edit method of these property editors, find the line
-
-     TheDialog := TGraphicPropertyEditorForm.Create(nil);
-
-   and replace the word "TGraphicPropertyEditorForm" by "GetEditorFormClass"
 }
 
 unit GraphPropEditsEx;

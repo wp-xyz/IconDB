@@ -121,8 +121,6 @@ var
   item, largestItem: TIconItem;
   w, h: Integer;
 begin
-  //DebugLn([Length(ASizes), ' ', Length(APictures)]);
-
   if FViewer.SelectedIcon <> nil then
   begin
     // Assuming ASizes are ordered by size...
@@ -163,7 +161,7 @@ begin
     end;
   except
     on E: Exception do begin
-      DebugLn('TIconFinderSettingsFrame.ReadSettings Loading ' +  ICONFINDER_CONFIG_FILENAME + ' failed: ' + E.Message);
+      DebugLn('[TIconFinderSettingsFrame.ReadSettings] Loading ' +  ICONFINDER_CONFIG_FILENAME + ' failed: ' + E.Message);
     end;
   end;
   if FViewer.IconViewer.IconFolders.Count = 0 then
@@ -184,7 +182,7 @@ begin
     end;
   except
      on E: Exception do begin
-       DebugLn('TIconFinderSettingsFrame.ReadSettings Saving ' + ICONFINDER_CONFIG_FILENAME + ' failed: ' + E.Message);
+       DebugLn('[TIconFinderSettingsFrame.ReadSettings] Saving ' + ICONFINDER_CONFIG_FILENAME + ' failed: ' + E.Message);
      end;
   end;
 end;

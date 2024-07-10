@@ -6,7 +6,8 @@
   for details about the license.
  *****************************************************************************
 
- Extended graphic property editor form allowing searching icons by keywords.
+ Extended graphic property editor form from which icons can be searched
+ by keywords.
 }
 
 unit GraphicPropEditEx;

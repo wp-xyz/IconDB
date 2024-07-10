@@ -8,11 +8,6 @@
 
  Extended image list component editor for searching icons by keywords.
 
- Changes required in Laz 3.99, unit ImageListEditor (IDEIntf):
- - make "InternalAddImageToList" protected
- - make "UpdatePreviewImage" protected
- - new public property "Modified: boolean read FModified"
-
  Each icon folder contained in the icon lib must have a file "metadata.xml" with
  a metadata block for each image.
 }
@@ -150,8 +145,6 @@ var
   mAdd: TMenuItem;
   mReplace: TMenuItem;
 begin
-  DebugLn('[TImageListEditorDlgEx.FormCreate] ENTER');
-
   inherited;
 
   acAdd := TAction.Create(ActionList);
@@ -171,8 +164,6 @@ begin
   mReplace := TMenuItem.Create(ReplacePopupMenu);
   mReplace.Action := acReplace;
   ReplacePopupMenu.Items.Add(mReplace);
-
-  DebugLn('[TImageListEditorDlgEx.FormCreate] EXIT');
 end;
 
 procedure TImageListEditorDlgEx.IconFinderDblClick(Sender: TObject);

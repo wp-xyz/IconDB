@@ -47,7 +47,8 @@ begin
   RegisterComponentEditor(TImageList, TImageListComponentEditorEx);
 
   // Register options page in IDE
-  IconFinderOptionsFrameID := RegisterIDEOptionsEditor(IconFinderOptionsGroup, TIconFinderSettingsFrame, 9999)^.Index;  // AIndex = what ???
+  IconFinderOptionsFrameID := RegisterIDEOptionsEditor(IconFinderOptionsGroup,
+    TIconFinderSettingsFrame, IconFinderOptionsIndex)^.Index;
 end;
 
 

@@ -89,8 +89,9 @@ procedure GlobalReadSettings(AConfig: TConfigStorage; AViewer: TIconViewerFrame;
 procedure GlobalWriteSettings(AConfig: TConfigStorage; AViewer: TIconViewerFrame; ANodeName: String);
 
 var
-  IconFinderOptionsGroup: integer;
-  IconFinderOptionsFrameID: integer;
+  IconFinderOptionsGroup: integer = 260;
+  IconFinderOptionsIndex: Integer = 100;
+  IconFinderOptionsFrameID: integer;    // Value obtained in registration
 
 
 implementation
@@ -188,17 +189,13 @@ begin
   try
     FViewer.IconViewer.WriteIconFolders(folders);
     CenterForm(F);
-    DebugLn('[EditFolders] - 0');
     F.SetIconFolders(folders);
     if F.ShowModal = mrOK then
     begin
       Screen.BeginWaitCursor;
       try
-        DebugLn('[EditFolders] - 1');
         F.GetIconFolders(folders);
-        DebugLn('[EditFolders] - 2');
         FViewer.ReadIconFolders(folders);
-        DebugLn('[EditFolders] - 3');
       finally
         Screen.EndWaitCursor;
       end;
@@ -258,7 +255,7 @@ begin
     end;
   except
     on E: Exception do begin
-      DebugLn('TIconFinderSettingsFrame.ReadSettings Loading ' +  ICONFINDER_CONFIG_FILENAME + ' failed: ' + E.Message);
+      DebugLn('[TIconFinderSettingsFrame.ReadSettings] Loading ' +  ICONFINDER_CONFIG_FILENAME + ' failed: ' + E.Message);
     end;
   end;
 end;
@@ -309,7 +306,7 @@ begin
      end;
    except
      on E: Exception do begin
-       DebugLn('TIconFinderSettingsFrame.ReadSettings Saving ' + ICONFINDER_CONFIG_FILENAME + ' failed: ' + E.Message);
+       DebugLn('[TIconFinderSettingsFrame.ReadSettings] Saving ' + ICONFINDER_CONFIG_FILENAME + ' failed: ' + E.Message);
      end;
    end;
 end;

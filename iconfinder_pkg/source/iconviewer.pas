@@ -8,7 +8,11 @@
 
  A frame composed of the essential controls for viewer thumbnails and filtering
  them.
+
+ Is used by the imagelist component editor, by the graphic property editor
+ and by the IDE settings page.
 }
+
 unit IconViewer;
 
 {$mode ObjFPC}{$H+}
