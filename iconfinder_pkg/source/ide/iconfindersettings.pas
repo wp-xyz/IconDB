@@ -367,6 +367,7 @@ var
   i: Integer;
   list: TStrings;
   s: String;
+  isHidden: Boolean;
 begin
   list := TStringList.Create;
   try
@@ -376,8 +377,8 @@ begin
     for i := 0 to list.Count-1 do
     begin
       AConfig.SetValue(Format('IconFinder/Folders/Item%d/Value', [i]), list[i]);
-      if list.Objects[i] <> nil then
-        AConfig.SetValue(Format('IconFinder/Folders/Item%d/Hidden', [i]), true);
+      isHidden := list.Objects[i] <> nil;
+      AConfig.SetValue(Format('IconFinder/Folders/Item%d/Hidden', [i]), isHidden);
     end;
 
     // Keyword filter history list
