@@ -47,11 +47,12 @@ object IconFolderForm: TIconFolderForm
       AnchorSideRight.Side = asrBottom
       AnchorSideBottom.Control = btnAddFolder
       Left = 8
-      Height = 204
-      Top = 0
+      Height = 200
+      Top = 4
       Width = 521
       Anchors = [akTop, akLeft, akRight, akBottom]
       BorderSpacing.Left = 8
+      BorderSpacing.Top = 4
       BorderSpacing.Right = 8
       ItemHeight = 0
       TabOrder = 0

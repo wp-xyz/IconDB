@@ -47,6 +47,7 @@ type
     procedure IconViewerFilterHandler(Sender: TObject);
     procedure IconSelectHandler(Sender: TObject);
   public
+    function Execute: Boolean;
     procedure LoadPictureFromIconFinder(APicture: TPicture);
     procedure LoadPictureSizesFromIconFinder(ASizes: Array of TPoint; APictures: Array of TPicture);
     procedure ReadSettings(ANodeName: String);
@@ -101,6 +102,11 @@ procedure TIconFinderForm.IconViewerDblClickHandler(Sender: TObject);
 begin
   if Assigned(FOnIconDblClick) then
     FOnIconDblClick(Sender);
+end;
+
+function TIconFinderForm.Execute: Boolean;
+begin
+  Result := ShowModal = mrOK;
 end;
 
 procedure TIconFinderForm.IconViewerFilterHandler(Sender: TObject);

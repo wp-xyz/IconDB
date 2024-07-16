@@ -39,12 +39,10 @@ type
     procedure FormCreate(Sender: TObject);
   private
     FIconFinderForm: TIconFinderForm;
-    procedure AddImgFromIconFinder(Sender: TObject);
-    procedure AddReplaceFromIconFinder(AReplace: Boolean);
+    procedure AddReplaceImgHandler(Sender: TObject);
+    procedure AddReplaceFromIconFinder(AIconFinder: TIconFinderForm; AReplace: Boolean);
+    function CreateIconFinder: TIconFinderForm;
     procedure IconFinderDblClick(Sender: TObject);
-    procedure ReplaceImgByIconFinder(Sender: TObject);
-  public
-    function ShowIconFinder: Boolean;
   end;
 
 
@@ -84,13 +82,24 @@ end;
 
 { TImageListEditorDlgEx }
 
-procedure TImageListEditorDlgEx.AddImgFromIconFinder(Sender: TObject);
+procedure TImageListEditorDlgEx.AddReplaceImgHandler(Sender: TObject);
+var
+  replace: Boolean;
 begin
-  if ShowIconFinder then
-    AddReplaceFromIconFinder(false);
+  FIconFinderForm := CreateIconFinder;
+  try
+    if FIconFinderForm.Execute then
+    begin
+      replace := TAction(Sender).Tag = 1;
+      AddReplaceFromIconFinder(FIconFinderForm, replace);
+    end;
+  finally
+    FreeAndNil(FIconFinderForm);
+  end;
 end;
 
-procedure TImageListEditorDlgEx.AddReplaceFromIconFinder(AReplace: Boolean);
+procedure TImageListEditorDlgEx.AddReplaceFromIconFinder(AIconFinder: TIconFinderForm;
+  AReplace: Boolean);
 var
   res: TCustomImageListResolution;
   sizes: array of TPoint = nil;
@@ -118,7 +127,7 @@ begin
       pictures[i] := TPicture.Create;
 
     // Get pictures form icon finder
-    FIconFinderForm.LoadPictureSizesFromIconFinder(sizes, pictures);
+    AIconFinder.LoadPictureSizesFromIconFinder(sizes, pictures);
 
     // First, add the largest image to the imagelist
     if AReplace then
@@ -138,6 +147,27 @@ begin
   UpdatePreviewImage;
 end;
 
+function TImageListEditorDlgEx.CreateIconFinder: TIconFinderForm;
+var
+  L, T: Integer;
+  R: TRect;
+begin
+  Result := TIconFinderForm.Create(self);
+  R := Screen.DesktopRect;
+  L := Left + Width;
+  if L + Result.Width > R.Right then
+  begin
+    L := Left - Result.Width;
+    if L < R.Left then
+      L := Left + (Width - Result.Width) div 2;
+  end;
+  T := Top;
+  Result.Left := L;
+  Result.Top := T;
+  Result.OnIconDblClick := @IconFinderDblClick;
+  Result.ReadSettings('ImageListComponentEditor');
+end;
+
 procedure TImageListEditorDlgEx.FormCreate(Sender: TObject);
 var
   acAdd: TAction;
@@ -150,12 +180,13 @@ begin
   acAdd := TAction.Create(ActionList);
   acAdd.Caption := RSImgListEditor_AddFromIconFinder;
   acAdd.ImageIndex := IDEImages.GetImageIndex('add_icon_from_finder', 16);
-  acAdd.OnExecute := @AddImgfromIconFinder;
+  acAdd.OnExecute := @AddReplaceImgHandler;
 
   acReplace := TAction.Create(ActionList);
   acReplace.Caption := RSImgListEditor_ReplaceFromIconFinder;
   acReplace.ImageIndex := IDEImages.GetImageIndex('replace_by_finder', 16);
-  acReplace.OnExecute := @ReplaceImgByIconFinder;
+  acReplace.OnExecute := @AddReplaceImgHandler;
+  acReplace.Tag := 1;  // to distinguish from acAdd having the same handler
 
   mAdd := TMenuItem.Create(AddPopupMenu);
   mAdd.Action := acAdd;
@@ -168,41 +199,8 @@ end;
 
 procedure TImageListEditorDlgEx.IconFinderDblClick(Sender: TObject);
 begin
-  FIconFinderForm.ModalResult := mrOK;
-end;
-
-function TImageListEditorDlgEx.ShowIconFinder: Boolean;
-var
-  L, T: Integer;
-  R: TRect;
-begin
-  if FIconFinderForm = nil then
-  begin
-    FIconFinderForm := TIconFinderForm.Create(self);
-    FIconFinderForm.OnIconDblClick := @IconFinderDblClick;
-  end;
-
-  R := Screen.DesktopRect;
-  L := Left + Width;
-  if L + FIconFinderForm.Width > R.Right then
-  begin
-    L := Left - FIconFinderForm.Width;
-    if L < R.Left then
-      L := Left + (Width - FIconFinderForm.Width) div 2;
-  end;
-  T := Top;
-  FIconFinderForm.Left := L;
-  FIconFinderForm.Top := T;
-
-  FIconFinderForm.ReadSettings('ImageListComponentEditor');
-
-  Result := FIconFinderForm.ShowModal = mrOK;
-end;
-
-procedure TImageListEditorDlgEx.ReplaceImgByIconFinder(Sender: TObject);
-begin
-  if ShowIconFinder then
-    AddReplaceFromIconFinder(true);
+  if FIconFinderForm <> nil then
+    FIconFinderForm.ModalResult := mrOK;
 end;
 
 

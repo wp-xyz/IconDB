@@ -29,9 +29,9 @@ type
     procedure IconFinderButtonClick(Sender: TObject);
   private
     FIconFinderForm: TIconFinderForm;
+    function CreateIconFinder: TIconFinderForm;
     procedure IconFinderDblClick(Sender: TObject);
   public
-    function ShowIconFinder: Boolean;
   end;
 
 implementation
@@ -40,10 +40,25 @@ implementation
 
 { TGraphicPropertyEditorFormEx }
 
-procedure TGraphicPropertyEditorFormEx.IconFinderButtonClick(Sender: TObject);
+function TGraphicPropertyEditorFormEx.CreateIconFinder: TIconFinderForm;
+var
+  L, T: Integer;
+  R: TRect;
 begin
-  if ShowIconFinder then
-    FIconFinderForm.LoadPictureFromIconFinder(ImagePreview.Picture);
+  Result := TIconFinderForm.Create(self);
+  R := Screen.DesktopRect;
+  L := Left + Width;
+  if L + Result.Width > R.Right then
+  begin
+    L := Left - Result.Width;
+    if L < R.Left then
+      L := Left + (Width - Result.Width) div 2;
+  end;
+  T := Top;
+  Result.Left := L;
+  Result.Top := T;
+  Result.OnIconDblClick := @IconFinderDblClick;
+  Result.ReadSettings('GraphicPropertyEditor');
 end;
 
 procedure TGraphicPropertyEditorFormEx.FormCreate(Sender: TObject);
@@ -53,38 +68,23 @@ begin
   LoadSaveBtnPanel.AutoSize := true;
 end;
 
+procedure TGraphicPropertyEditorFormEx.IconFinderButtonClick(Sender: TObject);
+begin
+  FIconFinderForm := CreateIconFinder;
+  try
+    if FIconFinderForm.Execute then
+      FIconFinderForm.LoadPictureFromIconFinder(ImagePreview.Picture);
+  finally
+    FreeAndNil(FIconFinderForm);
+  end;
+end;
+
 procedure TGraphicPropertyEditorFormEx.IconFinderDblClick(Sender: TObject);
 begin
-  FIconFinderForm.ModalResult := mrOK;
+  if FIconFinderForm <> nil then
+    FIconFinderForm.ModalResult := mrOK;
 end;
 
-function TGraphicPropertyEditorFormEx.ShowIconFinder: Boolean;
-var
-  L, T: Integer;
-  R: TRect;
-begin
-  if FIconFinderForm = nil then
-  begin
-    FIconFinderForm := TIconFinderForm.Create(self);
-    FIconFinderForm.OnIconDblClick := @IconFinderDblClick;
-  end;
-
-  R := Screen.DesktopRect;
-  L := Left + Width;
-  if L + FIconFinderForm.Width > R.Right then
-  begin
-    L := Left - FIconFinderForm.Width;
-    if L < R.Left then
-      L := Left + (Width - FIconFinderForm.Width) div 2;
-  end;
-  T := Top;
-  FIconFinderForm.Left := L;
-  FIconFinderForm.Top := T;
-
-  FIconFinderForm.ReadSettings('GraphicPropertyEditor');
-
-  Result := FIconFinderForm.ShowModal = mrOK;
-end;
 
 end.
 
