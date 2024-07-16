@@ -40,7 +40,7 @@ type
     procedure btnMoveFolderDownClick(Sender: TObject);
     procedure btnMoveFolderUpClick(Sender: TObject);
     procedure btnAddFolderClick(Sender: TObject);
-    procedure clbFoldersSelectionChange(Sender: TObject; User: boolean);
+    procedure clbFoldersSelectionChange(Sender: TObject; {%H-}User: boolean);
     procedure FormCreate(Sender: TObject);
   private
 

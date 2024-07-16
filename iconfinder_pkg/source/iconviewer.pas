@@ -61,7 +61,6 @@ type
     procedure IconDetailsPanelResize(Sender: TObject);
   private
     FIconViewer: TIconViewer;
-    FLayoutFixed: Boolean;
     FOnFilter: TNotifyEvent;
     FOnIconDblClick: TNotifyEvent;
     function GetFilteredCount: Integer;
@@ -454,8 +453,6 @@ begin
 end;
 
 procedure TIconViewerFrame.UpdateLanguage;
-var
-  idx: Integer;
 begin
   cmbFilterBySize.Hint := RSIconViewer_FilterByIconSizeHint;
   cmbFilterByStyle.Hint := RSIconViewer_FilterByIconStyleHint;

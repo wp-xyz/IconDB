@@ -21,15 +21,13 @@ interface
 uses
   Classes, SysUtils,
   // LazUtils
-  LazFileUtils, LazLoggerBase, LazConfigStorage,
+  LazFileUtils, LazLoggerBase,
   // LCL
-  Forms, Controls, Graphics, Dialogs, ImgList, StdCtrls, ComCtrls, Menus, ActnList,
-  // BuildIntf
-  IDEOptionsIntf,
+  Forms, Controls, Graphics, Dialogs, ImgList, ComCtrls, Menus, ActnList,
   // IDEIntf
-  PropEdits, ComponentEditors, ImageListEditor, BaseIDEIntf, ObjInspStrConsts, IDEImagesIntf,
+  PropEdits, ComponentEditors, ImageListEditor, ObjInspStrConsts, IDEImagesIntf,
   // Thumbnails
-  IconFinderStrConstsIDE, IconFinderCommon, IconThumbnails, IconViewer, IconFinderFrm;
+  IconFinderStrConstsIDE, IconThumbnails, IconFinderFrm;
 
 type
 
@@ -104,7 +102,6 @@ var
   res: TCustomImageListResolution;
   sizes: array of TPoint = nil;
   pictures: array of TPicture = nil;
-  pic: TPicture;
   i: Integer;
 begin
   if ImageList.ResolutionCount = 0 then

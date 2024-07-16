@@ -16,8 +16,8 @@ unit IconFinderMetaData;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ButtonPanel, LCLStrConsts,
-  StdCtrls, ExtCtrls, ExtDlgs,
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ButtonPanel,
+  StdCtrls, ExtCtrls,
   IconFinderStrConsts, IconThumbnails;
 
 type

@@ -27,7 +27,7 @@ uses
   // LazUtils
   LazConfigStorage, LazFileUtils, LazLoggerBase,
   // LCL
-  Controls, Graphics, StdCtrls, EditBtn, Dialogs, ComCtrls, Forms,
+  Controls, Graphics, Dialogs, ComCtrls, Forms,
   // BuildIntf
   IDEOptionsIntf, baseIDEIntf,
   // IdeIntf
@@ -182,7 +182,6 @@ procedure TIconFinderSettingsFrame.EditFolders;
 var
   F: TIconFolderForm;
   folders: TStrings;
-  P: TPoint;
 begin
   F := TIconFolderForm.Create(nil);
   folders := TStringList.Create;

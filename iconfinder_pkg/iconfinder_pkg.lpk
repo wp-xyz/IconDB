@@ -10,7 +10,7 @@
       <SearchPaths>
         <IncludeFiles Value="source"/>
         <OtherUnitFiles Value="source"/>
-        <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+        <UnitOutputDirectory Value="lib\run\$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
       <Other>
         <CustomOptions Value="$(IDEBuildOptions)"/>

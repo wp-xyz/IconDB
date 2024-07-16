@@ -49,7 +49,7 @@ type
   public
     function Execute: Boolean;
     procedure LoadPictureFromIconFinder(APicture: TPicture);
-    procedure LoadPictureSizesFromIconFinder(ASizes: Array of TPoint; APictures: Array of TPicture);
+    procedure LoadPictureSizesFromIconFinder(ASizes: Array of TPoint; {%H-}APictures: Array of TPicture);
     procedure ReadSettings(ANodeName: String);
     procedure WriteSettings;
     property OnIconDblClick: TNotifyEvent read FOnIconDblClick write FOnIconDblClick;

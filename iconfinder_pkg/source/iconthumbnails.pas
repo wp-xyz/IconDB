@@ -13,7 +13,7 @@ unit IconThumbNails;
 
 {$mode ObjFPC}{$H+}
 {$define OVERLAY_ICONS}
-
+{$WARN 6058 off : Call to subroutine "$1" marked as inline is not inlined}
 interface
 
 uses
@@ -900,7 +900,7 @@ var
   iconNameBase: String;
   item: TIconItem;
   itemNameBase: String;
-  w, h: Integer;
+  w: Integer;
 begin
   Result := nil;
   iconNameBase := AIcon.NameBase;
@@ -1037,9 +1037,7 @@ end;
 procedure TIconViewer.PopulateIconFoldersMenu(AMenu: TMenu);
 var
   i: Integer;
-  folder: String;
   menuitem: TMenuItem;
-
 begin
   AMenu.Items.Clear;
 
@@ -1157,7 +1155,6 @@ end;
 procedure TIconViewer.ReadMetadataFile(AFileName: String; AHidden: Boolean);
 var
   doc: TXMLDocument = nil;
-  root: TDOMNode;
   iconsNode, iconNode: TDOMNode;
   keywordsNode, keywordNode: TDOMNode;
   folder, fn: String;
@@ -1308,6 +1305,7 @@ var
   i, idx: Integer;
   folder: String;
 begin
+  Result := false;
   if AFileName = '' then
   begin
     SelectedIndex := -1;
@@ -1330,13 +1328,13 @@ begin
       Continue;
     if TIconThumbnail(Thumbnail[i]).Item.FileName = AFileName then
     begin
+      Result := true;
       idx := i;
       break;
     end;
   end;
 
-  // Not found
-  SelectedIndex := -1;
+  SelectedIndex := idx;
 end;
 
 procedure TIconViewer.SetSelectedIndex(AValue: Integer);
