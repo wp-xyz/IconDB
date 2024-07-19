@@ -24,7 +24,7 @@ uses
 
 type
   TIconItem = class;
-  TIconViewer = class;
+  TIconThumbnailViewer = class;
 
   TIconStyle = (isAnyStyle, isClassic, isFlat, isOutline, isOutline2);
 
@@ -46,7 +46,7 @@ type
     FKeywords: TStrings;
     FPicture: TPicture;
     FHidden: Boolean;
-    FViewer: TIconViewer;
+    FViewer: TIconThumbnailViewer;
     procedure SetStyleAsString(AValue: String);
   protected
     function GetDirectory: String;
@@ -109,7 +109,7 @@ type
     procedure Toggle(AIndex: Integer);
   end;
 
-  TIconViewer = class(TBasicThumbnailViewer)
+  TIconThumbnailViewer = class(TBasicThumbnailViewer)
   private
     FIconFolders: TIconFolderList;
     FIconList: TIconList;
@@ -551,9 +551,9 @@ begin
 end;
 
 
-{ TIconViewer }
+{ TIconThumbnailViewer }
 
-constructor TIconViewer.Create(AOwner: TComponent);
+constructor TIconThumbnailViewer.Create(AOwner: TComponent);
 begin
   inherited;
   FIconFolders := TIconFolderList.Create;
@@ -571,7 +571,7 @@ begin
   {$endif}
 end;
 
-destructor TIconViewer.Destroy;
+destructor TIconThumbnailViewer.Destroy;
 var
   res: Integer;
 begin
@@ -594,7 +594,7 @@ end;
 
 { Main filtering method: Compares the icon properties with the filter conditions
   and returns true when the icon can be displayed as a thumbnail. }
-function TIconViewer.AcceptIcon(AIcon: TIconItem): Boolean;
+function TIconThumbnailViewer.AcceptIcon(AIcon: TIconItem): Boolean;
 begin
   Result := false;
   if AIcon.Hidden then
@@ -618,7 +618,7 @@ end;
      keyword1 OR NOT keyword2 AND keyword3 AND NOT keyword4
      keyword1 keyword2  -- defaults to AND
   No brackets allowed! }
-function TIconViewer.AcceptKeywords(AIcon: TIconItem): Boolean;
+function TIconThumbnailViewer.AcceptKeywords(AIcon: TIconItem): Boolean;
 type
   TOperationKind = (opkAND, opkOR, opkNOT);
   TOperation = record
@@ -671,7 +671,7 @@ begin
 end;
 
 { Adds the associated icon to the unfiltered icon list. }
-function TIconViewer.AddIcon(AFileName, AKeywords: String; AStyle: TIconStyle;
+function TIconThumbnailViewer.AddIcon(AFileName, AKeywords: String; AStyle: TIconStyle;
   AWidth, AHeight: Integer): TIconItem;
 var
   sizeStr: String;
@@ -691,7 +691,7 @@ begin
     FSizes.Add(sizestr);
 end;
 
-procedure TIconViewer.AddIconFolder(AFolder: String; Hidden: Boolean = false);
+procedure TIconThumbnailViewer.AddIconFolder(AFolder: String; Hidden: Boolean = false);
 begin
   AFolder := AppendPathDelim(SwitchPathDelims(AFolder, true));
 
@@ -705,7 +705,7 @@ begin
   SelectedIndex := -1;
 end;
 
-procedure TIconViewer.Clear;
+procedure TIconThumbnailViewer.Clear;
 begin
   inherited;
   FLargestIconWidth := 0;
@@ -717,7 +717,7 @@ end;
 
 { Copies the metadata from the given icon to all other icons sharing the
   same name base (= part in name before the last '_') and directory. }
-procedure TIconViewer.CopyMetadataToNameBase(AIcon: TIconItem);
+procedure TIconThumbnailViewer.CopyMetadataToNameBase(AIcon: TIconItem);
 var
   i: Integer;
   item: TIconItem;
@@ -735,7 +735,7 @@ begin
   end;
 end;
 
-procedure TIconViewer.DeleteIcon(AIcon: TIconItem);
+procedure TIconThumbnailViewer.DeleteIcon(AIcon: TIconItem);
 var
   selIdx: Integer = -1;
   iconIdx: Integer;
@@ -760,7 +760,7 @@ begin
   end;
 end;
 
-procedure TIconViewer.DeleteIconFolder(AFolder: String);
+procedure TIconThumbnailViewer.DeleteIconFolder(AFolder: String);
 var
   i: Integer;
   folder: String;
@@ -780,7 +780,7 @@ begin
 end;
 
 {$ifdef OVERLAY_ICONS}
-procedure TIconViewer.DrawThumbnail(AThumbnail: TBasicThumbnail; ARect: TRect);
+procedure TIconThumbnailViewer.DrawThumbnail(AThumbnail: TBasicThumbnail; ARect: TRect);
 var
   ovl: TGraphic;
   ppi: Integer;
@@ -803,7 +803,7 @@ begin
 end;
 {$endif}
 
-procedure TIconViewer.FilterIcons;
+procedure TIconThumbnailViewer.FilterIcons;
 var
   i: Integer;
   item: TIconItem;
@@ -853,7 +853,7 @@ begin
     FOnFilter(self);
 end;
 
-function TIconViewer.FilterLocked: Boolean;
+function TIconThumbnailViewer.FilterLocked: Boolean;
 begin
   Result := FFilterLock <> 0;
 end;
@@ -861,7 +861,7 @@ end;
 { Finds the icon list entry for the specified item which has the same
   namebase, but the specified size.
   When AWidth = -1 and AHeight = -1 then the file without appendix is used. }
-function TIconViewer.FindIconSize(AIcon: TIconItem; AWidth, AHeight: Integer): TIconItem;
+function TIconThumbnailViewer.FindIconSize(AIcon: TIconItem; AWidth, AHeight: Integer): TIconItem;
 var
   i: Integer;
   iconNameBase: String;
@@ -894,7 +894,7 @@ begin
   Result := nil;
 end;
 
-function TIconViewer.FindLargestIcon(AIcon: TIconItem): TIconItem;
+function TIconThumbnailViewer.FindLargestIcon(AIcon: TIconItem): TIconItem;
 var
   i: Integer;
   iconNameBase: String;
@@ -921,18 +921,18 @@ begin
 end;
 
 { Returns the number of unfiltered icons loaded. }
-function TIconViewer.GetIconCount: Integer;
+function TIconThumbnailViewer.GetIconCount: Integer;
 begin
   Result := FIconList.Count;
 end;
 
 { Returns a sorted list with all available icon sizes, formatted as "width x height" }
-procedure TIconViewer.GetIconSizesAsStrings(AList: TStrings);
+procedure TIconThumbnailViewer.GetIconSizesAsStrings(AList: TStrings);
 begin
   AList.Assign(FSizes);
 end;
 
-procedure TIconViewer.GetKeywordsAsStrings(AList: TStrings);
+procedure TIconThumbnailViewer.GetKeywordsAsStrings(AList: TStrings);
 var
   i, j, k: Integer;
   keyword: String;
@@ -963,7 +963,7 @@ end;
   show/hide the icons of the clicked folder.
   The FIconFolders index of the folder is stored in the Tag of the menu item.
   Special tags: -1 --> show all folders, -2 --> hide all folders. }
-procedure TIconViewer.IconFolderClicked(Sender: TObject);
+procedure TIconThumbnailViewer.IconFolderClicked(Sender: TObject);
 var
   i, idx: Integer;
 begin
@@ -994,7 +994,7 @@ begin
 //  end;
 end;
 
-function TIconViewer.IndexOfThumbnail(AIcon: TIconItem): Integer;
+function TIconThumbnailViewer.IndexOfThumbnail(AIcon: TIconItem): Integer;
 var
   i: Integer;
 begin
@@ -1010,7 +1010,7 @@ begin
     end;
 end;
 
-procedure TIconViewer.LockFilter;
+procedure TIconThumbnailViewer.LockFilter;
 begin
   inc(FFilterLock);
 end;
@@ -1018,7 +1018,7 @@ end;
 { Returns true if at least one of the icon folders has been marked as "dirty"
   after changing its metadata.
   Called when the IconViewer is destroyed. Is evaluated for re-writing the metadata. }
-function TIconViewer.MetadataDirty: Boolean;
+function TIconThumbnailViewer.MetadataDirty: Boolean;
 var
   i: Integer;
 begin
@@ -1034,7 +1034,7 @@ end;
 { Populates the given menu with the names of all folders from which icons have
   been loaded. Hidden folders (having a non-nil Objects property in the
   IconFolder list) are not checked in the menu. }
-procedure TIconViewer.PopulateIconFoldersMenu(AMenu: TMenu);
+procedure TIconThumbnailViewer.PopulateIconFoldersMenu(AMenu: TMenu);
 var
   i: Integer;
   menuitem: TMenuItem;
@@ -1070,7 +1070,7 @@ begin
 end;
 
 { Reads the icons found in the specified folder. }
-procedure TIconViewer.ReadIconFolder(AFolder: String);
+procedure TIconThumbnailViewer.ReadIconFolder(AFolder: String);
 var
   isHidden: Boolean;
 begin
@@ -1090,7 +1090,7 @@ end;
 { Reads the icons found in the folders of the given list.
   List items with a non-nil Objects property are marked as being hidden.
   Their names are stored but their icons are not displayed. }
-procedure TIconViewer.ReadIconFolders(AList: TStrings);
+procedure TIconThumbnailViewer.ReadIconFolders(AList: TStrings);
 var
   i: Integer;
   selectedIconFileName: String = '';
@@ -1118,7 +1118,7 @@ end;
 { Looks for image files (*.png, *.bmp) in the given folder and adds them to
   the viewer.
   When AHidden is true all icons are marked as hidden, i.e. are not displayed. }
-procedure TIconViewer.ReadIcons(AFolder: String; AHidden: Boolean);
+procedure TIconThumbnailViewer.ReadIcons(AFolder: String; AHidden: Boolean);
 var
   files: TStrings;
   reader: TFPCustomImageReaderClass;
@@ -1152,7 +1152,7 @@ begin
   end;
 end;
 
-procedure TIconViewer.ReadMetadataFile(AFileName: String; AHidden: Boolean);
+procedure TIconThumbnailViewer.ReadMetadataFile(AFileName: String; AHidden: Boolean);
 var
   doc: TXMLDocument = nil;
   iconsNode, iconNode: TDOMNode;
@@ -1248,7 +1248,7 @@ begin
   end;
 end;
 
-procedure TIconViewer.SetFilterByIconKeywords(AValue: String);
+procedure TIconThumbnailViewer.SetFilterByIconKeywords(AValue: String);
 begin
   if FFilterByIconKeywords <> AValue then
   begin
@@ -1261,7 +1261,7 @@ begin
   end;
 end;
 
-procedure TIconViewer.SetFilterByIconSize(AValue: string);
+procedure TIconThumbnailViewer.SetFilterByIconSize(AValue: string);
 var
   sa: TStringArray;
 begin
@@ -1286,7 +1286,7 @@ begin
   end;
 end;
 
-procedure TIconViewer.SetFilterByIconStyle(AValue: TIconStyle);
+procedure TIconThumbnailViewer.SetFilterByIconStyle(AValue: TIconStyle);
 begin
   if FFilterByIconStyle <> AValue then
   begin
@@ -1300,7 +1300,7 @@ begin
 end;
 
 { Selects, among all visible thumbnails, the icon which has the given filename.}
-function TIconViewer.SelectIconInFile(AFileName: String): Boolean;
+function TIconThumbnailViewer.SelectIconInFile(AFileName: String): Boolean;
 var
   i, idx: Integer;
   folder: String;
@@ -1337,7 +1337,7 @@ begin
   SelectedIndex := idx;
 end;
 
-procedure TIconViewer.SetSelectedIndex(AValue: Integer);
+procedure TIconThumbnailViewer.SetSelectedIndex(AValue: Integer);
 var
   thumb: TIconThumbnail;
 begin
@@ -1356,7 +1356,7 @@ end;
 
 { This is for emphasizing icons in the viewer which do not yet have keywords
   or have an unspecified style. }
-function TIconViewer.ThumbnailMarked(AThumbnail: TBasicThumbnail): Boolean;
+function TIconThumbnailViewer.ThumbnailMarked(AThumbnail: TBasicThumbnail): Boolean;
 var
   item: TIconItem;
 begin
@@ -1367,7 +1367,7 @@ end;
 { The specified thumbnail is outside the drawing area. In this implementation
   of the icon viewer we release the associated picture to avoid running out
   of memory, in particular in the 32-bit IDE. }
-procedure TIconViewer.ThumbnailOutside(AThumbnail: TBasicThumbnail);
+procedure TIconThumbnailViewer.ThumbnailOutside(AThumbnail: TBasicThumbnail);
 var
   item: TIconItem;
 begin
@@ -1375,7 +1375,7 @@ begin
   if item <> nil then item.ReleasePicture;
 end;
 
-procedure TIconViewer.UnlockFilter;
+procedure TIconThumbnailViewer.UnlockFilter;
 begin
   dec(FFilterLock);
   if FFilterLock = 0 then
@@ -1389,7 +1389,7 @@ end;
   folder record to true.
   This procedure iterates over all icons and sets their Hidden flag when
   their folder is hidden. }
-procedure TIconViewer.UpdateIconFolders;
+procedure TIconThumbnailViewer.UpdateIconFolders;
 var
   i, j: Integer;
   hiddenFolders: TStringList;
@@ -1424,7 +1424,7 @@ end;
 
 { Copies the names of the stored icon folders to the given list. Hidden folders
   are marked by putting a non-nil value in the Objects of the output list. }
-procedure TIconViewer.WriteIconFolders(AList: TStrings);
+procedure TIconThumbnailViewer.WriteIconFolders(AList: TStrings);
 var
   i: Integer;
   folder: String;
@@ -1441,7 +1441,7 @@ begin
   end;
 end;
 
-procedure TIconViewer.WriteMetadataFiles;
+procedure TIconThumbnailViewer.WriteMetadataFiles;
 var
   folder, filename: String;
   doc: TXMLDocument;

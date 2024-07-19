@@ -60,7 +60,7 @@ type
     procedure cmbFilterByStyleChange(Sender: TObject);
     procedure IconDetailsPanelResize(Sender: TObject);
   private
-    FIconViewer: TIconViewer;
+    FIconViewer: TIconThumbnailViewer;
     FOnFilter: TNotifyEvent;
     FOnIconDblClick: TNotifyEvent;
     function GetFilteredCount: Integer;
@@ -96,7 +96,7 @@ type
     procedure UpdateLanguage;
 
     property FilteredCount: Integer read GetFilteredCount;
-    property IconViewer: TIconViewer read FIconViewer;
+    property IconViewer: TIconThumbnailViewer read FIconViewer;
     property ImageIndex_ExecuteFilter: TImageIndex index 0 read GetImageIndex write SetImageIndex;
     property ImageIndex_ClearFilter: TImageIndex index 1 read GetImageIndex write SetImageIndex;
     property ImageList: TCustomImageList read GetImageList write SetImageList;
@@ -122,7 +122,7 @@ const
 constructor TIconViewerFrame.Create(AOwner: TComponent);
 begin
   inherited;
-  FIconViewer := TIconViewer.Create(self);
+  FIconViewer := TIconThumbnailViewer.Create(self);
   FIconViewer.Align := alClient;
   FIconViewer.FocusedColor := clWindowText;
   FIconViewer.Parent := self;
